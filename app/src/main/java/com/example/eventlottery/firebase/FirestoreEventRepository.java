@@ -1,4 +1,6 @@
 package com.example.eventlottery.firebase;
 
-public class FirestoreEventRepository {
+import com.example.eventlottery.data.memory.EventRepository;
+
+public class FirestoreEventRepository implements EventRepository {
 }

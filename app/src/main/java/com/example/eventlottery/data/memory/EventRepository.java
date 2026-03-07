@@ -1,4 +1,4 @@
 package com.example.eventlottery.data.memory;
 
-public class EventRepository {
+public interface EventRepository {
 }

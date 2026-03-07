@@ -1,4 +1,6 @@
 package com.example.eventlottery.firebase;
 
-public class FirestoreWaitListRepository {
+import com.example.eventlottery.data.memory.WaitListRepository;
+
+public class FirestoreWaitListRepository implements WaitListRepository {
 }
