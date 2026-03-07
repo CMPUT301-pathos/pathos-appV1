@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417150303174",
+    "project_id": "pathos-eventlottery",
+    "storage_bucket": "pathos-eventlottery.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417150303174:android:ed57eb4c77bff25f1e90c7",
+        "android_client_info": {
+          "package_name": "com.example.pathos.eventlottery"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2t-sHZds1jD_Z-G1LK2IpbV8-4mzuMxA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
