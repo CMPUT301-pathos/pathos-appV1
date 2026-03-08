@@ -1,7 +1,8 @@
 package com.example.eventlottery;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,13 +10,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import android.view.View;
-import android.widget.Button;
-
-import com.google.firebase.firestore.FirebaseFirestore;
-
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Teammate's profile button
         Button profileButton = findViewById(R.id.button_profile);
         profileButton.setOnClickListener(v -> {
             profileButton.setVisibility(View.GONE);
@@ -41,5 +39,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Load invitation fragment with test data
+        if (savedInstanceState == null) {
+            EntrantInvitationFragment fragment = EntrantInvitationFragment.newInstance(
+                    "test_event_123",
+                    "Test Event",
+                    "test_device_456"
+            );
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 }
