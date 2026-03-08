@@ -1,7 +1,7 @@
 package com.example.eventlottery.domain;
 
 
-import com.example.eventlottery.data.memory.ProfileRepository;
+import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 
 /**

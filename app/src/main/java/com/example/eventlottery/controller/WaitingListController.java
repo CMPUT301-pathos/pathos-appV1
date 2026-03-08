@@ -1,6 +1,6 @@
 package com.example.eventlottery.controller;
 
-import com.example.eventlottery.data.memory.WaitListRepository;
+import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
 

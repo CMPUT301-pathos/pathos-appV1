@@ -1,6 +1,6 @@
 package com.example.eventlottery.controller;
 
-import com.example.eventlottery.data.memory.ProfileRepository;
+import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
 /**
  * Controller for managing user profile operations.

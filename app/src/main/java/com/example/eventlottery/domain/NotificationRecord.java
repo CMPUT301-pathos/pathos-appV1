@@ -11,7 +11,7 @@ public class NotificationRecord {
     public String message;
     public Timestamp createdAt;
     public boolean read;
-    public NotificationRecord() {} // Firestore
+    public NotificationRecord(String recipientId, String eventId, NotificationType win, String message) {} // Firestore
     public NotificationRecord(String id, String recipientId, String eventId, String type, String message, Timestamp createdAt, boolean read) {
         this.id = id;
         this.recipientId = recipientId;

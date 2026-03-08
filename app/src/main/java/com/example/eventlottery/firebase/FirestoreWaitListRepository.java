@@ -1,6 +1,6 @@
 package com.example.eventlottery.firebase;
 
-import com.example.eventlottery.data.memory.WaitListRepository;
+import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
 import com.google.firebase.firestore.FirebaseFirestore;

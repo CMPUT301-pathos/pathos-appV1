@@ -11,7 +11,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.ProfileController;
-import com.example.eventlottery.data.memory.ProfileRepository;
+import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;

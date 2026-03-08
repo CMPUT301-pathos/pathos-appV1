@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dashboardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvDashboardTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DASHBOARD"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:paddingBottom="12dp"/>
+
+    <TextView
+        android:id="@+id/tvDashboardSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="(Placeholder) Upcoming events / waitlist summary will show here."
+        android:textSize="14sp"/>
+
+</LinearLayout>
