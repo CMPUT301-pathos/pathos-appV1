@@ -40,18 +40,14 @@ public class PathosNotifyServiceTest {
         String eventId = "event_swim_001";
         String message = "You have won the lottery for this event!";
 
-        // run (NO Tasks.await in local unit tests)
         Task<Void> t = service.notifyWin(recipientId, eventId, message);
 
-        // verify task completed
         assertNotNull(t);
         assertTrue(t.isComplete());
         assertFalse(t.isCanceled());
         assertNull(t.getException());
 
-        // verify repo was called once
         assertEquals(1, repo.added.size());
-
         NotificationRecord r = repo.added.get(0);
 
         assertEquals(recipientId, getField(r, "recipientId"));
