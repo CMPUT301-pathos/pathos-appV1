@@ -34,23 +34,23 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
+            // Repurposed tab: Events page
             if (id == R.id.nav_scan) {
-                Toast.makeText(this, "Scan page not wired yet", Toast.LENGTH_SHORT).show();
+                switchTo(new EventsFragment());
                 return true;
             }
 
             if (id == R.id.nav_notifications) {
-                // Your notifications page (fragment)
                 switchTo(new EntrantInvitationFragment());
                 return true;
             }
 
             if (id == R.id.nav_profile) {
-                // Teammate’s profile page (fragment)
                 switchTo(new ProfileFragment());
                 return true;
             }
 
+            Toast.makeText(this, "Unknown tab", Toast.LENGTH_SHORT).show();
             return false;
         });
     }

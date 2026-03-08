@@ -1,59 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/profileScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#2E7D32"
-    android:padding="16dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="ACCOUNT INFO"
-        android:textSize="35sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="24dp"
-        android:layout_marginTop="16dp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Account Security"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="12dp" />
+    android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/profileRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvAccountInfoTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ACCOUNT INFO"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Edit Info section -->
+        <TextView
+            android:id="@+id/tvEditInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edit Info"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Name -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Full Name"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edit_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/editbox_background"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#666666"
+            android:hint="Enter your name"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Email -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email Address"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edit_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/editbox_background"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#666666"
+            android:hint="Enter your email"
+            android:inputType="textEmailAddress"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Phone -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Phone Number (Optional)"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edit_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:drawable/editbox_background"
+            android:padding="12dp"
+            android:textColor="#000000"
+            android:textColorHint="#666666"
+            android:hint="Enter your phone number"
+            android:inputType="phone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Save button -->
         <Button
-            android:id="@+id/button_logout"
+            android:id="@+id/button_save_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SAVE CHANGES"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Notification opt-out (placeholder until wired) -->
+        <TextView
+            android:id="@+id/tvNotificationOptOutTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notification"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:id="@+id/tvNotificationOptOutDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Want to opt out of notifications?"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp" />
+
+        <Switch
+            android:id="@+id/switch_opt_out"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="LOGOUT"
+            android:text="Opt out"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="16dp" />
+
+        <!--  Added: Event History button -->
+        <Button
+            android:id="@+id/button_event_history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="VIEW EVENT HISTORY"
             android:backgroundTint="#212121"
             android:textColor="#FFFFFF"
-            android:layout_marginEnd="12dp" />
+            android:layout_marginBottom="20dp" />
 
-        <Button
-            android:id="@+id/button_delete_account"
-            android:layout_width="wrap_content"
+        <!-- Account security -->
+        <TextView
+            android:id="@+id/tvAccountSecurity"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="DELETE ACCOUNT"
-            android:backgroundTint="#D32F2F"
-            android:textColor="#FFFFFF" />
+            android:text="Account Security"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/button_logout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="LOGOUT"
+                android:backgroundTint="#212121"
+                android:textColor="#FFFFFF"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/button_delete_account"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="DELETE ACCOUNT"
+                android:backgroundTint="#D32F2F"
+                android:textColor="#FFFFFF"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
 
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

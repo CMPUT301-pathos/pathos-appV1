@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base App Theme -->
+    <style name="AppTheme_ForStyledLayout" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/forestyled_accent_primary</item>
+        <item name="colorPrimaryVariant">#3700B3</item>
+        <item name="colorSecondary">@color/forestyled_accent_secondary</item>
+        <item name="colorOnPrimary">@color/forestyled_text_primary</item>
+        <item name="colorSurface">@color/forestyled_dark_surface</item>
+        <item name="colorOnSurface">@color/forestyled_text_primary</item>
+        <item name="android:windowBackground">@drawable/profile_gradient_background_forstyledlayout</item>
+    </style>
+
+    <!-- Card Style -->
+    <style name="CardStyle_ForStyledLayout" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardBackgroundColor">@color/forestyled_dark_surface</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <!-- Button Style -->
+    <style name="ButtonStyle_ForStyledLayout" parent="Widget.MaterialComponents.Button">
+        <item name="cornerRadius">28dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/forestyled_text_primary</item>
+        <!-- Commented out until anim file is created -->
+        <!-- <item name="android:stateListAnimator">@anim/button_elevation</item> -->
+    </style>
+
+    <!-- Input Field Style -->
+    <style name="InputStyle_ForStyledLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/forestyled_accent_primary</item>
+        <item name="hintTextColor">@color/forestyled_accent_primary</item>
+        <item name="android:textColorHint">@color/forestyled_text_hint</item>
+        <item name="android:textColor">@color/forestyled_text_primary</item>
+        <item name="boxBackgroundColor">@color/forestyled_dark_elevated</item>
+    </style>
+</resources>

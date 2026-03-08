@@ -1,25 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/dashboardRoot"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dashboardScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:fillViewport="true"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvDashboardTitle"
+    <LinearLayout
+        android:id="@+id/dashboardRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="DASHBOARD"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:paddingBottom="12dp"/>
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvDashboardSubtitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="(Placeholder) Upcoming events / waitlist summary will show here."
-        android:textSize="14sp"/>
+        <TextView
+            android:id="@+id/tvDashboardTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DASHBOARD"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:paddingBottom="8dp" />
 
-</LinearLayout>
+        <!-- Upcoming events -->
+        <TextView
+            android:id="@+id/tvUpcomingTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="YOUR UPCOMING EVENTS"
+            android:textStyle="bold"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Placeholder cards -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="#E0E0E0"
+            android:text="(Placeholder) Event Card 1"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="#E0E0E0"
+            android:text="(Placeholder) Event Card 2"
+            android:gravity="center_vertical"
+            android:padding="12dp"
+            android:layout_marginBottom="18dp" />
+
+        <!-- On the waitlist -->
+        <TextView
+            android:id="@+id/tvWaitlistTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ON-THE WAITLIST"
+            android:textStyle="bold"
+            android:paddingBottom="8dp" />
+
+        <!-- Placeholder waitlist rows with LEAVE buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="(Placeholder) Waitlisted Event 1" />
+
+            <Button
+                android:id="@+id/btnLeave1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LEAVE" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="18dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="(Placeholder) Waitlisted Event 2" />
+
+            <Button
+                android:id="@+id/btnLeave2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LEAVE" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
