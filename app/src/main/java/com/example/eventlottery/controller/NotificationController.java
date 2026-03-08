@@ -1,6 +1,6 @@
 package com.example.eventlottery.controller;
 
-import com.example.eventlottery.data.data.NotificationLogRepository;
+import com.example.eventlottery.data.NotificationLogRepository;
 import com.example.eventlottery.domain.NotificationRecord;
 import com.example.eventlottery.service.PathosNotifyService;
 import com.google.android.gms.tasks.Task;
