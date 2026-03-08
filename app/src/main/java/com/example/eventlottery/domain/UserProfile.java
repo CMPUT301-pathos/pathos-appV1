@@ -1,4 +1,81 @@
 package com.example.eventlottery.domain;
 
+
+import com.example.eventlottery.data.memory.ProfileRepository;
+import com.example.eventlottery.firebase.FirestoreProfileRepository;
+
+/**
+ * Represents a user profile in the application.
+ * Stores personal information and role for entrants, organizers, and admins.
+ *
+ * @author Dmitriy Limanets
+ * @version 1.0
+ * @see ProfileRepository
+ * @see FirestoreProfileRepository
+ */
+
 public class UserProfile {
+    private String deviceId;
+    private String name;
+    private String email;
+    private String phoneNumber;
+    private String role; //entrant, organizer, admin
+
+    /**
+     * Empty constructor required by Firestore to deserialize documents.
+     */
+    public UserProfile(){}
+
+    /**
+     * Creates a user profile with a default role of "entrant".
+     *
+     * @param deviceId    the unique device identifier
+     * @param name        the user's name
+     * @param email       the user's email address
+     * @param phoneNumber the user's phone number (optional)
+     */
+    public UserProfile(String deviceId, String name, String email, String phoneNumber){
+        this.deviceId = deviceId;
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.role = "entrant"; //for now have it as entrant on default
+    }
+
+
+    /**
+     * Creates a user profile with a specified role.
+     * Used for creating organizer or admin profiles.
+     *
+     * @param deviceId    the unique device identifier
+     * @param name        the user's name
+     * @param email       the user's email address
+     * @param phoneNumber the user's phone number (optional)
+     * @param role        the user's role ("entrant", "organizer", or "admin")
+     */
+    //This one is for creating an organizer and an admin
+    public UserProfile(String deviceId, String name, String email, String phoneNumber, String role){
+        this.deviceId = deviceId;
+        this.name = name;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.role = role;
+    }
+
+    //Getters and Setters
+
+    public String getDeviceId(){return deviceId;}
+    public void setDeviceId(String deviceId){this.deviceId = deviceId;}
+
+    public String getName(){return name;}
+    public void setName(String name){this.name = name;}
+
+    public String getEmail(){return email;}
+    public void setEmail(String email){this.email = email;}
+
+    public String getPhoneNumber(){return phoneNumber;}
+    public void setPhoneNumber(String phoneNumber){this.phoneNumber = phoneNumber;}
+
+    public String getRole(){return role;}
+    public void setRole(String role){this.role = role;}
 }

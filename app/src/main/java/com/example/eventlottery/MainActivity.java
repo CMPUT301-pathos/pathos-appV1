@@ -1,6 +1,8 @@
 package com.example.eventlottery;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,15 +23,32 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Teammate's profile button
+        Button profileButton = findViewById(R.id.button_profile);
+        profileButton.setOnClickListener(v -> {
+            profileButton.setVisibility(View.GONE);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ProfileFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                profileButton.setVisibility(View.VISIBLE);
+            }
+        });
+
         // Load invitation fragment with test data
         if (savedInstanceState == null) {
             EntrantInvitationFragment fragment = EntrantInvitationFragment.newInstance(
-                    "test_event_123",   // eventId
-                    "Test Event",       // eventName
-                    "test_device_456"   // deviceId
+                    "test_event_123",
+                    "Test Event",
+                    "test_device_456"
             );
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
                     .commit();
         }
     }
