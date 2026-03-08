@@ -1,4 +1,4 @@
-package com.example.eventlottery.data.memory;
+package com.example.eventlottery.data;
 
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
