@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+activity_main.xml
+Purpose: Hosts the fragment container and bottom navigation for the entrant UI.
+
+- fragment_container: where fragments are swapped in.
+- bottom_nav: BottomNavigationView wired to menu_entrant_bottom_nav.
+-->
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

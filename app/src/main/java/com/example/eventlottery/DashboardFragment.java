@@ -11,6 +11,25 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+/**
+ * DashboardFragment
+ *
+ * Role: Entrant landing page (Dashboard).
+ * - Currently a placeholder view for "upcoming events / waitlist summary".
+ * - Later will be extended to show real event cards & waitlist state from repositories.
+ *
+ * User stories (future extension target):
+ * - US 01.02.03 (History summary / past participation)
+ * - US 01.05.04 (waiting list counts)
+ *
+ * Current status:
+ * - UI placeholder only (no Firebase wiring yet).
+ * @author: Kenneth Joseph
+ * @version: 1.0
+ * @see: menu_entrant_bottom_nav.xml
+ */
+
+
 public class DashboardFragment extends Fragment {
 
     public DashboardFragment() {}

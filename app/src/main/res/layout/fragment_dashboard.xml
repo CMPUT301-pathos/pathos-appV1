@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+fragment_dashboard.xml
+Purpose: Placeholder Dashboard UI for the entrant's home view.
+Currently shows a title and a placeholder subtitle.
+-->
+
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/dashboardScroll"
     android:layout_width="match_parent"

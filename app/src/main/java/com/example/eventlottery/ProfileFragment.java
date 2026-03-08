@@ -19,6 +19,23 @@ import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 
 /**
+ * ProfileFragment (Account Info)
+ *
+ * Role: Entrant profile & account screen.
+ * - Shows editable profile fields (name/email/phone).
+ * - Provides "Save changes" UI (update profile).
+ * - Provides notification opt-out UI toggle (placeholder if not persisted yet).
+ * - Provides Account Security actions (Logout placeholder + Delete Account).
+ * - Provides entry point to EventHistoryFragment.
+ *
+ * User stories supported:
+ * - US 01.02.01/US 01.02.02: Provide/update personal info (name/email/optional phone).
+ * - US 01.02.04: Delete profile (delete account button).
+ * - US 01.02.03: View event history (button navigates to history screen).
+ * - US 01.04.03: Opt out of notifications (toggle UI; persistence may be TODO).
+ */
+
+/**
  * Combined Account Info page:
  * - Edit profile fields (US 01.02.02)
  * - Event History entry point (US 01.02.03) via EventHistoryFragment

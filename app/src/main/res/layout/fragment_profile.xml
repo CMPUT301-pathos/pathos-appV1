@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+fragment_profile.xml
+Purpose: Combined Account Info UI.
+Includes:
+- Name/email/phone inputs + Save Changes
+- Notification opt-out switch
+- "View Event History" button
+- Account security (Logout/Delete)
+-->
+
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/profileScroll"
     android:layout_width="match_parent"

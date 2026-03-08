@@ -64,14 +64,27 @@ import com.google.firebase.FirebaseApp;
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ * EventHistoryFragment
+ *
+ * Role: Displays a list of the entrant's past participation records.
+ * - Uses a RecyclerView + EventHistoryAdapter.
+ * - Each row is defined by item_history.xml.
+ *
+ * User stories supported:
+ * - US 01.02.03: View history of events registered for, selected or not.
+ *
+ * Notes:
+ * - Data source may be Firebase-backed or placeholder depending on current wiring.
+ */
 
 /**
  * Fragment for displaying event history to entrants.
  * Implements US 01.02.03 - View event history (whether selected or not).
  * Shows a list of events the user has interacted with and their outcomes.
  *
- * @author Hasrat Singh Chauhan
- * @version 1.0
+ * @author Hasrat Singh Chauhanm, Kenneth Joseph
+ * @version 2.o
  * @see EventHistoryRecord
  * @see EventHistoryAdapter
  * @see FirestoreEventHistoryRepository
