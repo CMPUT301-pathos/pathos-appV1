@@ -25,5 +25,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp" />
+    <Button
+        android:id="@+id/button_event_history"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Event History"
+        app:layout_constraintBottom_toTopOf="@+id/button_profile"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

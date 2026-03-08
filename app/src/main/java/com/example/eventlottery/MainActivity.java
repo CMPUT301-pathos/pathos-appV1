@@ -32,6 +32,26 @@ public class MainActivity extends AppCompatActivity {
                     .addToBackStack(null)
                     .commit();
         });
+        Button eventHistoryButton = findViewById(R.id.button_event_history);
+        eventHistoryButton.setOnClickListener(v -> {
+            profileButton.setVisibility(View.GONE);
+            eventHistoryButton.setVisibility(View.GONE);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new EventHistoryFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+                profileButton.setVisibility(View.VISIBLE);
+                // ADD THIS: Show event history button when back to main
+                Button eventHistoryBtn = findViewById(R.id.button_event_history);
+                if (eventHistoryBtn != null) {
+                    eventHistoryBtn.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             if (getSupportFragmentManager().getBackStackEntryCount() == 0) {

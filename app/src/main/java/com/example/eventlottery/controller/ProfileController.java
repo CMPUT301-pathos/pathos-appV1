@@ -52,5 +52,40 @@ public class ProfileController {
     public void deleteProfile(String deviceId, ProfileRepository.ProfileCallback callback) {
         profileRepository.deleteProfile(deviceId, callback);
     }
+    /**
+     * author : hasrat
+     * Updates an existing user profile or creates a new one.
+     * This method supports US 01.02.02 - Update profile information.
+     * in conjunction with the Editprofile Fragment
+     * @param deviceId the unique device identifier
+     * @param name the updated name
+     * @param email the updated email
+     * @param phone the updated phone number
+     * @param callback the callback to handle success or failure
+     */
+    public void updateProfile(String deviceId, String name, String email, String phone,
+                              ProfileRepository.ProfileCallback callback) {
+        // First try to get existing profile
+        getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (profile != null) {
+                    // Update existing profile
+                    profile.setName(name);
+                    profile.setEmail(email);
+                    profile.setPhoneNumber(phone);
+                    saveProfile(profile, callback);
+                } else {
+                    // Create new profile if it doesn't exist
+                    UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "entrant");
+                    saveProfile(newProfile, callback);
+                }
+            }
 
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
 }

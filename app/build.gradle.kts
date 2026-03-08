@@ -39,6 +39,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    // Add this line for CardView - hasrat
+    implementation("androidx.cardview:cardview:1.0.0")
 
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))

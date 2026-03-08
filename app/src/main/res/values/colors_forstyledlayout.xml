@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark Theme Colors -->
+    <color name="forestyled_dark_background_start">#121212</color>
+    <color name="forestyled_dark_background_end">#1E1E1E</color>
+    <color name="forestyled_dark_surface">#2D2D2D</color>
+    <color name="forestyled_dark_elevated">#383838</color>
+
+    <!-- Accent Colors -->
+    <color name="forestyled_accent_primary">#BB86FC</color>
+    <color name="forestyled_accent_secondary">#03DAC6</color>
+    <color name="forestyled_accent_error">#CF6679</color>
+
+    <!-- Text Colors -->
+    <color name="forestyled_text_primary">#FFFFFF</color>
+    <color name="forestyled_text_secondary">#B3B3B3</color>
+    <color name="forestyled_text_hint">#666666</color>
+
+    <!-- Status Colors -->
+    <color name="forestyled_success">#4CAF50</color>
+    <color name="forestyled_warning">#FFB74D</color>
+    <color name="forestyled_error">#CF6679</color>
+</resources>
