@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -13,18 +14,37 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
+
+        <!-- Launcher -->
         <activity
-            android:name=".MainActivity"
+            android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Entrant home -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- Organizer home placeholder -->
+        <activity
+            android:name=".OrganizerMainActivity"
+            android:exported="false" />
+
+        <!-- Admin home placeholder -->
+        <activity
+            android:name=".AdminMainActivity"
+            android:exported="false" />
+
+        <!-- If you still have this activity, keep it -->
         <activity
             android:name=".ui.NotificationsActivity"
             android:exported="false" />
+
     </application>
 
 </manifest>
