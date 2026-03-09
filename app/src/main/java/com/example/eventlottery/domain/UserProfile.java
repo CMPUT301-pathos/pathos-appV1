@@ -23,8 +23,6 @@ public class UserProfile {
     private String email;
     private String phoneNumber;
     private String role; //entrant, organizer, admin
-
-    private boolean notificationsEnabled; // used for US 01.04.03 Heorhii Litvinov
     /**
      * List of event history records for this user.
      * Tracks all events the user has interacted with and their outcomes.
@@ -45,13 +43,12 @@ public class UserProfile {
      * @param email       the user's email address
      * @param phoneNumber the user's phone number (optional)
      */
-    public UserProfile(String deviceId, String name, String email, String phoneNumber, boolean notificationsEnabled) {
+    public UserProfile(String deviceId, String name, String email, String phoneNumber) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.role = "entrant"; //for now have it as entrant on default
-        this.notificationsEnabled = notificationsEnabled; // US 01.04.03
     }
 
 
@@ -66,13 +63,12 @@ public class UserProfile {
      * @param role        the user's role ("entrant", "organizer", or "admin")
      */
     //This one is for creating an organizer and an admin
-    public UserProfile(String deviceId, String name, String email, String phoneNumber, String role, boolean notificationsEnabled) {
+    public UserProfile(String deviceId, String name, String email, String phoneNumber, String role) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.role = role;
-        this.notificationsEnabled = notificationsEnabled;
     }
 
     //Getters and Setters
@@ -116,11 +112,6 @@ public class UserProfile {
     public void setRole(String role) {
         this.role = role;
     }
-
-    // Notifications for US 01.04.03 Heorhii Litvinov
-    public boolean getNotifications(){return notificationsEnabled;}
-
-    public void setNotificationsEnabled(boolean notificationsEnabled){this.notificationsEnabled = notificationsEnabled;}
 
     /**
      * author : Hasrat
