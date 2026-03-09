@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+menu_entrant_bottom_nav.xml
+Purpose: Defines bottom navigation items for the entrant app experience.
+
+Tabs:
+- Dashboard (nav_home)
+- Events (nav_scan)  [repurposed placeholder for QR scan + event list]
+- Notifications (nav_notifications)
+- Profile (nav_profile)
+-->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
         android:id="@+id/nav_home"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Home" />
+        android:title="Dashboard" />
 
+    <!-- Keep id nav_scan, but repurpose as Events -->
     <item
         android:id="@+id/nav_scan"
-        android:icon="@android:drawable/ic_menu_camera"
-        android:title="Scan" />
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="Events" />
 
     <item
         android:id="@+id/nav_notifications"

@@ -4,6 +4,9 @@ package com.example.eventlottery.domain;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents a user profile in the application.
  * Stores personal information and role for entrants, organizers, and admins.
@@ -20,11 +23,17 @@ public class UserProfile {
     private String email;
     private String phoneNumber;
     private String role; //entrant, organizer, admin
-
+    /**
+     * List of event history records for this user.
+     * Tracks all events the user has interacted with and their outcomes.
+     * Used for US 01.02.03 - Event History display. -Hasrat
+     */
+    private List<EventHistoryRecord> eventHistory;
     /**
      * Empty constructor required by Firestore to deserialize documents.
      */
-    public UserProfile(){}
+    public UserProfile() {
+    }
 
     /**
      * Creates a user profile with a default role of "entrant".
@@ -34,7 +43,7 @@ public class UserProfile {
      * @param email       the user's email address
      * @param phoneNumber the user's phone number (optional)
      */
-    public UserProfile(String deviceId, String name, String email, String phoneNumber){
+    public UserProfile(String deviceId, String name, String email, String phoneNumber) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -54,7 +63,7 @@ public class UserProfile {
      * @param role        the user's role ("entrant", "organizer", or "admin")
      */
     //This one is for creating an organizer and an admin
-    public UserProfile(String deviceId, String name, String email, String phoneNumber, String role){
+    public UserProfile(String deviceId, String name, String email, String phoneNumber, String role) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
@@ -64,18 +73,90 @@ public class UserProfile {
 
     //Getters and Setters
 
-    public String getDeviceId(){return deviceId;}
-    public void setDeviceId(String deviceId){this.deviceId = deviceId;}
+    public String getDeviceId() {
+        return deviceId;
+    }
 
-    public String getName(){return name;}
-    public void setName(String name){this.name = name;}
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
+    }
 
-    public String getEmail(){return email;}
-    public void setEmail(String email){this.email = email;}
+    public String getName() {
+        return name;
+    }
 
-    public String getPhoneNumber(){return phoneNumber;}
-    public void setPhoneNumber(String phoneNumber){this.phoneNumber = phoneNumber;}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getRole(){return role;}
-    public void setRole(String role){this.role = role;}
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    /**
+     * author : Hasrat
+     * Returns the user's event history list.
+     * Initializes an empty list if null (prevents NullPointerException).
+     *
+     * @return List of EventHistoryRecord objects
+     */
+    public List<EventHistoryRecord> getEventHistory() {  // ← ADD THIS METHOD
+        if (eventHistory == null) {
+            eventHistory = new ArrayList<>();
+        }
+        return eventHistory;
+    }
+
+    /**
+     * Sets the user's event history list.
+     *
+     * @param eventHistory the list of EventHistoryRecord objects
+     */
+    public void setEventHistory(List<EventHistoryRecord> eventHistory) {  // ← ADD THIS METHOD
+        this.eventHistory = eventHistory;
+    }
+
+    /**
+     * Helper method to add a single record to event history.
+     * Automatically initializes the list if needed.
+     *
+     * @param record the EventHistoryRecord to add
+     */
+    public void addToHistory(EventHistoryRecord record) {  // ← ADD THIS METHOD
+        if (eventHistory == null) {
+            eventHistory = new ArrayList<>();
+        }
+        // Add to beginning for newest first
+        eventHistory.add(0, record);
+    }
+
+    /**
+     * Clears all event history for this user.
+     * Useful when resetting or deleting account.
+     */
+    public void clearHistory() {  // ← ADD THIS METHOD
+        if (eventHistory != null) {
+            eventHistory.clear();
+        }
+    }
 }

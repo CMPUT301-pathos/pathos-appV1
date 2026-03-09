@@ -13,6 +13,24 @@ import androidx.fragment.app.Fragment;
 import com.example.eventlottery.controller.WaitingListController;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 
+/**
+ * EntrantInvitationFragment
+ *
+ * Role: Notifications / invitations screen for entrants.
+ * - Displays notification-like content (e.g., invitations, win/lose messaging).
+ * - Provides UI hooks for accept/decline flows (depending on current wiring).
+ *
+ * User stories supported (UI layer):
+ * - US 01.04.01: Receive notification when chosen ("win") [UI entry point]
+ * - US 01.04.02: Receive notification when not chosen ("lose") [UI entry point]
+ * - US 01.05.02/01.05.03: Accept/Decline invitation (if wired)
+ *
+ * Notes:
+ * - Lottery trigger + true push/in-app notification delivery may be implemented later
+ *   in PathosNotifyService/raffle integration. Document current behavior honestly.
+ */
+
+
 public class EntrantInvitationFragment extends Fragment {
 
     private static final String ARG_EVENT_ID = "eventId";
