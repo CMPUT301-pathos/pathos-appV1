@@ -63,7 +63,7 @@ public class ProfileController {
      * @param phone the updated phone number
      * @param callback the callback to handle success or failure
      */
-    public void updateProfile(String deviceId, String name, String email, String phone,
+    public void updateProfile(String deviceId, String name, String email, String phone, boolean notificationsEnabled,
                               ProfileRepository.ProfileCallback callback) {
         // First try to get existing profile
         getProfile(deviceId, new ProfileRepository.ProfileCallback() {
@@ -74,10 +74,11 @@ public class ProfileController {
                     profile.setName(name);
                     profile.setEmail(email);
                     profile.setPhoneNumber(phone);
+                    profile.setNotificationsEnabled(notificationsEnabled);
                     saveProfile(profile, callback);
                 } else {
                     // Create new profile if it doesn't exist
-                    UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "entrant");
+                    UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "entrant", true); // true by default
                     saveProfile(newProfile, callback);
                 }
             }
@@ -88,4 +89,28 @@ public class ProfileController {
             }
         });
     }
+
+    // Heorhii Litvinov
+    // If we want to switch only notifications
+
+    public void setNotificationsEnabled(String deviceId, boolean enabled,
+                                        ProfileRepository.ProfileCallback callback) {
+
+        getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (profile != null) {
+                    profile.setNotificationsEnabled(enabled);
+                    saveProfile(profile, callback);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
+
 }
