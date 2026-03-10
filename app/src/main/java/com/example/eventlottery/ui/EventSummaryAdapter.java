@@ -36,14 +36,23 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
     private final List<EventSummary> items = new ArrayList<>();
     private final List<EventSummary> allItems = new ArrayList<>();
     private OnCriteriaClickListener criteriaClickListener;
+    private OnItemClickListener itemClickListener;
+
 
     public interface OnCriteriaClickListener {
         void onCriteriaClick(EventSummary event);
+    }
+    public interface OnItemClickListener{
+        void onItemClick(EventSummary event);
     }
 
     public void setCriteriaClickListener(OnCriteriaClickListener listener) {
         this.criteriaClickListener = listener;
     }
+    public void setItemClickListener(OnItemClickListener listener) {
+        this.itemClickListener = listener;
+    }
+
 
     public void setItems(List<EventSummary> list) {
         allItems.clear();
@@ -100,6 +109,12 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         h.btnLotteryCriteria.setOnClickListener(v -> {
             if (criteriaClickListener != null) {
                 criteriaClickListener.onCriteriaClick(e);
+            }
+        });
+
+        h.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(e);
             }
         });
     }

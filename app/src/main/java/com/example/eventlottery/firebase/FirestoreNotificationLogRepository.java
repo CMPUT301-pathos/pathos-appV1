@@ -1,4 +1,4 @@
-package com.example.eventlottery.data.firebase;
+package com.example.eventlottery.firebase;
 
 import com.example.eventlottery.data.NotificationLogRepository;
 import com.example.eventlottery.domain.NotificationRecord;
