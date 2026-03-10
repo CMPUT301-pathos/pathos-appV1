@@ -55,7 +55,6 @@ public class OrganizerDashboardFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-
         repo = new FirestoreEventRepository();
 
         RecyclerView rv = root.findViewById(R.id.recycler_my_events);
