@@ -68,7 +68,7 @@ public class SignupCreatesProfileAndAutoLoginTest {
         onView(withId(R.id.signup_phone)).perform(clearText(), typeText(""), closeSoftKeyboard());
 
         // Tap "Entrant" signup
-        onView(withId(R.id.btnSignupEntrant)).perform(click());
+        onView(withId(R.id.btnSignUpUser)).perform(click());
 
         // Wait until Firestore has the document
         assertTrue("Profile doc was not created in Firestore",

@@ -65,7 +65,7 @@ public class RouterActivityRoutingTest {
         // Signup UI should be visible (uses activity_signup.xml IDs)
         // If your signup screen uses different IDs, update the withId() lines.
         onView(withId(R.id.signup_name)).check(matches(isDisplayed()));
-        onView(withId(R.id.btnSignupEntrant)).check(matches(isDisplayed()));
+        onView(withId(R.id.btnSignUpUser)).check(matches(isDisplayed()));
     }
 
     // Espresso "matches" import helper:

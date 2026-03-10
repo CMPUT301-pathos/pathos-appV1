@@ -17,6 +17,7 @@ import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.example.eventlottery.ui.EventSummaryAdapter;
+import com.example.eventlottery.controller.EventController;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -27,7 +28,7 @@ import com.google.android.material.snackbar.Snackbar;
  * - List of user's events (placeholder for now)
  *
  * @author Kenneth Joseph
- * @version 1.1
+ * @version 1.4
  */
 
 public class OrganizerDashboardFragment extends Fragment {
@@ -35,6 +36,9 @@ public class OrganizerDashboardFragment extends Fragment {
     private EventRepository repo;
     private EventSummaryAdapter adapter;
     private TextView empty;
+
+    private EventController eventController;
+
 
     public OrganizerDashboardFragment() { }
 
@@ -55,23 +59,53 @@ public class OrganizerDashboardFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-
         repo = new FirestoreEventRepository();
+        eventController = new EventController(repo);
 
         RecyclerView rv = root.findViewById(R.id.recycler_my_events);
         empty = root.findViewById(R.id.tv_my_events_empty);
 
         adapter = new EventSummaryAdapter();
+        adapter.setShowOrganizerActions(true);
+        adapter.setCriteriaClickListener(event -> {
+            String criteria = eventController.getLotteryCriteria(event);
+            new android.app.AlertDialog.Builder(requireContext())
+                    .setTitle(event.getName())
+                    .setMessage(criteria)
+                    .setPositiveButton("Got it", null)
+                    .show();
+        });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 
-        adapter.setItemClickListener(event -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container,
-                            OrganizerEventManagerFragment.newInstance(event.getId(), event.getName()))
-                    .addToBackStack(null)
-                    .commit();
+
+
+
+
+
+
+
+        adapter.setOrganizerActionListener(new EventSummaryAdapter.OnOrganizerActionListener() {
+            @Override
+            public void onSeeQrClick(com.example.eventlottery.domain.EventSummary event) {
+                String payload = "eventId:" + event.getId();
+
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, QrCodeFragment.newInstance(payload))
+                        .addToBackStack(null)
+                        .commit();
+            }
+
+            @Override
+            public void onEditClick(com.example.eventlottery.domain.EventSummary event) {
+                Snackbar.make(root, "Edit coming soon", Snackbar.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onGeoDetailsClick(com.example.eventlottery.domain.EventSummary event) {
+                Snackbar.make(root, "Geo-details coming soon", Snackbar.LENGTH_SHORT).show();
+            }
         });
 
         loadMyEvents();
