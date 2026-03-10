@@ -34,6 +34,11 @@ android {
     }
 }
 
+
+configurations.configureEach {
+    exclude(group = "com.google.protobuf", module = "protobuf-lite")
+}
+
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -47,10 +52,13 @@ dependencies {
 
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
+    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
     implementation(libs.navigation.fragment)
+    implementation(libs.espresso.idling.resource)
+    implementation(libs.espresso.contrib)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

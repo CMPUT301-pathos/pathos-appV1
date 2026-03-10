@@ -19,6 +19,9 @@ import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import androidx.test.espresso.IdlingResource;
+import androidx.test.espresso.idling.CountingIdlingResource;
+
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
@@ -62,6 +65,31 @@ public class CreateEventFragment extends Fragment {
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
 
     private boolean isPublishing = false;
+
+    /**
+     * Espresso idling resource used by UI tests to wait for async publish work (Firestore/Storage).
+     *
+     * NOTE: Safe to keep in production code; it is lightweight and only used by tests.
+     */
+    private static final CountingIdlingResource PUBLISH_IDLING =
+            new CountingIdlingResource("CreateEventPublish");
+
+    /**
+     * Returns the idling resource so instrumented tests can synchronize on publish completion.
+     */
+    public static IdlingResource getPublishIdlingResource() {
+        return PUBLISH_IDLING;
+    }
+
+    private static void beginPublishAsync() {
+        PUBLISH_IDLING.increment();
+    }
+
+    private static void endPublishAsync() {
+        if (!PUBLISH_IDLING.isIdleNow()) {
+            PUBLISH_IDLING.decrement();
+        }
+    }
 
     public CreateEventFragment() { }
 
@@ -176,7 +204,7 @@ public class CreateEventFragment extends Fragment {
                 return;
             }
         }
-
+        beginPublishAsync();
         setPublishingState(true, selectedPosterUri == null ? "PUBLISHING..." : "UPLOADING POSTER...");
 
         if (selectedPosterUri != null) {
@@ -207,14 +235,22 @@ public class CreateEventFragment extends Fragment {
                     return posterRef.getDownloadUrl();
                 })
                 .addOnSuccessListener(uri -> {
-                    if (!isAdded()) return;
+                    // Fragment might have been detached; only proceed if we still have an Activity.
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
                     createEventDocument(name, desc, location, start, end, capacity, uri.toString());
                 })
                 .addOnFailureListener(e -> {
-                    if (!isAdded()) return;
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(), "Poster upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    endPublishAsync();
                 });
     }
 
@@ -244,25 +280,34 @@ public class CreateEventFragment extends Fragment {
                 .collection("events")
                 .add(eventDoc)
                 .addOnSuccessListener(ref -> {
-                    if (!isAdded()) return;
+                    // Even if the fragment is no longer 'added', we can still navigate as long as Activity exists.
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
 
                     String eventId = ref.getId();
                     String payload = "eventId:" + eventId;
 
                     Toast.makeText(requireContext(), "Event created", Toast.LENGTH_SHORT).show();
 
-                    // Important: reset state BEFORE navigating so we don't get stuck in "publishing..."
+                    // Reset state BEFORE navigating so we don't get stuck in "publishing..."
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
 
                     goToQr(payload);
+                    endPublishAsync();
                 })
                 .addOnFailureListener(e -> {
-                    if (!isAdded()) return;
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
 
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(), "Create failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    endPublishAsync();
                 });
     }
 
@@ -273,7 +318,7 @@ public class CreateEventFragment extends Fragment {
     private void goToQr(@NonNull String payload) {
         QrCodeFragment qr = QrCodeFragment.newInstance(payload);
 
-        FragmentManager fm = getParentFragmentManager();
+        FragmentManager fm = requireActivity().getSupportFragmentManager();
 
         if (fm.isStateSaved()) {
             fm.beginTransaction()

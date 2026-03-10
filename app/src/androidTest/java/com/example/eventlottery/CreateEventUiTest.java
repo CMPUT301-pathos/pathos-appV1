@@ -1,8 +1,11 @@
 package com.example.eventlottery;
 
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.espresso.IdlingRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -24,10 +27,22 @@ import static org.junit.Assert.*;
  * - Firestore persistence is verified in EventsListShowsCreatedEventTest.
  *
  * @author Kenneth Joseph
- * @version 1.0
+ * @version 1.2
  */
 @RunWith(AndroidJUnit4.class)
 public class CreateEventUiTest {
+
+    @Before
+    public void registerIdling() {
+        IdlingRegistry.getInstance()
+                .register(CreateEventFragment.getPublishIdlingResource());
+    }
+
+    @After
+    public void unregisterIdling() {
+        IdlingRegistry.getInstance()
+                .unregister(CreateEventFragment.getPublishIdlingResource());
+    }
 
     @Test
     public void createEvent_showsQrAfterPublish() {
