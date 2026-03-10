@@ -5,8 +5,15 @@ import com.google.firebase.firestore.DocumentSnapshot;
 /**
  * Lightweight model for showing events in lists.
  *
- * @author Kenneth Joseph
- * @version 1.0
+ * Extended to support filtering by category, location, date,
+ * and registration availability.
+ *
+ * User stories supported:
+ * - US 01.01.03: See a list of events to join the waiting list for
+ * - US 01.01.04: Filter events based on interests and availability
+ *
+ * @author Kenneth Joseph, Fawaz Mansoor
+ * @version 1.1
  */
 public class EventSummary {
     private final String id;
@@ -15,15 +22,24 @@ public class EventSummary {
     private final String location;
     private final long createdAt;
     private final String organizerDeviceId;
+    private final String category;
+    private final long eventDate;
+    private final long registrationStart;
+    private final long registrationEnd;
 
     public EventSummary(String id, String name, String description, String location,
-                        long createdAt, String organizerDeviceId) {
+                        long createdAt, String organizerDeviceId, String category,
+                        long eventDate, long registrationStart, long registrationEnd) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.location = location;
         this.createdAt = createdAt;
         this.organizerDeviceId = organizerDeviceId;
+        this.category = category;
+        this.eventDate = eventDate;
+        this.registrationStart = registrationStart;
+        this.registrationEnd = registrationEnd;
     }
 
     public String getId() { return id; }
@@ -32,6 +48,15 @@ public class EventSummary {
     public String getLocation() { return location; }
     public long getCreatedAt() { return createdAt; }
     public String getOrganizerDeviceId() { return organizerDeviceId; }
+    public String getCategory() { return category; }
+    public long getEventDate() { return eventDate; }
+    public long getRegistrationStart() { return registrationStart; }
+    public long getRegistrationEnd() { return registrationEnd; }
+
+    public boolean isRegistrationOpen() {
+        long now = System.currentTimeMillis();
+        return now >= registrationStart && now <= registrationEnd;
+    }
 
     public static EventSummary fromDoc(DocumentSnapshot doc) {
         String id = doc.getId();
@@ -39,14 +64,30 @@ public class EventSummary {
         String desc = safe(doc.getString("description"));
         String loc = safe(doc.getString("location"));
         String organizer = safe(doc.getString("organizerDeviceId"));
+        String category = safe(doc.getString("category"));
 
-        Long created = doc.getLong("createdAt");
-        long createdAt = (created == null) ? 0L : created;
+        Long created = safeGetLong(doc, "createdAt");
+        Long evDate = safeGetLong(doc, "eventDate");
+        Long regStart = safeGetLong(doc, "registrationStart");
+        Long regEnd = safeGetLong(doc, "registrationEnd");
 
-        return new EventSummary(id, name, desc, loc, createdAt, organizer);
+        return new EventSummary(id, name, desc, loc,
+                created == null ? 0L : created,
+                organizer, category,
+                evDate == null ? 0L : evDate,
+                regStart == null ? 0L : regStart,
+                regEnd == null ? 0L : regEnd);
     }
 
     private static String safe(String s) {
         return (s == null) ? "" : s;
+    }
+
+    private static Long safeGetLong(DocumentSnapshot doc, String field) {
+        try {
+            return doc.getLong(field);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

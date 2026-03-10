@@ -6,23 +6,30 @@ import java.util.Map;
 /**
  * Event domain model for organizer-created events.
  *
- * Minimal fields for US 02.01.01:
- * - name, description
- * - organizerDeviceId
- * - optional posterUrl (can be null for now)
+ * Extended to support category, location, eventDate,
+ * registrationStart, and registrationEnd fields.
  *
- * @author Kenneth Joseph
- * @version 1.0
+ * User stories supported:
+ * - US 02.01.01: Create a new event
+ * - US 02.01.04: Set a registration period
+ * - US 01.01.04: Filter events based on interests and availability
+ *
+ * @author Kenneth Joseph, Fawaz Mansoor
+ * @version 1.1
  */
 public class Event {
 
-    private String id;                 // Firestore document id
+    private String id;
     private String name;
     private String description;
     private String organizerDeviceId;
-    private String posterUrl;          // optional for now
+    private String posterUrl;
+    private String category;
+    private String location;
+    private long eventDate;           // when the event takes place (ms)
+    private long registrationStart;   // when registration opens (ms)
+    private long registrationEnd;     // when registration closes (ms)
 
-    // Firestore requires empty constructor
     public Event() {}
 
     public Event(String name, String description, String organizerDeviceId) {
@@ -32,7 +39,6 @@ public class Event {
         this.posterUrl = null;
     }
 
-    // --- Getters/Setters ---
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -48,15 +54,37 @@ public class Event {
     public String getPosterUrl() { return posterUrl; }
     public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
 
-    /**
-     *  for debug/logging.
-     */
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public long getEventDate() { return eventDate; }
+    public void setEventDate(long eventDate) { this.eventDate = eventDate; }
+
+    public long getRegistrationStart() { return registrationStart; }
+    public void setRegistrationStart(long registrationStart) { this.registrationStart = registrationStart; }
+
+    public long getRegistrationEnd() { return registrationEnd; }
+    public void setRegistrationEnd(long registrationEnd) { this.registrationEnd = registrationEnd; }
+
+    public boolean isRegistrationOpen() {
+        long now = System.currentTimeMillis();
+        return now >= registrationStart && now <= registrationEnd;
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("name", name);
         m.put("description", description);
         m.put("organizerDeviceId", organizerDeviceId);
         m.put("posterUrl", posterUrl);
+        m.put("category", category);
+        m.put("location", location);
+        m.put("eventDate", eventDate);
+        m.put("registrationStart", registrationStart);
+        m.put("registrationEnd", registrationEnd);
         return m;
     }
 }

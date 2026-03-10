@@ -11,22 +11,52 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.eventlottery.R;
 import com.example.eventlottery.domain.EventSummary;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
- * Adapter for displaying EventSummary cards.
+ * Adapter for displaying EventSummary cards in a RecyclerView.
  *
- * @author Kenneth Joseph
- * @version 1.0
+ * Extended to support filtering by category.
+ *
+ * User stories supported:
+ * - US 01.01.03: See a list of events to join the waiting list for
+ * - US 01.01.04: Filter events based on interests and availability
+ *
+ * @author Kenneth Joseph, Fawaz Mansoor
+ * @version 1.1
  */
 public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapter.VH> {
 
     private final List<EventSummary> items = new ArrayList<>();
+    private final List<EventSummary> allItems = new ArrayList<>();
 
     public void setItems(List<EventSummary> list) {
+        allItems.clear();
+        if (list != null) allItems.addAll(list);
+        items.clear();
+        items.addAll(allItems);
+        notifyDataSetChanged();
+    }
+
+    public void setFilteredItems(List<EventSummary> list) {
         items.clear();
         if (list != null) items.addAll(list);
+        notifyDataSetChanged();
+    }
+
+    public void filterByCategory(String category) {
+        items.clear();
+        if (category == null || category.equals("All")) {
+            items.addAll(allItems);
+        } else {
+            for (EventSummary e : allItems) {
+                if (e.getCategory().equalsIgnoreCase(category)) items.add(e);
+            }
+        }
         notifyDataSetChanged();
     }
 
@@ -47,6 +77,12 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
 
         String meta = "";
         if (!e.getLocation().isEmpty()) meta = "📍 " + e.getLocation();
+        if (!e.getCategory().isEmpty()) meta += "  🏷️ " + e.getCategory();
+        if (e.getEventDate() > 0) {
+            String date = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                    .format(new Date(e.getEventDate()));
+            meta += "  📅 " + date;
+        }
         if (meta.isEmpty()) meta = "Event ID: " + e.getId();
         h.tvMeta.setText(meta);
     }
