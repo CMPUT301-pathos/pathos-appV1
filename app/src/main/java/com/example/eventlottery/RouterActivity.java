@@ -73,9 +73,7 @@ public class RouterActivity extends AppCompatActivity {
 
     private void routeToRoleHome(String role) {
         Intent i;
-        if ("organizer".equalsIgnoreCase(role)) {
-            i = new Intent(this, OrganizerMainActivity.class);
-        } else if ("admin".equalsIgnoreCase(role)) {
+        if ("admin".equalsIgnoreCase(role)) {
             i = new Intent(this, AdminMainActivity.class);
         } else {
             i = new Intent(this, MainActivity.class); // default entrant

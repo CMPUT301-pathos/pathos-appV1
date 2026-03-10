@@ -50,24 +50,18 @@
             android:layout_marginBottom="8dp" />
 
         <Button
-            android:id="@+id/btnSignupEntrant"
+            android:id="@+id/btnSignUpUser"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SIGN UP AS ENTRANT"
+            android:text="SIGN UP AS USER"
             android:layout_marginBottom="10dp" />
 
-        <Button
-            android:id="@+id/btnSignupOrganizer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SIGN UP AS ORGANIZER"
-            android:layout_marginBottom="10dp" />
 
         <Button
-            android:id="@+id/btnSignupAdmin"
+            android:id="@+id/btnLoginAdmin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SIGN UP AS ADMIN" />
+            android:text="LOG IN AS ADMIN" />
 
     </LinearLayout>
 </ScrollView>

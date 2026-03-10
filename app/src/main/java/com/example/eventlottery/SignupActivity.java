@@ -27,7 +27,7 @@ public class SignupActivity extends AppCompatActivity {
     private String deviceId;
 
     private EditText etName, etEmail, etPhone;
-    private Button btnEntrant, btnOrganizer, btnAdmin;
+    private Button btnUser, btnAdmin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,12 +45,10 @@ public class SignupActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.signup_email);
         etPhone = findViewById(R.id.signup_phone);
 
-        btnEntrant = findViewById(R.id.btnSignupEntrant);
-        btnOrganizer = findViewById(R.id.btnSignupOrganizer);
-        btnAdmin = findViewById(R.id.btnSignupAdmin);
+        btnUser = findViewById(R.id.btnSignUpUser);
+        btnAdmin = findViewById(R.id.btnLoginAdmin);
 
-        btnEntrant.setOnClickListener(v -> createProfileAndRoute("entrant"));
-        btnOrganizer.setOnClickListener(v -> createProfileAndRoute("organizer"));
+        btnUser.setOnClickListener(v -> createProfileAndRoute("entrant"));
         btnAdmin.setOnClickListener(v -> createProfileAndRoute("admin"));
     }
 
@@ -95,9 +93,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private void routeToRoleHome(String role) {
         Intent i;
-        if ("organizer".equalsIgnoreCase(role)) {
-            i = new Intent(this, OrganizerMainActivity.class);
-        } else if ("admin".equalsIgnoreCase(role)) {
+        if ("admin".equalsIgnoreCase(role)) {
             i = new Intent(this, AdminMainActivity.class);
         } else {
             i = new Intent(this, MainActivity.class);
@@ -106,18 +102,15 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void setButtonsEnabled(boolean enabled) {
-        btnEntrant.setEnabled(enabled);
-        btnOrganizer.setEnabled(enabled);
+        btnUser.setEnabled(enabled);
         btnAdmin.setEnabled(enabled);
 
         if (!enabled) {
-            btnEntrant.setText("CREATING...");
-            btnOrganizer.setText("CREATING...");
-            btnAdmin.setText("CREATING...");
+            btnUser.setText("CREATING...");
+            btnAdmin.setText("LOGGING IN...");
         } else {
-            btnEntrant.setText("SIGN UP AS ENTRANT");
-            btnOrganizer.setText("SIGN UP AS ORGANIZER");
-            btnAdmin.setText("SIGN UP AS ADMIN");
+            btnUser.setText("SIGN UP AS USER");
+            btnAdmin.setText("LOG IN AS ADMIN");
         }
     }
 }
