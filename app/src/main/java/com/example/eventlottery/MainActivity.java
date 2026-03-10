@@ -12,25 +12,18 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 /**
  * MainActivity
  *
- * Role: UI host + navigation coordinator.
- * - Hosts a single fragment container and a BottomNavigationView.
- * - Switches between major entrant screens: Dashboard, Events (placeholder), Notifications, Profile.
+ * Hosts BottomNavigationView and swaps fragments into fragment_container.
  *
- * Related UI resources:
- * - activity_main.xml defines fragment_container + bottom_nav. (see activity_main.xml)
- * - menu_entrant_bottom_nav.xml defines nav items (Dashboard/Events/Notifications/Profile).
+ * Tabs:
+ * - Home (DashboardFragment)
+ * - Events (EventsFragment)
+ * - Organize (OrganizerDashboardFragment)  <-- NEW
+ * - Notifications (EntrantInvitationFragment)
+ * - Profile (ProfileFragment)
  *
- * User stories supported:
- * - Indirect support for all implemented entrant stories by providing navigation entry points:
- *   - US 01.02.02 (Update profile) via Profile tab
- *   - US 01.02.03 (Event history) via Profile tab → EventHistory
- *   - US 01.04.xx (Notification UI) via Notifications tab
- *
- * Notes:
- * - Events tab is currently a placeholder for US 01.06.01/01.06.02 (QR scan + join).
+ * @author Kenneth Joseph
+ * @version 1.0
  */
-
-
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
@@ -42,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = findViewById(R.id.bottom_nav);
 
-        // Default landing screen = Dashboard/Home
+        // Default landing screen = Home
         if (savedInstanceState == null) {
             switchTo(new DashboardFragment());
             bottomNav.setSelectedItemId(R.id.nav_home);
@@ -56,9 +49,14 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            // Repurposed tab: Events page
-            if (id == R.id.nav_scan) {
+            if (id == R.id.nav_events) {
                 switchTo(new EventsFragment());
+                return true;
+            }
+
+            // NEW: Organizer tab
+            if (id == R.id.nav_organizer) {
+                switchTo(new OrganizerDashboardFragment());
                 return true;
             }
 

@@ -42,6 +42,9 @@ dependencies {
     // Add this line for CardView - hasrat
     implementation("androidx.cardview:cardview:1.0.0")
 
+    // QR
+    implementation("com.google.zxing:core:3.5.3")
+
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.firebase:firebase-firestore")

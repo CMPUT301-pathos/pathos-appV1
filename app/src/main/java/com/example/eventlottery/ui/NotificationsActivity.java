@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventlottery.MainActivity;
 import com.example.eventlottery.R;
-import com.example.eventlottery.domain.NotificationRecord;
 import com.example.eventlottery.domain.NotificationType;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -52,7 +51,7 @@ public class NotificationsActivity extends AppCompatActivity {
                     startActivity(new Intent(this, MainActivity.class));
                     return true;
                 }
-                if (id == R.id.nav_scan) {
+                if (id == R.id.nav_events) {
                     Toast.makeText(this, "Scan screen not wired yet", Toast.LENGTH_SHORT).show();
                     return true;
                 }

@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/eventsScroll"
+    android:id="@+id/orgScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:padding="16dp">
 
     <LinearLayout
-        android:id="@+id/eventsRoot"
+        android:id="@+id/orgRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvEventsTitle"
+            android:id="@+id/tvOrgTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="DASHBOARD"
@@ -22,55 +22,40 @@
             android:paddingBottom="10dp" />
 
         <TextView
-            android:id="@+id/tvJoinEvent"
+            android:id="@+id/tvCreateEvent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="JOIN AN EVENT"
+            android:text="CREATE AN EVENT"
             android:textStyle="bold"
             android:textSize="16sp"
             android:paddingBottom="8dp" />
 
         <Button
-            android:id="@+id/btnQrScan"
+            android:id="@+id/btn_create_event"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QR SCAN" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="10dp">
-
-            <TextView
-                android:id="@+id/tvEventList"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="EVENT LIST"
-                android:textStyle="bold"
-                android:textSize="16sp" />
-
-            <Button
-                android:id="@+id/btnFilter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Filter" />
-        </LinearLayout>
+            android:text="CREATE" />
 
         <TextView
-            android:id="@+id/tv_events_empty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No events yet."
+            android:text="YOUR EVENTS"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:id="@+id/tv_my_events_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You haven't created any events yet."
             android:gravity="center"
             android:padding="12dp"
             android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_events"
+            android:id="@+id/recycler_my_events"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false" />

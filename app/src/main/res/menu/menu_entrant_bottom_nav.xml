@@ -10,7 +10,8 @@ Tabs:
 - Profile (nav_profile)
 -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/nav_home"
@@ -19,7 +20,7 @@ Tabs:
 
     <!-- Keep id nav_scan, but repurpose as Events -->
     <item
-        android:id="@+id/nav_scan"
+        android:id="@+id/nav_events"
         android:icon="@android:drawable/ic_menu_my_calendar"
         android:title="Events" />
 
@@ -27,6 +28,13 @@ Tabs:
         android:id="@+id/nav_notifications"
         android:icon="@android:drawable/ic_dialog_email"
         android:title="Notifications" />
+
+    <!--  Organizer Dashboard -->
+    <item
+        android:id="@+id/nav_organizer"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:title="Organize events" />
+
 
     <item
         android:id="@+id/nav_profile"
