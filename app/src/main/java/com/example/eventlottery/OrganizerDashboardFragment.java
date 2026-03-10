@@ -49,8 +49,11 @@ public class OrganizerDashboardFragment extends Fragment {
 
         Button btnCreate = root.findViewById(R.id.btn_create_event);
         btnCreate.setOnClickListener(v -> {
-            // Replace with your CreateEventFragment navigation when ready
-            Snackbar.make(root, "Create Event not wired yet", Snackbar.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new CreateEventFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
 
         repo = new FirestoreEventRepository();
@@ -61,6 +64,15 @@ public class OrganizerDashboardFragment extends Fragment {
         adapter = new EventSummaryAdapter();
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
+
+        adapter.setItemClickListener(event -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container,
+                            OrganizerEventManagerFragment.newInstance(event.getId(), event.getName()))
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         loadMyEvents();
 
