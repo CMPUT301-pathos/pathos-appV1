@@ -9,10 +9,18 @@ import java.util.List;
 
 /**
  * Represents a user profile in the application.
- * Stores personal information and role for entrants, organizers, and admins.
+ * Stores personal information, role, and notification preferences.
  *
- * @author Dmitriy Limanets
- * @version 1.0
+ * Extended to support notification opt-out preference.
+ *
+ * User stories supported:
+ * - US 01.02.01/US 01.02.02: Provide/update personal info
+ * - US 01.02.03: View event history
+ * - US 01.02.04: Delete profile
+ * - US 01.04.03: Opt out of receiving notifications
+ *
+ * @author Dmitriy Limanets, Fawaz Mansoor
+ * @version 1.1
  * @see ProfileRepository
  * @see FirestoreProfileRepository
  */
@@ -29,6 +37,7 @@ public class UserProfile {
      * Used for US 01.02.03 - Event History display. -Hasrat
      */
     private List<EventHistoryRecord> eventHistory;
+    private boolean notificationsEnabled = true; // opt-in by default
     /**
      * Empty constructor required by Firestore to deserialize documents.
      */
@@ -111,6 +120,14 @@ public class UserProfile {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isNotificationsEnabled() {
+        return notificationsEnabled;
+    }
+
+    public void setNotificationsEnabled(boolean notificationsEnabled) {
+        this.notificationsEnabled = notificationsEnabled;
     }
 
     /**

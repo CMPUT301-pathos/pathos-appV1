@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controller for event browsing and filtering.
+ * Controller for event browsing, filtering, and lottery criteria.
  *
  * Responsibilities:
  * - Load all events from the repository
  * - Filter events by category, location, and availability
+ * - Generate lottery criteria text for a given event
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
@@ -19,7 +20,7 @@ import java.util.List;
  * - US 01.05.05: Be informed about lottery selection criteria
  *
  * @author Fawaz Mansoor
- * @version 1.0
+ * @version 1.1
  */
 public class EventController {
 

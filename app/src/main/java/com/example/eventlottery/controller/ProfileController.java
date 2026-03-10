@@ -6,8 +6,15 @@ import com.example.eventlottery.domain.UserProfile;
  * Controller for managing user profile operations.
  * Acts as an intermediary between the UI and the ProfileRepository.
  *
- * @author Dmitriy Limanets
- * @version 1.0
+ * Extended to support notification preference toggling.
+ *
+ * User stories supported:
+ * - US 01.02.01/US 01.02.02: Provide/update personal info
+ * - US 01.02.04: Delete profile
+ * - US 01.04.03: Opt out of receiving notifications
+ *
+ * @author Dmitriy Limanets, Fawaz Mansoor
+ * @version 1.1
  * @see ProfileRepository
  * @see UserProfile
  */
@@ -79,6 +86,34 @@ public class ProfileController {
                     // Create new profile if it doesn't exist
                     UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "entrant");
                     saveProfile(newProfile, callback);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
+    /**
+     * Toggles notification preferences for a user profile.
+     * Supports US 01.04.03 - Opt out of receiving notifications.
+     *
+     * @param deviceId             the unique device identifier
+     * @param notificationsEnabled true to opt in, false to opt out
+     * @param callback             the callback to handle success or failure
+     */
+    public void setNotificationsEnabled(String deviceId, boolean notificationsEnabled,
+                                        ProfileRepository.ProfileCallback callback) {
+        getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (profile != null) {
+                    profile.setNotificationsEnabled(notificationsEnabled);
+                    saveProfile(profile, callback);
+                } else {
+                    callback.onFailure(new Exception("Profile not found for deviceId: " + deviceId));
                 }
             }
 
