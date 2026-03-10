@@ -27,11 +27,13 @@
             android:text="You have won the lottery for this event!"
             android:paddingBottom="10dp"/>
 
+        <!-- Accept/Decline buttons for win notifications -->
         <LinearLayout
             android:id="@+id/winButtonsRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <Button
                 android:id="@+id/btnAccept"
@@ -48,6 +50,15 @@
                 android:text="Decline"
                 android:layout_marginStart="10dp"/>
         </LinearLayout>
+
+        <!-- Clear button for lose notifications -->
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:text="Clear"
+            android:visibility="gone"/>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

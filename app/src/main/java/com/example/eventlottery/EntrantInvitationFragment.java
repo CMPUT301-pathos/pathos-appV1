@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -12,24 +13,6 @@ import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.WaitingListController;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
-
-/**
- * EntrantInvitationFragment
- *
- * Role: Notifications / invitations screen for entrants.
- * - Displays notification-like content (e.g., invitations, win/lose messaging).
- * - Provides UI hooks for accept/decline flows (depending on current wiring).
- *
- * User stories supported (UI layer):
- * - US 01.04.01: Receive notification when chosen ("win") [UI entry point]
- * - US 01.04.02: Receive notification when not chosen ("lose") [UI entry point]
- * - US 01.05.02/01.05.03: Accept/Decline invitation (if wired)
- *
- * Notes:
- * - Lottery trigger + true push/in-app notification delivery may be implemented later
- *   in PathosNotifyService/raffle integration. Document current behavior honestly.
- */
-
 
 public class EntrantInvitationFragment extends Fragment {
 
@@ -68,24 +51,64 @@ public class EntrantInvitationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_entrant_invitation, container, false);
 
-        TextView textEventName = view.findViewById(R.id.text_event_name);
-        TextView textEventDetails = view.findViewById(R.id.text_event_details);
-        Button buttonAccept = view.findViewById(R.id.button_accept);
-        Button buttonDecline = view.findViewById(R.id.button_decline);
+        LinearLayout notificationsContainer = view.findViewById(R.id.notifications_container);
 
-        textEventName.setText("You've been selected!");
-        textEventDetails.setText("Event: " + eventName);
+        // Win notification card
+        addWinNotification(inflater, notificationsContainer, eventName);
 
-        buttonAccept.setOnClickListener(v -> {
-            waitingListController.acceptInvitation(eventId, deviceId);
-            Toast.makeText(getContext(), "You have accepted the invitation!", Toast.LENGTH_SHORT).show();
-        });
-
-        buttonDecline.setOnClickListener(v -> {
-            waitingListController.declineInvitation(eventId, deviceId);
-            Toast.makeText(getContext(), "You have declined the invitation.", Toast.LENGTH_SHORT).show();
-        });
+        // Lose notification card (for demo)
+        addLoseNotification(inflater, notificationsContainer, "Some Other Event");
 
         return view;
+    }
+
+    private void addWinNotification(LayoutInflater inflater, LinearLayout container, String name) {
+        View card = inflater.inflate(R.layout.item_notification, container, false);
+
+        TextView tvEventName = card.findViewById(R.id.tvEventName);
+        TextView tvMessage = card.findViewById(R.id.tvMessage);
+        Button btnAccept = card.findViewById(R.id.btnAccept);
+        Button btnDecline = card.findViewById(R.id.btnDecline);
+        LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
+        Button btnClear = card.findViewById(R.id.btnClear);
+
+        tvEventName.setText(name != null ? name : "Event");
+        tvMessage.setText("You have won the lottery for this event!");
+        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+        winButtonsRow.setVisibility(View.VISIBLE);
+        btnClear.setVisibility(View.GONE);
+
+        btnAccept.setOnClickListener(v -> {
+            waitingListController.acceptInvitation(eventId, deviceId);
+            Toast.makeText(getContext(), "You have accepted the invitation!", Toast.LENGTH_SHORT).show();
+            container.removeView(card);
+        });
+
+        btnDecline.setOnClickListener(v -> {
+            waitingListController.declineInvitation(eventId, deviceId);
+            Toast.makeText(getContext(), "You have declined the invitation.", Toast.LENGTH_SHORT).show();
+            container.removeView(card);
+        });
+
+        container.addView(card);
+    }
+
+    private void addLoseNotification(LayoutInflater inflater, LinearLayout container, String name) {
+        View card = inflater.inflate(R.layout.item_notification, container, false);
+
+        TextView tvEventName = card.findViewById(R.id.tvEventName);
+        TextView tvMessage = card.findViewById(R.id.tvMessage);
+        LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
+        Button btnClear = card.findViewById(R.id.btnClear);
+
+        tvEventName.setText(name != null ? name : "Event");
+        tvMessage.setText("You have lost the lottery for this event :(");
+        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+        winButtonsRow.setVisibility(View.GONE);
+        btnClear.setVisibility(View.VISIBLE);
+
+        btnClear.setOnClickListener(v -> container.removeView(card));
+
+        container.addView(card);
     }
 }
