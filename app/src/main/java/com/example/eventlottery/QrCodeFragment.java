@@ -1,5 +1,6 @@
 package com.example.eventlottery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,15 +8,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.android.material.button.MaterialButton;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 
 /**
  * QrCodeFragment
@@ -24,21 +29,26 @@ import com.google.zxing.qrcode.QRCodeWriter;
  * Used by US 02.01.01 after event creation.
  *
  * @author Kenneth Joseph
- * @version 1.0
+ * @version 1.1
+ * @see: fragment_qr_code.xml, CreateEventFragment.java
  */
+
 public class QrCodeFragment extends Fragment {
 
     private static final String ARG_PAYLOAD = "payload";
 
-    public static QrCodeFragment newInstance(@NonNull String payload) {
-        QrCodeFragment f = new QrCodeFragment();
-        Bundle b = new Bundle();
-        b.putString(ARG_PAYLOAD, payload);
-        f.setArguments(b);
-        return f;
-    }
+    private String payload;
+    private Bitmap qrBitmap;
 
     public QrCodeFragment() { }
+
+    public static QrCodeFragment newInstance(String payload) {
+        QrCodeFragment fragment = new QrCodeFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_PAYLOAD, payload);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Nullable
     @Override
@@ -49,32 +59,63 @@ public class QrCodeFragment extends Fragment {
     ) {
         View root = inflater.inflate(R.layout.fragment_qr_code, container, false);
 
-        ImageView qrImage = root.findViewById(R.id.iv_qr);
+        ImageView ivQr = root.findViewById(R.id.iv_qr_code);
         TextView tvPayload = root.findViewById(R.id.tv_qr_payload);
+        MaterialButton btnShareQr = root.findViewById(R.id.btn_share_qr);
 
-        String payload = (getArguments() != null) ? getArguments().getString(ARG_PAYLOAD) : null;
-        if (payload == null) payload = "eventId:missing";
+        if (getArguments() != null) {
+            payload = getArguments().getString(ARG_PAYLOAD, "");
+        } else {
+            payload = "";
+        }
 
         tvPayload.setText(payload);
-        qrImage.setImageBitmap(makeQrBitmap(payload, 700));
+
+        try {
+            qrBitmap = com.example.eventlottery.util.QrCodeGenerator.generate(payload, 800);
+            ivQr.setImageBitmap(qrBitmap);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Failed to generate QR code", Toast.LENGTH_LONG).show();
+        }
+
+        btnShareQr.setOnClickListener(v -> shareQrCode());
 
         return root;
     }
 
-    private Bitmap makeQrBitmap(String text, int sizePx) {
-        QRCodeWriter writer = new QRCodeWriter();
+    private void shareQrCode() {
+        if (qrBitmap == null) {
+            Toast.makeText(requireContext(), "QR code not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         try {
-            BitMatrix matrix = writer.encode(text, BarcodeFormat.QR_CODE, sizePx, sizePx);
-            Bitmap bmp = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
-            for (int x = 0; x < sizePx; x++) {
-                for (int y = 0; y < sizePx; y++) {
-                    bmp.setPixel(x, y, matrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
-                }
+            File cachePath = new File(requireContext().getCacheDir(), "shared_qr");
+            if (!cachePath.exists()) {
+                cachePath.mkdirs();
             }
-            return bmp;
-        } catch (WriterException e) {
-            // fallback blank bitmap
-            return Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888);
+
+            File file = new File(cachePath, "event_qr.png");
+            FileOutputStream stream = new FileOutputStream(file);
+            qrBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            stream.flush();
+            stream.close();
+
+            android.net.Uri contentUri = FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().getPackageName() + ".fileprovider",
+                    file
+            );
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("image/png");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Scan this QR code to view the event.");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(shareIntent, "Share QR Code"));
+        } catch (IOException e) {
+            Toast.makeText(requireContext(), "Failed to share QR code", Toast.LENGTH_LONG).show();
         }
     }
 }
