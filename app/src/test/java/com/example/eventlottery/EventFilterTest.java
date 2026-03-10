@@ -9,24 +9,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit tests for event filtering logic.
+ * Unit tests for event filtering and lottery criteria logic.
  *
  * User stories covered:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
+ * - US 01.05.05: Be informed about lottery selection criteria
  *
  * @author Fawaz Mansoor
- * @version 1.0
+ * @version 1.1
  */
 public class EventFilterTest {
 
     // Helper methods
     private EventSummary makeSummary(String id, String name, String category) {
-        return new EventSummary(id, name, "desc", "", 0L, "org1", category, 0L, 0L, 0L);
+        return new EventSummary(id, name, "desc", "", 0L, "org1", category, 0L, 0L, 0L, 0, 0);
     }
 
     private EventSummary makeSummary(String id, String name, String category, String location) {
-        return new EventSummary(id, name, "desc", location, 0L, "org1", category, 0L, 0L, 0L);
+        return new EventSummary(id, name, "desc", location, 0L, "org1", category, 0L, 0L, 0L, 0, 0);
     }
 
     // --- Category filter tests ---
@@ -52,7 +53,6 @@ public class EventFilterTest {
         events.add(makeSummary("1", "Sports Event", "Sports"));
         events.add(makeSummary("2", "Music Event", "Music"));
 
-        // "All" should return everything
         List<EventSummary> filtered = new ArrayList<>(events);
 
         assertEquals(2, filtered.size());
@@ -122,7 +122,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary openEvent = new EventSummary(
                 "1", "Open Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0);
 
         assertTrue(openEvent.isRegistrationOpen());
     }
@@ -132,7 +132,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary closedEvent = new EventSummary(
                 "2", "Closed Event", "desc", "Calgary",
-                now, "org1", "Music", now + 100000, now - 200000, now - 100000);
+                now, "org1", "Music", now + 100000, now - 200000, now - 100000, 0, 0);
 
         assertFalse(closedEvent.isRegistrationOpen());
     }
@@ -143,11 +143,11 @@ public class EventFilterTest {
 
         EventSummary openEvent = new EventSummary(
                 "1", "Open Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0);
 
         EventSummary closedEvent = new EventSummary(
                 "2", "Closed Event", "desc", "Calgary",
-                now, "org1", "Music", now + 100000, now - 200000, now - 100000);
+                now, "org1", "Music", now + 100000, now - 200000, now - 100000, 0, 0);
 
         List<EventSummary> events = new ArrayList<>();
         events.add(openEvent);
@@ -160,5 +160,37 @@ public class EventFilterTest {
 
         assertEquals(1, filtered.size());
         assertEquals("Open Event", filtered.get(0).getName());
+    }
+
+    // --- Lottery criteria tests ---
+
+    @Test
+    public void testLotteryCriteria_capacityIsSet() {
+        long now = System.currentTimeMillis();
+        EventSummary event = new EventSummary(
+                "1", "Test Event", "desc", "Edmonton",
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 50, 10);
+
+        assertEquals(50, event.getCapacity());
+    }
+
+    @Test
+    public void testLotteryCriteria_drawSizeIsSet() {
+        long now = System.currentTimeMillis();
+        EventSummary event = new EventSummary(
+                "1", "Test Event", "desc", "Edmonton",
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 50, 10);
+
+        assertEquals(10, event.getDrawSize());
+    }
+
+    @Test
+    public void testLotteryCriteria_unlimitedCapacity() {
+        long now = System.currentTimeMillis();
+        EventSummary event = new EventSummary(
+                "1", "Test Event", "desc", "Edmonton",
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0);
+
+        assertEquals(0, event.getCapacity());
     }
 }

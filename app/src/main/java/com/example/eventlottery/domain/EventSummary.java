@@ -6,14 +6,15 @@ import com.google.firebase.firestore.DocumentSnapshot;
  * Lightweight model for showing events in lists.
  *
  * Extended to support filtering by category, location, date,
- * and registration availability.
+ * registration availability, and lottery criteria.
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
+ * - US 01.05.05: Be informed about lottery selection criteria
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.1
+ * @version 1.2
  */
 public class EventSummary {
     private final String id;
@@ -26,10 +27,13 @@ public class EventSummary {
     private final long eventDate;
     private final long registrationStart;
     private final long registrationEnd;
+    private final int capacity;
+    private final int drawSize;
 
     public EventSummary(String id, String name, String description, String location,
                         long createdAt, String organizerDeviceId, String category,
-                        long eventDate, long registrationStart, long registrationEnd) {
+                        long eventDate, long registrationStart, long registrationEnd,
+                        int capacity, int drawSize) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -40,6 +44,8 @@ public class EventSummary {
         this.eventDate = eventDate;
         this.registrationStart = registrationStart;
         this.registrationEnd = registrationEnd;
+        this.capacity = capacity;
+        this.drawSize = drawSize;
     }
 
     public String getId() { return id; }
@@ -52,6 +58,8 @@ public class EventSummary {
     public long getEventDate() { return eventDate; }
     public long getRegistrationStart() { return registrationStart; }
     public long getRegistrationEnd() { return registrationEnd; }
+    public int getCapacity() { return capacity; }
+    public int getDrawSize() { return drawSize; }
 
     public boolean isRegistrationOpen() {
         long now = System.currentTimeMillis();
@@ -70,13 +78,18 @@ public class EventSummary {
         Long evDate = safeGetLong(doc, "eventDate");
         Long regStart = safeGetLong(doc, "registrationStart");
         Long regEnd = safeGetLong(doc, "registrationEnd");
+        Long cap = safeGetLong(doc, "capacity");
+        Long draw = safeGetLong(doc, "drawSize");
 
-        return new EventSummary(id, name, desc, loc,
+        return new EventSummary(
+                id, name, desc, loc,
                 created == null ? 0L : created,
                 organizer, category,
                 evDate == null ? 0L : evDate,
                 regStart == null ? 0L : regStart,
-                regEnd == null ? 0L : regEnd);
+                regEnd == null ? 0L : regEnd,
+                cap == null ? 0 : cap.intValue(),
+                draw == null ? 0 : draw.intValue());
     }
 
     private static String safe(String s) {

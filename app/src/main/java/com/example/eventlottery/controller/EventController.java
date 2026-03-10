@@ -16,6 +16,7 @@ import java.util.List;
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
+ * - US 01.05.05: Be informed about lottery selection criteria
  *
  * @author Fawaz Mansoor
  * @version 1.0
@@ -81,5 +82,52 @@ public class EventController {
             if (categoryMatch && availabilityMatch) filtered.add(e);
         }
         return filtered;
+    }
+
+    public String getLotteryCriteria(EventSummary event) {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
+                "MMM dd, yyyy", java.util.Locale.getDefault());
+
+        StringBuilder criteria = new StringBuilder();
+
+        criteria.append("📋 Lottery Criteria\n\n");
+
+        // Registration window
+        if (event.getRegistrationStart() > 0) {
+            criteria.append("📅 Registration Opens:\n")
+                    .append(sdf.format(new java.util.Date(event.getRegistrationStart())))
+                    .append("\n\n");
+        }
+        if (event.getRegistrationEnd() > 0) {
+            criteria.append("📅 Registration Closes:\n")
+                    .append(sdf.format(new java.util.Date(event.getRegistrationEnd())))
+                    .append("\n\n");
+        }
+
+        // Waiting list capacity
+        if (event.getCapacity() > 0) {
+            criteria.append("👥 Waiting List Capacity:\n")
+                    .append(event.getCapacity()).append(" entrants max")
+                    .append("\n\n");
+        } else {
+            criteria.append("👥 Waiting List Capacity:\n")
+                    .append("Unlimited")
+                    .append("\n\n");
+        }
+
+        // Draw size
+        if (event.getDrawSize() > 0) {
+            criteria.append("Number of Winners:\n")
+                    .append(event.getDrawSize()).append(" entrants will be selected")
+                    .append("\n\n");
+        }
+
+        // Selection process explanation
+        criteria.append("Selection Process:\n")
+                .append("Winners are chosen randomly and fairly from all entrants " +
+                        "on the waiting list once registration closes. " +
+                        "If a selected entrant declines, a replacement is drawn.");
+
+        return criteria.toString();
     }
 }
