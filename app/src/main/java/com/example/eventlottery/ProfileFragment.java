@@ -24,7 +24,7 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * Role: Entrant profile & account screen.
  * - Shows editable profile fields (name/email/phone).
  * - Provides "Save changes" UI (update profile).
- * - Provides notification opt-out UI toggle (placeholder if not persisted yet).
+ * - Provides notification opt-out toggle (wired to Firestore).
  * - Provides Account Security actions (Logout placeholder + Delete Account).
  * - Provides entry point to EventHistoryFragment.
  *
@@ -32,17 +32,11 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * - US 01.02.01/US 01.02.02: Provide/update personal info (name/email/optional phone).
  * - US 01.02.04: Delete profile (delete account button).
  * - US 01.02.03: View event history (button navigates to history screen).
- * - US 01.04.03: Opt out of notifications (toggle UI; persistence may be TODO).
- */
-
-/**
- * Combined Account Info page:
- * - Edit profile fields (US 01.02.02)
- * - Event History entry point (US 01.02.03) via EventHistoryFragment
- * - Notification opt-out placeholder (US 01.04.03 placeholder)
- * - Logout/Delete buttons (delete wired, logout placeholder)
+ * - US 01.04.03: Opt out of notifications (wired to Firestore via ProfileController).
+ * - US 01.05.05: View lottery criteria per event (via EventsFragment).
  *
- * Author: Dmitriy Limanets, Kenneth Joseph
+ * @author Dmitriy Limanets, Kenneth Joseph, Fawaz Mansoor
+ * @version 1.1
  */
 public class ProfileFragment extends Fragment {
 
@@ -75,18 +69,11 @@ public class ProfileFragment extends Fragment {
         eventHistoryButton = view.findViewById(R.id.button_event_history);
         optOutSwitch = view.findViewById(R.id.switch_opt_out);
 
-        // Load current profile data
+        // Load current profile data and wire switch listener after loading
         loadCurrentProfile();
 
         // Save changes
         saveButton.setOnClickListener(v -> saveProfile());
-
-        // Opt-out placeholder
-        optOutSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            Toast.makeText(getContext(),
-                    isChecked ? "Opt-out enabled (not wired yet)" : "Opt-out disabled (not wired yet)",
-                    Toast.LENGTH_SHORT).show();
-        });
 
         // Event history
         eventHistoryButton.setOnClickListener(v -> {
@@ -101,7 +88,7 @@ public class ProfileFragment extends Fragment {
                 Toast.makeText(getContext(), "Logout not wired yet", Toast.LENGTH_SHORT).show()
         );
 
-        // Delete account (wired)
+        // Delete account
         deleteButton.setOnClickListener(v -> showDeleteConfirmDialog());
 
         return view;
@@ -115,7 +102,34 @@ public class ProfileFragment extends Fragment {
                     editName.setText(profile.getName());
                     editEmail.setText(profile.getEmail());
                     editPhone.setText(profile.getPhoneNumber());
+
+                    // Set switch state BEFORE attaching listener to avoid triggering save
+                    optOutSwitch.setOnCheckedChangeListener(null);
+                    optOutSwitch.setChecked(!profile.isNotificationsEnabled());
+                    optOutSwitch.jumpDrawablesToCurrentState();
                 }
+
+                // Attach listener AFTER setting initial state
+                optOutSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    profileController.setNotificationsEnabled(deviceId, !isChecked,
+                            new ProfileRepository.ProfileCallback() {
+                                @Override
+                                public void onSuccess(UserProfile profile) {
+                                    Toast.makeText(getContext(),
+                                            isChecked ? "Notifications disabled" : "Notifications enabled",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Toast.makeText(getContext(),
+                                            "Failed to update notification preference",
+                                            Toast.LENGTH_SHORT).show();
+                                    optOutSwitch.setOnCheckedChangeListener(null);
+                                    optOutSwitch.setChecked(!isChecked);
+                                }
+                            });
+                });
             }
 
             @Override
