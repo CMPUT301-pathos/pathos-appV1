@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
@@ -36,15 +37,20 @@ import java.util.Map;
  *
  * US 02.01.01: Organizer can create a new event and generate a promotional QR code.
  *
- * Extended MVP:
+ * MVP behavior:
  * - Collect event fields
- * - Select registration dates using a Material date range picker
- * - Optionally upload an event poster
- * - Save to Firestore collection "events" (auto-id)
- * - Navigate to QrCodeFragment to display the QR payload
+ * - Choose registration dates with a Material date range picker
+ * - Optionally upload an event poster to Firebase Storage
+ * - Save to Firestore "events" (auto-id)
+ * - Navigate to QrCodeFragment on success
+ *
+ * Reliability notes:
+ * - Prevents double publish
+ * - Guards against fragment/activity lifecycle issues
+ * - Uses commitAllowingStateLoss only when FragmentManager state is saved
  *
  * @author Kenneth Joseph
- * @version 1.1
+ * @version 1.2
  */
 public class CreateEventFragment extends Fragment {
 
@@ -54,6 +60,8 @@ public class CreateEventFragment extends Fragment {
 
     private Uri selectedPosterUri;
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
+
+    private boolean isPublishing = false;
 
     public CreateEventFragment() { }
 
@@ -112,15 +120,13 @@ public class CreateEventFragment extends Fragment {
     }
 
     private void showDateRangePicker() {
-        MaterialDatePicker<Pair<Long, Long>> picker = MaterialDatePicker.Builder.dateRangePicker()
-                .setTitleText("Select registration dates")
-                .build();
+        MaterialDatePicker<Pair<Long, Long>> picker =
+                MaterialDatePicker.Builder.dateRangePicker()
+                        .setTitleText("Select registration dates")
+                        .build();
 
         picker.addOnPositiveButtonClickListener(selection -> {
-            if (selection == null || selection.first == null || selection.second == null) {
-                return;
-            }
-
+            if (selection == null || selection.first == null || selection.second == null) return;
             etStart.setText(formatDate(selection.first));
             etEnd.setText(formatDate(selection.second));
         });
@@ -129,6 +135,9 @@ public class CreateEventFragment extends Fragment {
     }
 
     private void publishEvent() {
+        if (isPublishing) return; // prevent double publish
+        isPublishing = true;
+
         String name = safe(etName);
         String desc = safe(etDesc);
         String location = safe(etLocation);
@@ -138,14 +147,17 @@ public class CreateEventFragment extends Fragment {
 
         if (TextUtils.isEmpty(name)) {
             etName.setError("Required");
+            isPublishing = false;
             return;
         }
         if (TextUtils.isEmpty(start)) {
             etStart.setError("Required");
+            isPublishing = false;
             return;
         }
         if (TextUtils.isEmpty(end)) {
             etEnd.setError("Required");
+            isPublishing = false;
             return;
         }
 
@@ -155,10 +167,12 @@ public class CreateEventFragment extends Fragment {
                 capacity = Integer.parseInt(capStr);
                 if (capacity < 1) {
                     etCapacity.setError("Must be >= 1");
+                    isPublishing = false;
                     return;
                 }
             } catch (NumberFormatException e) {
                 etCapacity.setError("Enter a number");
+                isPublishing = false;
                 return;
             }
         }
@@ -188,14 +202,17 @@ public class CreateEventFragment extends Fragment {
                 .continueWithTask(task -> {
                     if (!task.isSuccessful()) {
                         Exception exception = task.getException();
-                        if (exception != null) {
-                            throw exception;
-                        }
+                        if (exception != null) throw exception;
                     }
                     return posterRef.getDownloadUrl();
                 })
-                .addOnSuccessListener(uri -> createEventDocument(name, desc, location, start, end, capacity, uri.toString()))
+                .addOnSuccessListener(uri -> {
+                    if (!isAdded()) return;
+                    createEventDocument(name, desc, location, start, end, capacity, uri.toString());
+                })
                 .addOnFailureListener(e -> {
+                    if (!isAdded()) return;
+                    isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(), "Poster upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
@@ -227,23 +244,50 @@ public class CreateEventFragment extends Fragment {
                 .collection("events")
                 .add(eventDoc)
                 .addOnSuccessListener(ref -> {
+                    if (!isAdded()) return;
+
                     String eventId = ref.getId();
                     String payload = "eventId:" + eventId;
 
                     Toast.makeText(requireContext(), "Event created", Toast.LENGTH_SHORT).show();
 
-                    QrCodeFragment qr = QrCodeFragment.newInstance(payload);
+                    // Important: reset state BEFORE navigating so we don't get stuck in "publishing..."
+                    isPublishing = false;
+                    setPublishingState(false, "PUBLISH");
 
-                    requireActivity().getSupportFragmentManager()
-                            .beginTransaction()
-                            .replace(R.id.fragment_container, qr)
-                            .addToBackStack(null)
-                            .commit();
+                    goToQr(payload);
                 })
                 .addOnFailureListener(e -> {
+                    if (!isAdded()) return;
+
+                    isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(), "Create failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
+    }
+
+    /**
+     * Navigates to QrCodeFragment safely.
+     * Uses commitAllowingStateLoss only if state is already saved.
+     */
+    private void goToQr(@NonNull String payload) {
+        QrCodeFragment qr = QrCodeFragment.newInstance(payload);
+
+        FragmentManager fm = getParentFragmentManager();
+
+        if (fm.isStateSaved()) {
+            fm.beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(R.id.fragment_container, qr)
+                    .addToBackStack(null)
+                    .commitAllowingStateLoss();
+        } else {
+            fm.beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(R.id.fragment_container, qr)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     private void setPublishingState(boolean publishing, String buttonText) {
