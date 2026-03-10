@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/organizer_dashboard_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <TextView
+            android:id="@+id/tv_organizer_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DASHBOARD"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="18dp" />
+
+        <!-- Create an event -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CREATE AN EVENT"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btn_create_event"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            android:text="CREATE"
+            android:layout_marginBottom="22dp" />
+
+        <!-- Your events -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YOUR EVENTS"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="   Filter"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Placeholder event cards -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/darker_gray"
+            android:alpha="0.18" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/darker_gray"
+            android:alpha="0.18" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/darker_gray"
+            android:alpha="0.18" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginBottom="12dp"
+            android:background="@android:color/darker_gray"
+            android:alpha="0.18" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
