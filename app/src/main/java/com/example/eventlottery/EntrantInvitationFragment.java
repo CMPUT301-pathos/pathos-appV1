@@ -14,6 +14,23 @@ import androidx.fragment.app.Fragment;
 import com.example.eventlottery.controller.WaitingListController;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 
+/**
+ * Fragment displaying the notifications/invitations screen for entrants.
+ *
+ * Responsibilities:
+ * - Display win/lose lottery notifications as cards
+ * - Allow entrant to accept or decline an invitation
+ * - Clear lose notifications
+ *
+ * User stories supported:
+ * - US 01.04.01: Receive notification when chosen from waiting list
+ * - US 01.04.02: Receive notification when not chosen
+ * - US 01.05.02: Accept the invitation to register for an event
+ * - US 01.05.03: Decline an invitation when chosen
+ *
+ * @author Fawaz Mansoor
+ * @version 1.0
+ */
 public class EntrantInvitationFragment extends Fragment {
 
     private static final String ARG_EVENT_ID = "eventId";

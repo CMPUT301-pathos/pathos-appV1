@@ -8,6 +8,21 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Firestore implementation of WaitListRepository.
+ * Stores participation records in collection: "waitlist"
+ *
+ * Responsibilities:
+ * - Persist entrant participation records
+ * - Update participation status in Firestore
+ *
+ * User stories supported:
+ * - US 01.05.02: Accept the invitation to register for an event
+ * - US 01.05.03: Decline an invitation when chosen
+ *
+ * @author Fawaz Mansoor
+ * @version 1.0
+ */
 public class FirestoreWaitListRepository implements WaitListRepository {
 
     private final FirebaseFirestore db;

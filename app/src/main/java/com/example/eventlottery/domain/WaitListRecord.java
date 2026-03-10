@@ -1,5 +1,19 @@
 package com.example.eventlottery.domain;
 
+/**
+ * Domain model representing an entrant's participation record for an event.
+ *
+ * Responsibilities:
+ * - Store participation status (WAITING, INVITED, ACCEPTED, DECLINED, CANCELLED)
+ * - Enforce valid state transitions for accept and decline actions
+ *
+ * User stories supported:
+ * - US 01.05.02: Accept the invitation to register for an event
+ * - US 01.05.03: Decline an invitation when chosen
+ *
+ * @author Fawaz Mansoor
+ * @version 1.0
+ */
 public class WaitListRecord {
     private String eventId;
     private String deviceId;
