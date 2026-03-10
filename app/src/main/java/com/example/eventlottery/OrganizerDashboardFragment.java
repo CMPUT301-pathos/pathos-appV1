@@ -4,33 +4,26 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.button.MaterialButton;
 
 /**
  * OrganizerDashboardFragment
  *
- * Organizer UI landing page (Marketplace-style):
- * - Create an Event button
- * - List of user's events (placeholder cards for now)
- *
- * Later ties into:
- * - US 02.01.01 (create event + generate QR)
- * - US 02.02.xx (view entrants/waitlist)
+ * Organizer tools landing page:
+ * - Create an Event button (US 02.01.01)
+ * - List of user's events (placeholder for now)
  *
  * @author Kenneth Joseph
  * @version 1.0
  */
 public class OrganizerDashboardFragment extends Fragment {
 
-    public OrganizerDashboardFragment() {
-        // Required empty public constructor
-    }
+    public OrganizerDashboardFragment() { }
 
     @Nullable
     @Override
@@ -41,10 +34,14 @@ public class OrganizerDashboardFragment extends Fragment {
     ) {
         View root = inflater.inflate(R.layout.fragment_organizer_dashboard, container, false);
 
-        Button btnCreate = root.findViewById(R.id.btn_create_event);
-        btnCreate.setOnClickListener(v ->
-                Snackbar.make(root, "Create Event not wired yet", Snackbar.LENGTH_SHORT).show()
-        );
+        View btn = root.findViewById(R.id.btn_create_event);
+        btn.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new CreateEventFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         return root;
     }

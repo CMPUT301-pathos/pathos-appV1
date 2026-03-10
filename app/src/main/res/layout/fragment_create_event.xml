@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EVENT CREATION"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/et_event_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name of Event"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/et_event_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Event Description/Link"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/et_event_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Location"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/et_event_capacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Capacity (#) (optional)"
+            android:inputType="number"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/et_event_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Registration Start (YYYY-MM-DD)"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/et_event_end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Registration End (YYYY-MM-DD)"
+            android:layout_marginBottom="18dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_publish_event"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PUBLISH (GENERATE QR)" />
+
+    </LinearLayout>
+</ScrollView>
