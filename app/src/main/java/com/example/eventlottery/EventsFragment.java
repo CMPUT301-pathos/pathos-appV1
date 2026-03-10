@@ -79,6 +79,14 @@ public class EventsFragment extends Fragment {
         empty = root.findViewById(R.id.tv_events_empty);
 
         adapter = new EventSummaryAdapter();
+        adapter.setCriteriaClickListener(event -> {
+            String criteria = eventController.getLotteryCriteria(event);
+            new android.app.AlertDialog.Builder(requireContext())
+                    .setTitle(event.getName())
+                    .setMessage(criteria)
+                    .setPositiveButton("Got it", null)
+                    .show();
+        });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 

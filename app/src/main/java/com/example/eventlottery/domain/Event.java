@@ -29,6 +29,8 @@ public class Event {
     private long eventDate;           // when the event takes place (ms)
     private long registrationStart;   // when registration opens (ms)
     private long registrationEnd;     // when registration closes (ms)
+    private int capacity;     // max entrants on waiting list (0 = unlimited)
+    private int drawSize;     // how many will be selected in the lottery
 
     public Event() {}
 
@@ -69,6 +71,12 @@ public class Event {
     public long getRegistrationEnd() { return registrationEnd; }
     public void setRegistrationEnd(long registrationEnd) { this.registrationEnd = registrationEnd; }
 
+    public int getCapacity() { return capacity; }
+    public void setCapacity(int capacity) { this.capacity = capacity; }
+
+    public int getDrawSize() { return drawSize; }
+    public void setDrawSize(int drawSize) { this.drawSize = drawSize; }
+
     public boolean isRegistrationOpen() {
         long now = System.currentTimeMillis();
         return now >= registrationStart && now <= registrationEnd;
@@ -85,6 +93,8 @@ public class Event {
         m.put("eventDate", eventDate);
         m.put("registrationStart", registrationStart);
         m.put("registrationEnd", registrationEnd);
+        m.put("capacity", capacity);
+        m.put("drawSize", drawSize);
         return m;
     }
 }

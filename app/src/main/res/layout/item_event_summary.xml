@@ -37,5 +37,17 @@
             android:alpha="0.7"
             android:layout_marginTop="10dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_lottery_criteria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View Lottery Criteria"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            app:icon="@drawable/ic_clipboard"
+            app:iconPadding="8dp"
+            app:iconTint="#FFFFFF"
+            xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>
