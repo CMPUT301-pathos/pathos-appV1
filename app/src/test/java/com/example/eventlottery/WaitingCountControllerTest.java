@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Unit tests for US 01.05.04 - Know how many entrants are on the waiting list.
  *
- * @author Edwin
+ * @author Edwin David
  * @version 1.0
  */
 public class WaitingCountControllerTest {
