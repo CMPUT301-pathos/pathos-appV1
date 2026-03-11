@@ -83,7 +83,7 @@ import java.util.List;
  * Implements US 01.02.03 - View event history (whether selected or not).
  * Shows a list of events the user has interacted with and their outcomes.
  *
- * @author Hasrat Singh Chauhanm, Kenneth Joseph
+ * @author Hasrat Singh Chauhan, Kenneth Joseph
  * @version 2.o
  * @see EventHistoryRecord
  * @see EventHistoryAdapter

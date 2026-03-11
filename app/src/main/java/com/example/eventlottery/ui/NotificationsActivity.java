@@ -20,7 +20,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ *
+ @author : hasrat
+ */
 public class NotificationsActivity extends AppCompatActivity {
 
     private RecyclerView rv;
