@@ -62,6 +62,9 @@ public class EventSummary {
     public int getDrawSize() { return drawSize; }
 
     public boolean isRegistrationOpen() {
+        if (registrationStart <= 0 || registrationEnd <= 0) {
+            return false;
+        }
         long now = System.currentTimeMillis();
         return now >= registrationStart && now <= registrationEnd;
     }

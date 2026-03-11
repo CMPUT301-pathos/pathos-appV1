@@ -29,13 +29,15 @@ import com.example.eventlottery.ui.EventSummaryAdapter;
  * Responsibilities:
  * - Display all available events in a RecyclerView
  * - Provide filter dialog for category, location, date, and availability
+ * - Navigate to event details when an event card is tapped
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
+ * - US 01.06.02: Sign up for an event from the event details
  *
- * @author Fawaz Mansoor
- * @version 1.0
+ * @author Fawaz Mansoor, Edwin David
+ * @version 1.1
  */
 public class EventsFragment extends Fragment {
 
@@ -86,6 +88,18 @@ public class EventsFragment extends Fragment {
                     .setMessage(criteria)
                     .setPositiveButton("Got it", null)
                     .show();
+        });
+
+
+        // US 01.06.02: When event card is clicked, navigate to EventDetailFragment
+        adapter.setItemClickListener(event -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, EventDetailFragment.newInstance(
+                            event.getId(), event.getName(), event.getDescription()))
+                    .addToBackStack(null) //return to the events list.
+
+                    .commit();
         });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);

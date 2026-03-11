@@ -8,6 +8,7 @@ material = "1.13.0"
 activity = "1.12.3"
 constraintlayout = "2.2.1"
 navigationFragment = "2.9.7"
+espressoIdlingResource = "3.7.0"
 espressoContrib = "3.7.0"
 
 [libraries]
@@ -19,6 +20,7 @@ material = { group = "com.google.android.material", name = "material", version.r
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
+espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-idling-resource", version.ref = "espressoIdlingResource" }
 espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espressoContrib" }
 
 [plugins]

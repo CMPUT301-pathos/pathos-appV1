@@ -29,20 +29,45 @@ import java.util.Locale;
  * - US 01.05.05: Be informed about lottery selection criteria
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.2
+ * @version 1.3
  */
 public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapter.VH> {
 
     private final List<EventSummary> items = new ArrayList<>();
     private final List<EventSummary> allItems = new ArrayList<>();
     private OnCriteriaClickListener criteriaClickListener;
+    private OnItemClickListener itemClickListener;
+    private OnOrganizerActionListener organizerActionListener;
+    private boolean showOrganizerActions = false;
 
     public interface OnCriteriaClickListener {
         void onCriteriaClick(EventSummary event);
     }
+    public interface OnItemClickListener{
+        void onItemClick(EventSummary event);
+    }
+
+    public interface OnOrganizerActionListener {
+        void onSeeQrClick(EventSummary event);
+        void onEditClick(EventSummary event);
+        void onGeoDetailsClick(EventSummary event);
+    }
 
     public void setCriteriaClickListener(OnCriteriaClickListener listener) {
         this.criteriaClickListener = listener;
+    }
+    public void setItemClickListener(OnItemClickListener listener) {
+        this.itemClickListener = listener;
+    }
+
+
+    public void setOrganizerActionListener(OnOrganizerActionListener listener) {
+        this.organizerActionListener = listener;
+    }
+
+    public void setShowOrganizerActions(boolean showOrganizerActions) {
+        this.showOrganizerActions = showOrganizerActions;
+        notifyDataSetChanged();
     }
 
     public void setItems(List<EventSummary> list) {
@@ -97,9 +122,36 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         if (meta.isEmpty()) meta = "Event ID: " + e.getId();
         h.tvMeta.setText(meta);
 
+        int organizerVisibility = showOrganizerActions ? View.VISIBLE : View.GONE;
+        h.organizerActionsRow.setVisibility(organizerVisibility);
+
         h.btnLotteryCriteria.setOnClickListener(v -> {
             if (criteriaClickListener != null) {
                 criteriaClickListener.onCriteriaClick(e);
+            }
+        });
+
+        h.itemView.setOnClickListener(v -> {
+            if (itemClickListener != null) {
+                itemClickListener.onItemClick(e);
+            }
+        });
+
+        h.btnSeeQr.setOnClickListener(v -> {
+            if (organizerActionListener != null) {
+                organizerActionListener.onSeeQrClick(e);
+            }
+        });
+
+        h.btnEditEvent.setOnClickListener(v -> {
+            if (organizerActionListener != null) {
+                organizerActionListener.onEditClick(e);
+            }
+        });
+
+        h.btnGeoDetails.setOnClickListener(v -> {
+            if (organizerActionListener != null) {
+                organizerActionListener.onGeoDetailsClick(e);
             }
         });
     }
@@ -111,7 +163,8 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
 
     static class VH extends RecyclerView.ViewHolder {
         final TextView tvName, tvDesc, tvMeta;
-        final Button btnLotteryCriteria;
+        final Button btnLotteryCriteria, btnSeeQr, btnEditEvent, btnGeoDetails;
+        final View organizerActionsRow;
 
         VH(@NonNull View itemView) {
             super(itemView);
@@ -119,6 +172,10 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
             tvDesc = itemView.findViewById(R.id.tv_event_desc);
             tvMeta = itemView.findViewById(R.id.tv_event_meta);
             btnLotteryCriteria = itemView.findViewById(R.id.btn_lottery_criteria);
+            btnSeeQr = itemView.findViewById(R.id.btn_see_qr);
+            btnEditEvent = itemView.findViewById(R.id.btn_edit_event);
+            btnGeoDetails = itemView.findViewById(R.id.btn_geo_details);
+            organizerActionsRow = itemView.findViewById(R.id.layout_organizer_actions);
         }
     }
 }

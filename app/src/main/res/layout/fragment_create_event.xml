@@ -52,6 +52,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Registration Start (YYYY-MM-DD)"
+            android:focusable="false"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:inputType="none"
+            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
             android:layout_marginBottom="12dp" />
 
         <EditText
@@ -59,7 +64,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Registration End (YYYY-MM-DD)"
+            android:focusable="false"
+            android:clickable="true"
+            android:cursorVisible="false"
+            android:inputType="none"
+            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
             android:layout_marginBottom="18dp" />
+
+        <ImageView
+            android:id="@+id/iv_event_poster_preview"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="12dp"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:contentDescription="Event poster preview" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_select_event_poster"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="ADD EVENT POSTER" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_publish_event"
