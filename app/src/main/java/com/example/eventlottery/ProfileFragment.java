@@ -53,6 +53,8 @@ public class ProfileFragment extends Fragment {
     private Button saveButton, logoutButton, deleteButton, eventHistoryButton;
     private Switch optOutSwitch;
 
+    boolean notificationsEnabled;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +86,7 @@ public class ProfileFragment extends Fragment {
         // Opt-out placeholder
         optOutSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Toast.makeText(getContext(),
-                    isChecked ? "Opt-out enabled (not wired yet)" : "Opt-out disabled (not wired yet)",
+                    isChecked ? "Opt-out enabled" : "Opt-out disabled",
                     Toast.LENGTH_SHORT).show();
         });
 
@@ -115,6 +117,8 @@ public class ProfileFragment extends Fragment {
                     editName.setText(profile.getName());
                     editEmail.setText(profile.getEmail());
                     editPhone.setText(profile.getPhoneNumber());
+                    // switch ON = opted out
+                    optOutSwitch.setChecked(!profile.getNotifications());
                 }
             }
 
@@ -142,7 +146,11 @@ public class ProfileFragment extends Fragment {
         saveButton.setEnabled(false);
         saveButton.setText("SAVING...");
 
-        profileController.updateProfile(deviceId, name, email, phone, new ProfileRepository.ProfileCallback() {
+        // true = receive notifications
+        // false = opted out
+        boolean notificationsEnabled = !optOutSwitch.isChecked();
+
+        profileController.updateProfile(deviceId, name, email, phone, notificationsEnabled, new ProfileRepository.ProfileCallback() {
             @Override
             public void onSuccess(UserProfile profile) {
                 saveButton.setEnabled(true);
