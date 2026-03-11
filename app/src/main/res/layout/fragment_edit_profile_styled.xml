@@ -144,6 +144,15 @@
                 android:textSize="16sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Notifications-->
+        <Switch
+            android:id="@+id/switch_opt_out"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opt out of organizer/admin notifications"
+            android:textColor="@color/forestyled_text_primary"
+            android:layout_marginBottom="24dp"/>
+
         <!-- Buttons -->
         <LinearLayout
             android:layout_width="match_parent"

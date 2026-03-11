@@ -2,28 +2,47 @@ package com.example.eventlottery.util;
 
 import com.example.eventlottery.controller.NotificationController;
 import com.example.eventlottery.data.NotificationLogRepository;
+<<<<<<< HEAD
 import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
+=======
+import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.data.firebase.FirestoreNotificationLogRepository;
+import com.example.eventlottery.firebase.FirestoreProfileRepository;
+>>>>>>> recovery
 import com.example.eventlottery.service.PathosNotifyService;
 
 public class ServiceLocator {
 
     private static NotificationLogRepository notificationRepo;
     private static PathosNotifyService notifyService;
+    private static ProfileRepository profileRepository;
     private static NotificationController notificationController;
 
     public static NotificationLogRepository notificationRepo() {
-        if (notificationRepo == null) notificationRepo = new FirestoreNotificationLogRepository();
+        if (notificationRepo == null)
+            notificationRepo = new FirestoreNotificationLogRepository();
         return notificationRepo;
     }
 
     public static PathosNotifyService notifyService() {
-        if (notifyService == null) notifyService = new PathosNotifyService(notificationRepo());
+        if (notifyService == null)
+            notifyService = new PathosNotifyService(notificationRepo());
         return notifyService;
+    }
+
+    public static ProfileRepository profileRepository() {
+        if (profileRepository == null)
+            profileRepository = new FirestoreProfileRepository();
+        return profileRepository;
     }
 
     public static NotificationController notificationController() {
         if (notificationController == null) {
-            notificationController = new NotificationController(notifyService(), notificationRepo());
+            notificationController = new NotificationController(
+                    notifyService(),
+                    notificationRepo(),
+                    profileRepository()
+            );
         }
         return notificationController;
     }
