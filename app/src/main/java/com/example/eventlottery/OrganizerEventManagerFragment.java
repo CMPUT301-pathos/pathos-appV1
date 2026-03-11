@@ -31,15 +31,17 @@ import java.util.List;
  * - Run initial lottery draw
  * - Draw replacement when entrant declines/cancels
  * - View list of all chosen (invited) entrants
+ * - View list of all entrants on the waiting list
  *
  * User stories supported:
  * - US 01.05.01: Another chance to be chosen when someone declines
+ * - US 02.02.01: View the list of entrants who joined the event waiting list
  * - US 02.05.02: Sample a specified number of attendees
  * - US 02.05.03: Draw a replacement applicant
  * - US 02.06.01: View a list of all chosen entrants who are invited to apply
  *
  * @author Dmitriy Limanets, Edwin David
- * @version 1.1
+ * @version 1.2
  */
 public class OrganizerEventManagerFragment extends Fragment {
 
@@ -55,7 +57,7 @@ public class OrganizerEventManagerFragment extends Fragment {
     private FirestoreWaitListRepository waitListRepo;
     private TextView tvEventName, tvDrawStatus;
     private EditText etDrawCount;
-    private Button btnRunDraw, btnDrawReplacement, btnViewInvited;
+    private Button btnRunDraw, btnDrawReplacement, btnViewInvited, btnViewWaiting;
 
     public static OrganizerEventManagerFragment newInstance(String eventId, String eventName) {
         OrganizerEventManagerFragment fragment = new OrganizerEventManagerFragment();
@@ -96,6 +98,7 @@ public class OrganizerEventManagerFragment extends Fragment {
         btnRunDraw = root.findViewById(R.id.btn_run_draw);
         btnDrawReplacement = root.findViewById(R.id.btn_draw_replacement);
         btnViewInvited = root.findViewById(R.id.btn_view_invited);
+        btnViewWaiting = root.findViewById(R.id.btn_view_waiting);
 
         tvEventName.setText(eventName);
 
@@ -104,6 +107,9 @@ public class OrganizerEventManagerFragment extends Fragment {
 
         // US 02.06.01: when clicked displays entrants who are invited for the event
         btnViewInvited.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.INVITED, "Invited Entrants"));
+
+        // US 02.02.01: when clicked displays all entrants who joined the waiting list
+        btnViewWaiting.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.WAITING, "Waiting List"));
 
         return root;
     }
