@@ -57,6 +57,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     //implementation(libs.navigation.fragment)
     implementation(libs.espresso.contrib) {
         exclude(group = "com.google.protobuf", module = "protobuf-lite")

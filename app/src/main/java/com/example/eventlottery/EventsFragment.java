@@ -51,6 +51,8 @@ public class EventsFragment extends Fragment {
     private String selectedLocation = "";
     private boolean openOnly = false;
     private long selectedAfterDateMs = 0;
+    private com.example.eventlottery.service.BeaconQrService beaconQrService;
+    private androidx.activity.result.ActivityResultLauncher<com.journeyapps.barcodescanner.ScanOptions> scanLauncher;
 
     private static final String[] CATEGORIES = {
             "All", "Sports", "Music", "Arts", "Education", "Community"
@@ -69,9 +71,49 @@ public class EventsFragment extends Fragment {
         Button btnQrScan = root.findViewById(R.id.btnQrScan);
         btnFilter = root.findViewById(R.id.btnFilter);
 
-        btnQrScan.setOnClickListener(v ->
-                Toast.makeText(requireContext(), "QR Scan not wired yet", Toast.LENGTH_SHORT).show()
-        );
+        btnQrScan.setOnClickListener(v -> {
+            com.journeyapps.barcodescanner.ScanContract scanContract =
+                    new com.journeyapps.barcodescanner.ScanContract();
+            scanLauncher.launch(new com.journeyapps.barcodescanner.ScanOptions()
+                    .setPrompt("Scan an event QR code")
+                    .setBeepEnabled(true)
+                    .setOrientationLocked(true));
+        });
+
+        // TEMPORARY TEST BUTTON - remove before submitting
+//        Button btnTestQr = root.findViewById(R.id.btnQrScan);
+//        // Simulate scanning the QR code directly
+//        Button btnDirectTest = new Button(requireContext());
+//        btnDirectTest.setText("Test QR (Debug)");
+//        btnDirectTest.setOnClickListener(v -> {
+//            String testPayload = "eventId:n0luv6NL4JoAuL0J4ZkE";
+//            beaconQrService.resolveQrScan(testPayload,
+//                    new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {
+//                        @Override
+//                        public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
+//                            EventDetailFragment fragment = EventDetailFragment.newInstance(
+//                                    event.getId(),
+//                                    event.getName(),
+//                                    event.getDescription()
+//                            );
+//                            getParentFragmentManager().beginTransaction()
+//                                    .replace(R.id.fragment_container, fragment)
+//                                    .addToBackStack(null)
+//                                    .commit();
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Exception e) {
+//                            Toast.makeText(requireContext(),
+//                                    "Event not found: " + e.getMessage(),
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//        });
+//
+//        // Add button to root layout temporarily
+//        ((android.widget.LinearLayout) root.findViewById(R.id.eventsRoot))
+//                .addView(btnDirectTest, 0);
 
         btnFilter.setOnClickListener(v -> showFilterDialog());
 
@@ -103,6 +145,37 @@ public class EventsFragment extends Fragment {
         });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
+
+        beaconQrService = new com.example.eventlottery.service.BeaconQrService(new FirestoreEventRepository());
+
+        scanLauncher = registerForActivityResult(new com.journeyapps.barcodescanner.ScanContract(), result -> {
+            if (result.getContents() != null) {
+                String payload = result.getContents();
+                beaconQrService.resolveQrScan(payload, new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {                    @Override
+                    public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
+                        // Navigate to event details
+                        EventDetailFragment fragment = EventDetailFragment.newInstance(
+                                event.getId(),
+                                event.getName(),
+                                event.getDescription()
+                        );
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, fragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(requireContext(),
+                                "Event not found: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(requireContext(), "Scan cancelled", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         loadEvents();
 
