@@ -4,6 +4,8 @@ import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
 
+import java.util.List;
+
 /**
  * Controller for managing entrant participation in events.
  *
@@ -15,9 +17,11 @@ import com.example.eventlottery.domain.WaitStatus;
  * - US 01.01.01: Join the waiting list for a specific event
  * - US 01.01.02: Leave the waiting list for a specific event
  * - US 01.05.02: Accept the invitation to register for an event
+ * - US 01.05.04: Count of total entrants on the waiting list
  * - US 01.05.03: Decline an invitation when chosen
  *
  * @author Fawaz Mansoor
+ * @author Edwin David on US 01.05.04
  * @version 1.0
  */
 public class WaitingListController {
@@ -49,5 +53,25 @@ public class WaitingListController {
 
     public void leaveWaitingList(String eventId, String deviceId) {
         waitListRepository.removeFromWaitList(eventId, deviceId);
+    }
+
+    public interface CountCallback {
+        void onCount(int count);
+        void onFailure(Exception e);
+    }
+
+    public void getWaitingCount(String eventId, CountCallback callback) {
+        waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.WAITING,
+                new WaitListRepository.WaitListCallBack() {
+                    @Override
+                    public void onSuccess(List<WaitListRecord> records) {
+                        callback.onCount(records.size());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        callback.onFailure(e);
+                    }
+                });
     }
 }
