@@ -1,4 +1,4 @@
- #Pathos App
+ # Pathos App
 
 Welcome to [Pathos App], a lottery-based event management Android application!
 
