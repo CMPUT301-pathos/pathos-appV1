@@ -74,4 +74,21 @@ public class WaitingListController {
                     }
                 });
     }
+
+    //New ones below using callback
+    public void checkIfJoined(String eventId, String deviceId,
+                              WaitListRepository.SingleRecordCallback callback) {
+        waitListRepository.getRecordAsync(eventId, deviceId, callback);
+    }
+
+    public void joinWaitingList(String eventId, String deviceId,
+                                WaitListRepository.OperationCallback callback) {
+        WaitListRecord record = new WaitListRecord(eventId, deviceId);
+        waitListRepository.addToWaitList(record, callback);
+    }
+
+    public void leaveWaitingList(String eventId, String deviceId,
+                                 WaitListRepository.OperationCallback callback) {
+        waitListRepository.removeFromWaitList(eventId, deviceId, callback);
+    }
 }

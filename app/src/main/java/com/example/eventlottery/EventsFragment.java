@@ -90,6 +90,7 @@ public class EventsFragment extends Fragment {
                     .show();
         });
 
+
         // US 01.06.02: When event card is clicked, navigate to EventDetailFragment
         adapter.setItemClickListener(event -> {
             requireActivity().getSupportFragmentManager()
@@ -97,6 +98,7 @@ public class EventsFragment extends Fragment {
                     .replace(R.id.fragment_container, EventDetailFragment.newInstance(
                             event.getId(), event.getName(), event.getDescription()))
                     .addToBackStack(null) //return to the events list.
+
                     .commit();
         });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
