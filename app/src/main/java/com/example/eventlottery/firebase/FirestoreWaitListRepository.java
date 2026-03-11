@@ -99,4 +99,46 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    @Override
+    public void getRecordAsync(String eventId, String deviceId, SingleRecordCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId + "_" + deviceId)
+                .get()
+                .addOnSuccessListener(doc ->{
+                    if(doc.exists()){
+                        WaitListRecord record = new WaitListRecord(
+                                doc.getString("eventId"),
+                                doc.getString("deviceId")
+                        );
+                        record.setStatus(WaitStatus.valueOf(doc.getString("status")));
+                        callback.onSuccess(record);
+                    }else{
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+
+    }
+
+    @Override
+    public void addToWaitList(WaitListRecord record, OperationCallback callback) {
+        db.collection(COLLECTION)
+                .document(record.getEventId() + "_" + record.getDeviceId())
+                .set(record)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    @Override
+    public void removeFromWaitList(String eventId, String deviceId, OperationCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId + "_" + deviceId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
 }

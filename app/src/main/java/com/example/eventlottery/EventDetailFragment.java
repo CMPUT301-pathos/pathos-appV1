@@ -15,6 +15,9 @@ import androidx.fragment.app.Fragment;
 import com.example.eventlottery.controller.WaitingListController;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.data.WaitListRepository;
+import com.example.eventlottery.domain.WaitListRecord;
+import com.example.eventlottery.domain.WaitStatus;
 
 /**
  * Fragment displaying the details of a specific event for entrants.
@@ -81,6 +84,79 @@ public class EventDetailFragment extends Fragment {
         textName.setText(eventName);
         textDescription.setText(description);
 
+        refreshWaitCount(textWaitCount);
+
+        // Check current status and set button accordingly
+        waitingListController.checkIfJoined(eventId, deviceId,
+                new WaitListRepository.SingleRecordCallback() {
+                    @Override
+                    public void onSuccess(WaitListRecord record) {
+                        if (record != null && record.getStatus() == WaitStatus.WAITING) {
+                            setLeaveMode(buttonJoin, textWaitCount);
+                        } else if (record == null) {
+                            setJoinMode(buttonJoin, textWaitCount);
+                        } else {
+                            buttonJoin.setEnabled(false);
+                            buttonJoin.setText(record.getStatus().name());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        setJoinMode(buttonJoin, textWaitCount);
+                    }
+                });
+
+        return view;
+    }
+
+    private void setJoinMode(Button button, TextView waitCount) {
+        button.setText("Join Waiting List");
+        button.setEnabled(true);
+        button.setOnClickListener(v -> {
+            button.setEnabled(false);
+            waitingListController.joinWaitingList(eventId, deviceId,
+                    new WaitListRepository.OperationCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(getContext(), "You've joined the waiting list!", Toast.LENGTH_SHORT).show();
+                            setLeaveMode(button, waitCount);
+                            refreshWaitCount(waitCount);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(), "Failed to join. Try again.", Toast.LENGTH_SHORT).show();
+                            button.setEnabled(true);
+                        }
+                    });
+        });
+    }
+
+    private void setLeaveMode(Button button, TextView waitCount) {
+        button.setText("Leave Waiting List");
+        button.setEnabled(true);
+        button.setOnClickListener(v -> {
+            button.setEnabled(false);
+            waitingListController.leaveWaitingList(eventId, deviceId,
+                    new WaitListRepository.OperationCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(getContext(), "You've left the waiting list.", Toast.LENGTH_SHORT).show();
+                            setJoinMode(button, waitCount);
+                            refreshWaitCount(waitCount);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(), "Failed to leave. Try again.", Toast.LENGTH_SHORT).show();
+                            button.setEnabled(true);
+                        }
+                    });
+        });
+    }
+
+    private void refreshWaitCount(TextView textWaitCount) {
         waitingListController.getWaitingCount(eventId, new WaitingListController.CountCallback() {
             @Override
             public void onCount(int count) {
@@ -92,14 +168,5 @@ public class EventDetailFragment extends Fragment {
                 textWaitCount.setText("Waitlist count unavailable");
             }
         });
-
-        buttonJoin.setOnClickListener(v -> {
-            waitingListController.joinWaitingList(eventId, deviceId);
-            Toast.makeText(getContext(), "You have joined the waiting list!", Toast.LENGTH_SHORT).show();
-            buttonJoin.setEnabled(false);
-            buttonJoin.setText("Joined");
-        });
-
-        return view;
     }
 }

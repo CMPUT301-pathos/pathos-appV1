@@ -87,6 +87,14 @@ public class EventsFragment extends Fragment {
                     .setPositiveButton("Got it", null)
                     .show();
         });
+        adapter.setItemClickListener(event -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container,
+                            EventDetailFragment.newInstance(event.getId(), event.getName(), event.getDescription()))
+                    .addToBackStack(null)
+                    .commit();
+        });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 
