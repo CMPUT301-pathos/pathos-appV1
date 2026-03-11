@@ -99,7 +99,11 @@ public class OrganizerDashboardFragment extends Fragment {
 
             @Override
             public void onEditClick(com.example.eventlottery.domain.EventSummary event) {
-                Snackbar.make(root, "Edit coming soon", Snackbar.LENGTH_SHORT).show();
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, EditEventFragment.newInstance(event))
+                        .addToBackStack(null)
+                        .commit();
             }
 
             @Override
