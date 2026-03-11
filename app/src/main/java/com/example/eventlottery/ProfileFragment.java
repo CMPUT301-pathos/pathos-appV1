@@ -77,8 +77,6 @@ public class ProfileFragment extends Fragment {
         // Save changes
         saveButton.setOnClickListener(v -> saveProfile());
 
-<<<<<<< HEAD
-=======
         // Opt-out placeholder
         optOutSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             Toast.makeText(getContext(),
@@ -86,7 +84,6 @@ public class ProfileFragment extends Fragment {
                     Toast.LENGTH_SHORT).show();
         });
 
->>>>>>> recovery
         // Event history
         eventHistoryButton.setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
@@ -114,16 +111,13 @@ public class ProfileFragment extends Fragment {
                     editName.setText(profile.getName());
                     editEmail.setText(profile.getEmail());
                     editPhone.setText(profile.getPhoneNumber());
-<<<<<<< HEAD
 
                     // Set switch state BEFORE attaching listener to avoid triggering save
                     optOutSwitch.setOnCheckedChangeListener(null);
                     optOutSwitch.setChecked(!profile.isNotificationsEnabled());
                     optOutSwitch.jumpDrawablesToCurrentState();
-=======
                     // switch ON = opted out
-                    optOutSwitch.setChecked(!profile.getNotifications());
->>>>>>> recovery
+                    optOutSwitch.setChecked(!profile.isNotificationsEnabled());
                 }
 
                 // Attach listener AFTER setting initial state

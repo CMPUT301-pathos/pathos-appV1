@@ -2,13 +2,9 @@ package com.example.eventlottery.util;
 
 import com.example.eventlottery.controller.NotificationController;
 import com.example.eventlottery.data.NotificationLogRepository;
-<<<<<<< HEAD
 import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
-=======
 import com.example.eventlottery.data.ProfileRepository;
-import com.example.eventlottery.data.firebase.FirestoreNotificationLogRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
->>>>>>> recovery
 import com.example.eventlottery.service.PathosNotifyService;
 
 public class ServiceLocator {

@@ -64,14 +64,16 @@ public class ProfileController {
      * Updates an existing user profile or creates a new one.
      * This method supports US 01.02.02 - Update profile information.
      * in conjunction with the Editprofile Fragment
-     * @param deviceId the unique device identifier
-     * @param name the updated name
-     * @param email the updated email
-     * @param phone the updated phone number
-     * @param callback the callback to handle success or failure
+     *
+     * @param deviceId             the unique device identifier
+     * @param name                 the updated name
+     * @param email                the updated email
+     * @param phone                the updated phone number
+     * @param notificationsEnabled
+     * @param callback             the callback to handle success or failure
      */
     public void updateProfile(String deviceId, String name, String email, String phone,
-                              ProfileRepository.ProfileCallback callback) {
+                              boolean notificationsEnabled, ProfileRepository.ProfileCallback callback) {
         // First try to get existing profile
         getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override

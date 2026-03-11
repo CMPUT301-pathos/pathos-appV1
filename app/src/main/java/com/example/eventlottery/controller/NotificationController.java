@@ -1,6 +1,7 @@
 package com.example.eventlottery.controller;
 
 import com.example.eventlottery.data.NotificationLogRepository;
+import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.NotificationRecord;
 import com.example.eventlottery.service.PathosNotifyService;
 import com.google.android.gms.tasks.Task;
@@ -12,7 +13,7 @@ public class NotificationController {
     private final PathosNotifyService notifyService;
     private final NotificationLogRepository notificationRepo;
 
-    public NotificationController(PathosNotifyService notifyService, NotificationLogRepository notificationRepo) {
+    public NotificationController(PathosNotifyService notifyService, NotificationLogRepository notificationRepo, ProfileRepository profileRepository) {
         this.notifyService = notifyService;
         this.notificationRepo = notificationRepo;
     }
