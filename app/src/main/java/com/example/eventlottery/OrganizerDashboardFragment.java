@@ -131,6 +131,15 @@ public class OrganizerDashboardFragment extends Fragment {
             }
         });
 
+        adapter.setItemClickListener(event -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container,
+                            OrganizerEventDetailFragment.newInstance(event))
+                    .addToBackStack(null)
+                    .commit();
+        });
+
         loadMyEvents();
 
         return root;

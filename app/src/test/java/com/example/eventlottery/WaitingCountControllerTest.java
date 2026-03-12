@@ -41,4 +41,8 @@ class FakeWaitListRepository implements WaitListRepository {
     @Override public void getRecordAsync(String eId, String dId, SingleRecordCallback callback) { callback.onSuccess(null); }
     @Override public List<WaitListRecord> getRecordsByEvent(String eId) { return new ArrayList<>(); }
     @Override public List<WaitListRecord> getRecordsByStatus(String eId, WaitStatus s) { return new ArrayList<>(); }
+    @Override
+    public void getRecordsByEventAsync(String eventId, WaitListCallBack callback) {
+        callback.onSuccess(records);
+    }
 }
