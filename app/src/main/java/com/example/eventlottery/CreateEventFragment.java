@@ -24,6 +24,7 @@ import androidx.test.espresso.idling.CountingIdlingResource;
 
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
@@ -199,13 +200,21 @@ public class CreateEventFragment extends Fragment {
      * corresponding text fields.
      */
     private void showDateRangePicker() {
+
+        CalendarConstraints constraints =
+                new CalendarConstraints.Builder()
+                        .setStart(System.currentTimeMillis())
+                        .build();
+
         MaterialDatePicker<Pair<Long, Long>> picker =
                 MaterialDatePicker.Builder.dateRangePicker()
                         .setTitleText("Select registration dates")
+                        .setCalendarConstraints(constraints)
                         .build();
 
         picker.addOnPositiveButtonClickListener(selection -> {
             if (selection == null || selection.first == null || selection.second == null) return;
+
             etStart.setText(formatDate(selection.first));
             etEnd.setText(formatDate(selection.second));
         });
@@ -246,7 +255,23 @@ public class CreateEventFragment extends Fragment {
             isPublishing = false;
             return;
         }
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
+            Date startDate = sdf.parse(start);
+            Date today = new Date();
+
+            if (startDate != null && startDate.before(today)) {
+                etStart.setError("Start date cannot be in the past");
+                isPublishing = false;
+                return;
+            }
+
+        } catch (Exception e) {
+            etStart.setError("Invalid date");
+            isPublishing = false;
+            return;
+        }
         Integer capacity = null;
         if (!TextUtils.isEmpty(capStr)) {
             try {
