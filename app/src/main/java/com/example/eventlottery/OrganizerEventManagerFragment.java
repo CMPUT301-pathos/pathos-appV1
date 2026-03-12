@@ -1,5 +1,6 @@
 package com.example.eventlottery;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.OrganizeLotteryController;
 import com.example.eventlottery.domain.WaitListRecord;
+import com.example.eventlottery.domain.WaitStatus;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
 import com.example.eventlottery.service.PathosNotifyService;
@@ -28,14 +30,18 @@ import java.util.List;
  * Responsibilities:
  * - Run initial lottery draw
  * - Draw replacement when entrant declines/cancels
+ * - View list of all chosen (invited) entrants
+ * - View list of all entrants on the waiting list
  *
  * User stories supported:
  * - US 01.05.01: Another chance to be chosen when someone declines
+ * - US 02.02.01: View the list of entrants who joined the event waiting list
  * - US 02.05.02: Sample a specified number of attendees
  * - US 02.05.03: Draw a replacement applicant
+ * - US 02.06.01: View a list of all chosen entrants who are invited to apply
  *
- * @author Dmitriy Limanets
- * @version 1.0
+ * @author Dmitriy Limanets, Edwin David
+ * @version 1.2
  */
 public class OrganizerEventManagerFragment extends Fragment {
 
@@ -46,9 +52,12 @@ public class OrganizerEventManagerFragment extends Fragment {
     private String eventName;
 
     private OrganizeLotteryController lotteryController;
+
+    //let other methods access waitlist data
+    private FirestoreWaitListRepository waitListRepo;
     private TextView tvEventName, tvDrawStatus;
     private EditText etDrawCount;
-    private Button btnRunDraw, btnDrawReplacement;
+    private Button btnRunDraw, btnDrawReplacement, btnViewInvited, btnViewWaiting;
 
     /**
      * Factory method to create a new instance of this fragment for a specific event.
@@ -83,7 +92,9 @@ public class OrganizerEventManagerFragment extends Fragment {
             eventName = getArguments().getString(ARG_EVENT_NAME);
         }
 
-        FirestoreWaitListRepository waitListRepo = new FirestoreWaitListRepository();
+        //reused in showEntrantsByStatus()
+        waitListRepo = new FirestoreWaitListRepository();
+
         PathosRaffleService raffleService = new PathosRaffleService(waitListRepo);
         PathosNotifyService notifyService = new PathosNotifyService(new FirestoreNotificationLogRepository());
         lotteryController = new OrganizeLotteryController(raffleService, notifyService);
@@ -112,11 +123,19 @@ public class OrganizerEventManagerFragment extends Fragment {
         etDrawCount = root.findViewById(R.id.et_draw_count);
         btnRunDraw = root.findViewById(R.id.btn_run_draw);
         btnDrawReplacement = root.findViewById(R.id.btn_draw_replacement);
+        btnViewInvited = root.findViewById(R.id.btn_view_invited);
+        btnViewWaiting = root.findViewById(R.id.btn_view_waiting);
 
         tvEventName.setText(eventName);
 
         btnRunDraw.setOnClickListener(v -> runInitialDraw());
         btnDrawReplacement.setOnClickListener(v -> runReplacementDraw());
+
+        // US 02.06.01: when clicked displays entrants who are invited for the event
+        btnViewInvited.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.INVITED, "Invited Entrants"));
+
+        // US 02.02.01: when clicked displays all entrants who joined the waiting list
+        btnViewWaiting.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.WAITING, "Waiting List"));
 
         return root;
     }

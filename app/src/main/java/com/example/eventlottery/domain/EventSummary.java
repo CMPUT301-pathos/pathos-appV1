@@ -29,11 +29,12 @@ public class EventSummary {
     private final long registrationEnd;
     private final int capacity;
     private final int drawSize;
+    private final String posterUrl;
 
     public EventSummary(String id, String name, String description, String location,
                         long createdAt, String organizerDeviceId, String category,
                         long eventDate, long registrationStart, long registrationEnd,
-                        int capacity, int drawSize) {
+                        int capacity, int drawSize, String posterUrl) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -46,6 +47,7 @@ public class EventSummary {
         this.registrationEnd = registrationEnd;
         this.capacity = capacity;
         this.drawSize = drawSize;
+        this.posterUrl = posterUrl;
     }
 
     public String getId() { return id; }
@@ -60,6 +62,9 @@ public class EventSummary {
     public long getRegistrationEnd() { return registrationEnd; }
     public int getCapacity() { return capacity; }
     public int getDrawSize() { return drawSize; }
+    public String getPosterUrl() {
+        return posterUrl;
+    }
 
 
     /**
@@ -98,6 +103,7 @@ public class EventSummary {
         String loc = safe(doc.getString("location"));
         String organizer = safe(doc.getString("organizerDeviceId"));
         String category = safe(doc.getString("category"));
+        String posterUrl = doc.getString("posterUrl");
 
         Long created = safeGetLong(doc, "createdAt");
         Long evDate = safeGetLong(doc, "eventDate");
@@ -114,7 +120,8 @@ public class EventSummary {
                 regStart == null ? 0L : regStart,
                 regEnd == null ? 0L : regEnd,
                 cap == null ? 0 : cap.intValue(),
-                draw == null ? 0 : draw.intValue());
+                draw == null ? 0 : draw.intValue(),
+                posterUrl);
     }
 
     /**

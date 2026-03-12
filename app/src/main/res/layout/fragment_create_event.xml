@@ -1,97 +1,238 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:padding="20dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient_header">
 
-    <LinearLayout
+    <!-- Header -->
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:text="EVENT CREATION"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:letterSpacing="0.05"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="24dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="EVENT CREATION"
-            android:textStyle="bold"
-            android:textSize="24sp"
-            android:layout_marginBottom="16dp" />
+    <!-- Scrollable form -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false">
 
-        <EditText
-            android:id="@+id/et_event_name"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name of Event"
-            android:layout_marginBottom="12dp" />
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/et_event_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Event Description/Link"
-            android:layout_marginBottom="12dp" />
+            <!-- Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name of Event"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
 
-        <EditText
-            android:id="@+id/et_event_location"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Location"
-            android:layout_marginBottom="12dp" />
+            <EditText
+                android:id="@+id/et_event_name"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Name"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="16dp" />
 
-        <EditText
-            android:id="@+id/et_event_capacity"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Capacity (#) (optional)"
-            android:inputType="number"
-            android:layout_marginBottom="12dp" />
+            <!-- Description -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Description/Link"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
 
-        <EditText
-            android:id="@+id/et_event_start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Registration Start (YYYY-MM-DD)"
-            android:focusable="false"
-            android:clickable="true"
-            android:cursorVisible="false"
-            android:inputType="none"
-            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
-            android:layout_marginBottom="12dp" />
+            <EditText
+                android:id="@+id/et_event_description"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Type..."
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="16dp" />
 
-        <EditText
-            android:id="@+id/et_event_end"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Registration End (YYYY-MM-DD)"
-            android:focusable="false"
-            android:clickable="true"
-            android:cursorVisible="false"
-            android:inputType="none"
-            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
-            android:layout_marginBottom="18dp" />
+            <!-- Location -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Location"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
 
-        <ImageView
-            android:id="@+id/iv_event_poster_preview"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginTop="12dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:contentDescription="Event poster preview" />
+            <EditText
+                android:id="@+id/et_event_location"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="e.g. Edmonton"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="16dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_select_event_poster"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="ADD EVENT POSTER" />
+            <!-- Capacity -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Limit of Entrant Wait-list (optional)"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_publish_event"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="PUBLISH (GENERATE QR)" />
+            <EditText
+                android:id="@+id/et_event_capacity"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="##"
+                android:inputType="number"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="16dp" />
 
-    </LinearLayout>
-</ScrollView>
+            <!-- Category -->
+            <TextView
+                android:id="@+id/tv_selected_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Category: All"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_pick_category"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="PICK CATEGORY"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Registration Period -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Registration Period"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/et_event_start"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Start (YYYY-MM-DD)"
+                android:focusable="false"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:inputType="none"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/et_event_end"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="End (YYYY-MM-DD)"
+                android:focusable="false"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:inputType="none"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Poster -->
+            <ImageView
+                android:id="@+id/iv_event_poster_preview"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="Event poster preview" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_select_event_poster"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="ADD EVENT POSTER"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Publish -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_publish_event"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="GENERATE QR CODE &amp; POST"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="#1A1A2E"
+                app:cornerRadius="16dp"
+                android:layout_marginBottom="8dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

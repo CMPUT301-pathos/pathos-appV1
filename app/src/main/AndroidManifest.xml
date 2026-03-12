@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Needed for Firestore / network calls -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -34,13 +35,33 @@
             android:exported="false" />
 
         <!-- Optional placeholders if you already created them -->
-        <activity
-            android:name=".OrganizerMainActivity"
-            android:exported="false" />
-
+        <!-- Admin Main Activity - FOR TESTING -->
         <activity
             android:name=".AdminMainActivity"
-            android:exported="false" />
+            android:exported="true">
+            <!-- TEMPORARILY add this intent-filter to run admin directly -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".admin.AdminBrowseEventsActivity"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".admin.AdminBrowseUsersActivity"
+            android:theme="@style/Theme.MyApplication" />
+
+        <activity
+            android:name=".admin.AdminNotificationLogs"
+            android:theme="@style/Theme.MyApplication" />
+        <activity android:name=".admin.AdminBrowseImages" />
+
+        <!-- Your other activities -->
+        <!--activity android:name=".SignupActivity" /-->
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

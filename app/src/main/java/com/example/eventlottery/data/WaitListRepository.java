@@ -30,6 +30,7 @@ public interface WaitListRepository {
     void addToWaitList(WaitListRecord record);
     void removeFromWaitList(String eventId, String deviceId);
     void updateStatus(String eventId, String deviceId, WaitStatus newStatus);
+    void getRecordsByEventAsync(String eventId, WaitListCallBack callback);
     WaitListRecord getRecord(String eventId, String deviceId);
     List<WaitListRecord> getRecordsByEvent(String eventId);
     List<WaitListRecord> getRecordsByStatus(String eventId, WaitStatus status);
@@ -52,4 +53,20 @@ public interface WaitListRepository {
      * @param callback returns the matching records or an error
      */
     void getRecordsByStatusAsync(String eventId, WaitStatus status, WaitListCallBack callback);
+
+    void getRecordAsync(String eventId, String deviceId, SingleRecordCallback callback);
+
+    interface SingleRecordCallback{
+        void onSuccess(WaitListRecord record); //null if not found
+        void onFailure(Exception e);
+    }
+
+    interface OperationCallback{
+        void onSuccess();
+        void onFailure(Exception e);
+    }
+
+    void addToWaitList(WaitListRecord record, OperationCallback callback);
+    void removeFromWaitList(String eventId, String deviceId, OperationCallback callback);
+
 }

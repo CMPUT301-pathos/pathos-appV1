@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -42,7 +43,7 @@ import java.util.Map;
  * US 02.01.01: Organizer can create a new event and generate a promotional QR code.
  *
  * MVP behavior:
- * - Collect event fields
+ * - Collect event fields including category
  * - Choose registration dates with a Material date range picker
  * - Optionally upload an event poster to Firebase Storage
  * - Save to Firestore "events" (auto-id)
@@ -53,31 +54,31 @@ import java.util.Map;
  * - Guards against fragment/activity lifecycle issues
  * - Uses commitAllowingStateLoss only when FragmentManager state is saved
  *
- * @author Kenneth Joseph
- * @version 1.2
+ * @author Kenneth Joseph, Fawaz Mansoor
+ * @version 1.3
  */
 public class CreateEventFragment extends Fragment {
 
     private EditText etName, etDesc, etLocation, etStart, etEnd, etCapacity;
     private ImageView ivPosterPreview;
     private MaterialButton btnSelectPoster, btnPublish;
+    private TextView tvSelectedCategory;
 
     private Uri selectedPosterUri;
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
 
     private boolean isPublishing = false;
+    private String selectedCategory = "All";
+    private static final String[] CATEGORIES = {
+            "All", "Sports", "Music", "Arts", "Education", "Community"
+    };
 
     /**
      * Espresso idling resource used by UI tests to wait for async publish work (Firestore/Storage).
-     *
-     * NOTE: Safe to keep in production code; it is lightweight and only used by tests.
      */
     private static final CountingIdlingResource PUBLISH_IDLING =
             new CountingIdlingResource("CreateEventPublish");
 
-    /**
-     * Returns the idling resource so instrumented tests can synchronize on publish completion.
-     */
     public static IdlingResource getPublishIdlingResource() {
         return PUBLISH_IDLING;
     }
@@ -141,6 +142,19 @@ public class CreateEventFragment extends Fragment {
         ivPosterPreview = root.findViewById(R.id.iv_event_poster_preview);
         btnSelectPoster = root.findViewById(R.id.btn_select_event_poster);
         btnPublish = root.findViewById(R.id.btn_publish_event);
+        tvSelectedCategory = root.findViewById(R.id.tv_selected_category);
+        MaterialButton btnPickCategory = root.findViewById(R.id.btn_pick_category);
+
+        // Category picker
+        btnPickCategory.setOnClickListener(v -> {
+            new android.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Select Category")
+                    .setItems(CATEGORIES, (d, which) -> {
+                        selectedCategory = CATEGORIES[which];
+                        tvSelectedCategory.setText("Category: " + selectedCategory);
+                    })
+                    .show();
+        });
 
         setupImagePicker();
         setupDateRangePicker();
@@ -230,7 +244,7 @@ public class CreateEventFragment extends Fragment {
      * Otherwise, the event document is created directly in Firestore.
      */
     private void publishEvent() {
-        if (isPublishing) return; // prevent double publish
+        if (isPublishing) return;
         isPublishing = true;
 
         String name = safe(etName);
@@ -287,6 +301,7 @@ public class CreateEventFragment extends Fragment {
                 return;
             }
         }
+
         beginPublishAsync();
         setPublishingState(true, selectedPosterUri == null ? "PUBLISHING..." : "UPLOADING POSTER...");
 
@@ -306,13 +321,8 @@ public class CreateEventFragment extends Fragment {
      * If the upload fails, an error message is displayed to the user.
      */
     private void uploadPosterAndCreateEvent(
-            String name,
-            String desc,
-            String location,
-            String start,
-            String end,
-            Integer capacity
-    ) {
+            String name, String desc, String location,
+            String start, String end, Integer capacity) {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
         String fileName = "event_posters/" + organizerDeviceId + "_" + System.currentTimeMillis() + ".jpg";
         StorageReference posterRef = FirebaseStorage.getInstance().getReference().child(fileName);
@@ -326,18 +336,11 @@ public class CreateEventFragment extends Fragment {
                     return posterRef.getDownloadUrl();
                 })
                 .addOnSuccessListener(uri -> {
-                    // Fragment might have been detached; only proceed if we still have an Activity.
-                    if (getActivity() == null) {
-                        endPublishAsync();
-                        return;
-                    }
+                    if (getActivity() == null) { endPublishAsync(); return; }
                     createEventDocument(name, desc, location, start, end, capacity, uri.toString());
                 })
                 .addOnFailureListener(e -> {
-                    if (getActivity() == null) {
-                        endPublishAsync();
-                        return;
-                    }
+                    if (getActivity() == null) { endPublishAsync(); return; }
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(), "Poster upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -354,14 +357,9 @@ public class CreateEventFragment extends Fragment {
      * QR code screen for the newly created event.
      */
     private void createEventDocument(
-            String name,
-            String desc,
-            String location,
-            String start,
-            String end,
-            Integer capacity,
-            @Nullable String posterUrl
-    ) {
+            String name, String desc, String location,
+            String start, String end, Integer capacity,
+            @Nullable String posterUrl) {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
 
         Map<String, Object> eventDoc = new HashMap<>();
@@ -371,6 +369,7 @@ public class CreateEventFragment extends Fragment {
         eventDoc.put("registrationStart", start);
         eventDoc.put("registrationEnd", end);
         eventDoc.put("capacity", capacity);
+        eventDoc.put("category", selectedCategory);
         eventDoc.put("organizerDeviceId", organizerDeviceId);
         eventDoc.put("createdAt", System.currentTimeMillis());
         eventDoc.put("posterUrl", posterUrl);
@@ -379,30 +378,17 @@ public class CreateEventFragment extends Fragment {
                 .collection("events")
                 .add(eventDoc)
                 .addOnSuccessListener(ref -> {
-                    // Even if the fragment is no longer 'added', we can still navigate as long as Activity exists.
-                    if (getActivity() == null) {
-                        endPublishAsync();
-                        return;
-                    }
-
+                    if (getActivity() == null) { endPublishAsync(); return; }
                     String eventId = ref.getId();
                     String payload = "eventId:" + eventId;
-
                     Toast.makeText(requireContext(), "Event created", Toast.LENGTH_SHORT).show();
-
-                    // Reset state BEFORE navigating so we don't get stuck in "publishing..."
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
-
                     goToQr(payload);
                     endPublishAsync();
                 })
                 .addOnFailureListener(e -> {
-                    if (getActivity() == null) {
-                        endPublishAsync();
-                        return;
-                    }
-
+                    if (getActivity() == null) { endPublishAsync(); return; }
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(), "Create failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -410,15 +396,9 @@ public class CreateEventFragment extends Fragment {
                 });
     }
 
-    /**
-     * Navigates to QrCodeFragment safely.
-     * Uses commitAllowingStateLoss only if state is already saved.
-     */
     private void goToQr(@NonNull String payload) {
         QrCodeFragment qr = QrCodeFragment.newInstance(payload);
-
         FragmentManager fm = requireActivity().getSupportFragmentManager();
-
         if (fm.isStateSaved()) {
             fm.beginTransaction()
                     .setReorderingAllowed(true)

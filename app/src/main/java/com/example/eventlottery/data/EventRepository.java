@@ -11,7 +11,7 @@ import java.util.List;
  * - US 02.01.01: create event
  * - Event list screens: load all events / load events for a specific organizer
  *
- * @author Kenneth Joseph
+ * @author Kenneth Joseph and hasratsinghchauhan
  * @version 1.1
  */
 public interface EventRepository {

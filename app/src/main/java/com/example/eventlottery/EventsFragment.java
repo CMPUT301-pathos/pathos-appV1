@@ -22,6 +22,7 @@ import com.example.eventlottery.controller.EventController;
 import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.ui.EventSummaryAdapter;
+import com.google.android.material.button.MaterialButton;
 
 /**
  * Fragment displaying the list of joinable events for entrants.
@@ -29,13 +30,15 @@ import com.example.eventlottery.ui.EventSummaryAdapter;
  * Responsibilities:
  * - Display all available events in a RecyclerView
  * - Provide filter dialog for category, location, date, and availability
+ * - Navigate to event details when an event card is tapped
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
+ * - US 01.06.02: Sign up for an event from the event details
  *
- * @author Fawaz Mansoor
- * @version 1.0
+ * @author Fawaz Mansoor, Edwin David
+ * @version 1.1
  */
 public class EventsFragment extends Fragment {
 
@@ -49,6 +52,8 @@ public class EventsFragment extends Fragment {
     private String selectedLocation = "";
     private boolean openOnly = false;
     private long selectedAfterDateMs = 0;
+    private com.example.eventlottery.service.BeaconQrService beaconQrService;
+    private androidx.activity.result.ActivityResultLauncher<com.journeyapps.barcodescanner.ScanOptions> scanLauncher;
 
     private static final String[] CATEGORIES = {
             "All", "Sports", "Music", "Arts", "Education", "Community"
@@ -80,9 +85,49 @@ public class EventsFragment extends Fragment {
         Button btnQrScan = root.findViewById(R.id.btnQrScan);
         btnFilter = root.findViewById(R.id.btnFilter);
 
-        btnQrScan.setOnClickListener(v ->
-                Toast.makeText(requireContext(), "QR Scan not wired yet", Toast.LENGTH_SHORT).show()
-        );
+        btnQrScan.setOnClickListener(v -> {
+            com.journeyapps.barcodescanner.ScanContract scanContract =
+                    new com.journeyapps.barcodescanner.ScanContract();
+            scanLauncher.launch(new com.journeyapps.barcodescanner.ScanOptions()
+                    .setPrompt("Scan an event QR code")
+                    .setBeepEnabled(true)
+                    .setOrientationLocked(true));
+        });
+
+        // TEMPORARY TEST BUTTON - remove before submitting
+//        Button btnTestQr = root.findViewById(R.id.btnQrScan);
+//        // Simulate scanning the QR code directly
+//        Button btnDirectTest = new Button(requireContext());
+//        btnDirectTest.setText("Test QR (Debug)");
+//        btnDirectTest.setOnClickListener(v -> {
+//            String testPayload = "eventId:n0luv6NL4JoAuL0J4ZkE";
+//            beaconQrService.resolveQrScan(testPayload,
+//                    new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {
+//                        @Override
+//                        public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
+//                            EventDetailFragment fragment = EventDetailFragment.newInstance(
+//                                    event.getId(),
+//                                    event.getName(),
+//                                    event.getDescription()
+//                            );
+//                            getParentFragmentManager().beginTransaction()
+//                                    .replace(R.id.fragment_container, fragment)
+//                                    .addToBackStack(null)
+//                                    .commit();
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Exception e) {
+//                            Toast.makeText(requireContext(),
+//                                    "Event not found: " + e.getMessage(),
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//        });
+//
+//        // Add button to root layout temporarily
+//        ((android.widget.LinearLayout) root.findViewById(R.id.eventsRoot))
+//                .addView(btnDirectTest, 0);
 
         btnFilter.setOnClickListener(v -> showFilterDialog());
 
@@ -94,14 +139,75 @@ public class EventsFragment extends Fragment {
         adapter = new EventSummaryAdapter();
         adapter.setCriteriaClickListener(event -> {
             String criteria = eventController.getLotteryCriteria(event);
-            new android.app.AlertDialog.Builder(requireContext())
-                    .setTitle(event.getName())
-                    .setMessage(criteria)
-                    .setPositiveButton("Got it", null)
-                    .show();
+
+            View dialogView = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.dialog_lottery_criteria, null);
+
+            TextView tvName = dialogView.findViewById(R.id.tv_criteria_event_name);
+            TextView tvContent = dialogView.findViewById(R.id.tv_criteria_content);
+            MaterialButton btnGotIt = dialogView.findViewById(R.id.btn_criteria_got_it);
+
+            tvName.setText(event.getName());
+            tvContent.setText(criteria);
+
+            android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(requireContext())
+                    .setView(dialogView)
+                    .create();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new android.graphics.drawable.ColorDrawable(
+                                android.graphics.Color.TRANSPARENT));
+            }
+
+            btnGotIt.setOnClickListener(v -> dialog.dismiss());
+            dialog.show();
+        });
+
+
+        // US 01.06.02: When event card is clicked, navigate to EventDetailFragment
+        adapter.setItemClickListener(event -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, EventDetailFragment.newInstance(
+                            event.getId(), event.getName(), event.getDescription()))
+                    .addToBackStack(null) //return to the events list.
+
+                    .commit();
         });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
+
+        beaconQrService = new com.example.eventlottery.service.BeaconQrService(new FirestoreEventRepository());
+
+        scanLauncher = registerForActivityResult(new com.journeyapps.barcodescanner.ScanContract(), result -> {
+            if (result.getContents() != null) {
+                String payload = result.getContents();
+                beaconQrService.resolveQrScan(payload, new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {                    @Override
+                    public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
+                        // Navigate to event details
+                        EventDetailFragment fragment = EventDetailFragment.newInstance(
+                                event.getId(),
+                                event.getName(),
+                                event.getDescription()
+                        );
+                        getParentFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, fragment)
+                                .addToBackStack(null)
+                                .commit();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(requireContext(),
+                                "Event not found: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(requireContext(), "Scan cancelled", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         loadEvents();
 
@@ -136,20 +242,28 @@ public class EventsFragment extends Fragment {
      * Updates the adapter based on selected filters.
      */
     private void showFilterDialog() {
-        LinearLayout layout = new LinearLayout(requireContext());
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(48, 32, 48, 16);
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_filter_events, null);
 
-        // Category
-        TextView tvCategoryLabel = new TextView(requireContext());
+        TextView tvCategoryLabel = dialogView.findViewById(R.id.tv_filter_category_label);
+        MaterialButton btnPickCategory = dialogView.findViewById(R.id.btn_filter_pick_category);
+        EditText etLocation = dialogView.findViewById(R.id.et_filter_location);
+        TextView tvDateLabel = dialogView.findViewById(R.id.tv_filter_date_label);
+        MaterialButton btnPickDate = dialogView.findViewById(R.id.btn_filter_pick_date);
+        MaterialButton btnClearDate = dialogView.findViewById(R.id.btn_filter_clear_date);
+        CheckBox cbOpenOnly = dialogView.findViewById(R.id.cb_filter_open_only);
+        MaterialButton btnClear = dialogView.findViewById(R.id.btn_filter_clear);
+        MaterialButton btnApply = dialogView.findViewById(R.id.btn_filter_apply);
+
+        // Set current state
         tvCategoryLabel.setText("Category: " + selectedCategory);
-        tvCategoryLabel.setTextSize(14);
-        layout.addView(tvCategoryLabel);
+        etLocation.setText(selectedLocation);
+        cbOpenOnly.setChecked(openOnly);
+        long[] selectedDateMs = {selectedAfterDateMs};
+        updateDateLabel(tvDateLabel, selectedDateMs[0]);
 
-        Button btnPickCategory = new Button(requireContext());
-        btnPickCategory.setText("Pick Category");
         btnPickCategory.setOnClickListener(v -> {
-            new AlertDialog.Builder(requireContext())
+            new android.app.AlertDialog.Builder(requireContext())
                     .setTitle("Select Category")
                     .setItems(CATEGORIES, (d, which) -> {
                         selectedCategory = CATEGORIES[which];
@@ -157,81 +271,53 @@ public class EventsFragment extends Fragment {
                     })
                     .show();
         });
-        layout.addView(btnPickCategory);
 
-        // Location
-        TextView tvLocationLabel = new TextView(requireContext());
-        tvLocationLabel.setText("Location:");
-        tvLocationLabel.setTextSize(14);
-        tvLocationLabel.setPadding(0, 24, 0, 4);
-        layout.addView(tvLocationLabel);
-
-        EditText etLocation = new EditText(requireContext());
-        etLocation.setHint("e.g. Edmonton");
-        etLocation.setText(selectedLocation);
-        layout.addView(etLocation);
-
-        // Date picker
-        TextView tvDateLabel = new TextView(requireContext());
-        tvDateLabel.setTextSize(14);
-        tvDateLabel.setPadding(0, 24, 0, 4);
-        long[] selectedDateMs = {selectedAfterDateMs};
-        updateDateLabel(tvDateLabel, selectedDateMs[0]);
-        layout.addView(tvDateLabel);
-
-        Button btnPickDate = new Button(requireContext());
-        btnPickDate.setText(selectedAfterDateMs == 0 ? "Pick Date" : "Change Date");
         btnPickDate.setOnClickListener(v -> {
             java.util.Calendar cal = java.util.Calendar.getInstance();
             if (selectedDateMs[0] > 0) cal.setTimeInMillis(selectedDateMs[0]);
-
             new android.app.DatePickerDialog(requireContext(), (view, year, month, day) -> {
                 cal.set(year, month, day, 0, 0, 0);
                 selectedDateMs[0] = cal.getTimeInMillis();
                 updateDateLabel(tvDateLabel, selectedDateMs[0]);
-                btnPickDate.setText("Change Date");
             }, cal.get(java.util.Calendar.YEAR),
                     cal.get(java.util.Calendar.MONTH),
                     cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
         });
-        layout.addView(btnPickDate);
 
-        // Clear date button
-        Button btnClearDate = new Button(requireContext());
-        btnClearDate.setText("Clear Date Filter");
         btnClearDate.setOnClickListener(v -> {
             selectedDateMs[0] = 0;
             updateDateLabel(tvDateLabel, 0);
-            btnPickDate.setText("Pick Date");
         });
-        layout.addView(btnClearDate);
 
-        // Availability checkbox
-        CheckBox cbOpenOnly = new CheckBox(requireContext());
-        cbOpenOnly.setText("Show only open registration");
-        cbOpenOnly.setChecked(openOnly);
-        cbOpenOnly.setPadding(0, 24, 0, 0);
-        layout.addView(cbOpenOnly);
+        android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .create();
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Filter Events")
-                .setView(layout)
-                .setPositiveButton("Apply", (dialog, which) -> {
-                    selectedLocation = etLocation.getText().toString().trim();
-                    openOnly = cbOpenOnly.isChecked();
-                    selectedAfterDateMs = selectedDateMs[0];
-                    applyFilters();
-                })
-                .setNegativeButton("Clear Filters", (dialog, which) -> {
-                    selectedCategory = "All";
-                    selectedLocation = "";
-                    openOnly = false;
-                    selectedAfterDateMs = 0;
-                    adapter.setFilteredItems(eventController.filterByCategoryAndAvailability("All", false));
-                    btnFilter.setText("Filter");
-                    empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-                })
-                .show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+
+        btnClear.setOnClickListener(v -> {
+            selectedCategory = "All";
+            selectedLocation = "";
+            openOnly = false;
+            selectedAfterDateMs = 0;
+            adapter.setFilteredItems(eventController.filterByCategoryAndAvailability("All", false));
+            btnFilter.setText("Filter");
+            empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            dialog.dismiss();
+        });
+
+        btnApply.setOnClickListener(v -> {
+            selectedLocation = etLocation.getText().toString().trim();
+            openOnly = cbOpenOnly.isChecked();
+            selectedAfterDateMs = selectedDateMs[0];
+            applyFilters();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     /**

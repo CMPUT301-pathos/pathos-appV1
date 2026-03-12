@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/orgScroll"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/orgRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient_header">
 
+    <!-- Header -->
     <LinearLayout
-        android:id="@+id/orgRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="20dp">
 
         <TextView
             android:id="@+id/tvOrgTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="DASHBOARD"
-            android:textSize="24sp"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:paddingBottom="10dp" />
+            android:textColor="#FFFFFF"
+            android:letterSpacing="0.1"
+            android:paddingBottom="16dp" />
 
         <TextView
             android:id="@+id/tvCreateEvent"
@@ -27,38 +33,70 @@
             android:layout_height="wrap_content"
             android:text="CREATE AN EVENT"
             android:textStyle="bold"
-            android:textSize="16sp"
-            android:paddingBottom="8dp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:letterSpacing="0.08"
+            android:paddingBottom="10dp" />
 
         <Button
             android:id="@+id/btn_create_event"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CREATE" />
+            android:layout_height="44dp"
+            android:text="CREATE"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:backgroundTint="#1A1A2E"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:stateListAnimator="@null" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="YOUR EVENTS"
             android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="10dp" />
-
-        <TextView
-            android:id="@+id/tv_my_events_empty"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="You haven't created any events yet."
-            android:gravity="center"
-            android:padding="12dp"
-            android:visibility="gone" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_my_events"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:letterSpacing="0.08"
+            android:layout_marginTop="20dp" />
 
     </LinearLayout>
-</ScrollView>
+
+    <!-- Event list -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_my_events_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="You haven't created any events yet."
+                android:textColor="#FFFFFF"
+                android:gravity="center"
+                android:padding="12dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_my_events"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

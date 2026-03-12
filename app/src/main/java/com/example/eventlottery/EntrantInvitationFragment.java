@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,15 +11,27 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.WaitingListController;
+import com.example.eventlottery.data.WaitListRepository;
+import com.example.eventlottery.domain.WaitListRecord;
+import com.example.eventlottery.domain.WaitStatus;
+import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
+import com.example.eventlottery.service.DeviceIdentityService;
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Fragment displaying the notifications/invitations screen for entrants.
  *
  * Responsibilities:
- * - Display win/lose lottery notifications as cards
+ * - Load all waitlist records for the current device from Firestore
+ * - Display win notifications (INVITED status) with Accept/Decline buttons
+ * - Display lose notifications (DECLINED/CANCELLED) with Clear button
  * - Allow entrant to accept or decline an invitation
- * - Clear lose notifications
  *
  * User stories supported:
  * - US 01.04.01: Receive notification when chosen from waiting list
@@ -29,18 +40,12 @@ import com.example.eventlottery.firebase.FirestoreWaitListRepository;
  * - US 01.05.03: Decline an invitation when chosen
  *
  * @author Fawaz Mansoor
- * @version 1.0
+ * @version 1.1
  */
 public class EntrantInvitationFragment extends Fragment {
 
-    private static final String ARG_EVENT_ID = "eventId";
-    private static final String ARG_EVENT_NAME = "eventName";
-    private static final String ARG_DEVICE_ID = "deviceId";
-
-    private String eventId;
-    private String eventName;
-    private String deviceId;
-
+    private LinearLayout notificationsContainer;
+    private TextView tvEmpty;
     private WaitingListController waitingListController;
 
     /**
@@ -70,12 +75,8 @@ public class EntrantInvitationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            eventId = getArguments().getString(ARG_EVENT_ID);
-            eventName = getArguments().getString(ARG_EVENT_NAME);
-            deviceId = getArguments().getString(ARG_DEVICE_ID);
-        }
         waitingListController = new WaitingListController(new FirestoreWaitListRepository());
+        deviceId = DeviceIdentityService.getDeviceId(requireContext());
     }
 
     /**
@@ -90,14 +91,18 @@ public class EntrantInvitationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_entrant_invitation, container, false);
+        notificationsContainer = view.findViewById(R.id.notifications_container);
 
-        LinearLayout notificationsContainer = view.findViewById(R.id.notifications_container);
+        // Add empty state TextView dynamically
+        tvEmpty = new TextView(requireContext());
+        tvEmpty.setText("No notifications yet.");
+        tvEmpty.setTextColor(0xCCFFFFFF);
+        tvEmpty.setGravity(android.view.Gravity.CENTER);
+        tvEmpty.setPadding(0, 48, 0, 0);
+        tvEmpty.setVisibility(View.GONE);
+        notificationsContainer.addView(tvEmpty);
 
-        // Win notification card
-        addWinNotification(inflater, notificationsContainer, eventName);
-
-        // Lose notification card (for demo)
-        addLoseNotification(inflater, notificationsContainer, "Some Other Event");
+        loadNotifications(inflater);
 
         return view;
     }
@@ -115,30 +120,32 @@ public class EntrantInvitationFragment extends Fragment {
 
         TextView tvEventName = card.findViewById(R.id.tvEventName);
         TextView tvMessage = card.findViewById(R.id.tvMessage);
-        Button btnAccept = card.findViewById(R.id.btnAccept);
-        Button btnDecline = card.findViewById(R.id.btnDecline);
+        MaterialButton btnAccept = card.findViewById(R.id.btnAccept);
+        MaterialButton btnDecline = card.findViewById(R.id.btnDecline);
         LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
-        Button btnClear = card.findViewById(R.id.btnClear);
+        MaterialButton btnClear = card.findViewById(R.id.btnClear);
 
-        tvEventName.setText(name != null ? name : "Event");
+        tvEventName.setText(eventName);
         tvMessage.setText("You have won the lottery for this event!");
-        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
         winButtonsRow.setVisibility(View.VISIBLE);
         btnClear.setVisibility(View.GONE);
 
         btnAccept.setOnClickListener(v -> {
-            waitingListController.acceptInvitation(eventId, deviceId);
+            waitingListController.acceptInvitation(record.getEventId(), deviceId);
             Toast.makeText(getContext(), "You have accepted the invitation!", Toast.LENGTH_SHORT).show();
-            container.removeView(card);
+            notificationsContainer.removeView(card);
+            checkEmpty();
         });
 
         btnDecline.setOnClickListener(v -> {
-            waitingListController.declineInvitation(eventId, deviceId);
+            waitingListController.declineInvitation(record.getEventId(), deviceId);
             Toast.makeText(getContext(), "You have declined the invitation.", Toast.LENGTH_SHORT).show();
-            container.removeView(card);
+            notificationsContainer.removeView(card);
+            checkEmpty();
         });
 
-        container.addView(card);
+        notificationsContainer.addView(card);
+        tvEmpty.setVisibility(View.GONE);
     }
 
     /**
@@ -155,16 +162,25 @@ public class EntrantInvitationFragment extends Fragment {
         TextView tvEventName = card.findViewById(R.id.tvEventName);
         TextView tvMessage = card.findViewById(R.id.tvMessage);
         LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
-        Button btnClear = card.findViewById(R.id.btnClear);
+        MaterialButton btnClear = card.findViewById(R.id.btnClear);
 
-        tvEventName.setText(name != null ? name : "Event");
-        tvMessage.setText("You have lost the lottery for this event :(");
-        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+        tvEventName.setText(eventName);
+        tvMessage.setText("You were not selected for this event.");
         winButtonsRow.setVisibility(View.GONE);
         btnClear.setVisibility(View.VISIBLE);
 
-        btnClear.setOnClickListener(v -> container.removeView(card));
+        btnClear.setOnClickListener(v -> {
+            notificationsContainer.removeView(card);
+            checkEmpty();
+        });
 
-        container.addView(card);
+        notificationsContainer.addView(card);
+        tvEmpty.setVisibility(View.GONE);
+    }
+
+    private void checkEmpty() {
+        // -1 because tvEmpty is always in the container
+        int visibleCards = notificationsContainer.getChildCount() - 1;
+        tvEmpty.setVisibility(visibleCards == 0 ? View.VISIBLE : View.GONE);
     }
 }

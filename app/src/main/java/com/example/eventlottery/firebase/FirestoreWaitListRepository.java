@@ -5,6 +5,7 @@ import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -167,4 +168,70 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    @Override
+    public void getRecordAsync(String eventId, String deviceId, SingleRecordCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId + "_" + deviceId)
+                .get()
+                .addOnSuccessListener(doc ->{
+                    if(doc.exists()){
+                        WaitListRecord record = new WaitListRecord(
+                                doc.getString("eventId"),
+                                doc.getString("deviceId")
+                        );
+                        record.setStatus(WaitStatus.valueOf(doc.getString("status")));
+                        callback.onSuccess(record);
+                    }else{
+                        callback.onSuccess(null);
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+
+    }
+
+    @Override
+    public void addToWaitList(WaitListRecord record, OperationCallback callback) {
+        db.collection(COLLECTION)
+                .document(record.getEventId() + "_" + record.getDeviceId())
+                .set(record)
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    @Override
+    public void removeFromWaitList(String eventId, String deviceId, OperationCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId + "_" + deviceId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(callback::onFailure);
+    }
+    @Override
+    public void getRecordsByEventAsync(String eventId, WaitListCallBack callback) {
+        db.collection(COLLECTION)
+                .whereEqualTo("eventId", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    List<WaitListRecord> records = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : snap) {
+                        WaitListRecord record = new WaitListRecord(
+                                doc.getString("eventId"),
+                                doc.getString("deviceId")
+                        );
+                        String statusStr = doc.getString("status");
+                        if (statusStr != null) {
+                            try {
+                                record.setStatus(WaitStatus.valueOf(statusStr));
+                            } catch (IllegalArgumentException ignored) {}
+                        }
+                        records.add(record);
+                    }
+                    callback.onSuccess(records);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
 }

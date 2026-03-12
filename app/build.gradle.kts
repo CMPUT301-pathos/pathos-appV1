@@ -49,13 +49,19 @@ dependencies {
 
     // QR
     implementation("com.google.zxing:core:3.5.3")
-
+    //bumptech for the AdminEvenDetails referred by GitHub copilot
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
     implementation("com.google.protobuf:protobuf-javalite:3.25.5")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    //implementation(libs.navigation.fragment)
+    implementation(libs.espresso.contrib) {
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
+    }
     implementation(libs.navigation.fragment)
     implementation(libs.espresso.idling.resource)
     implementation(libs.espresso.contrib)
