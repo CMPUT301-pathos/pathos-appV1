@@ -2,10 +2,12 @@ package com.example.eventlottery;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.IdlingRegistry;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,5 +83,39 @@ public class CreateEventUiTest {
             if (noViewFoundException != null) throw noViewFoundException;
             assertTrue("View did not match", matcher.matches(view));
         };
+    }
+
+    @Rule
+    public ActivityScenarioRule<MainActivity> activityRule =
+            new ActivityScenarioRule<>(MainActivity.class);
+
+    @Test
+    public void publishFailsWhenStartDateIsInPast() {
+
+        ActivityScenario.launch(MainActivity.class);
+
+        // go to organizer tab first
+        onView(withId(R.id.nav_organizer)).perform(click());
+
+        // open create event screen
+        onView(withId(R.id.btn_create_event)).perform(click());
+
+        // enter required fields
+        onView(withId(R.id.et_event_name))
+                .perform(typeText("Test Event"), closeSoftKeyboard());
+
+        onView(withId(R.id.et_event_start))
+                .perform(replaceText("2020-01-01"), closeSoftKeyboard());
+
+        onView(withId(R.id.et_event_end))
+                .perform(replaceText("2030-01-01"), closeSoftKeyboard());
+
+        // click publish
+        onView(withId(R.id.btn_publish_event))
+                .perform(click());
+
+        // verify error
+        onView(withId(R.id.et_event_start))
+                .check(matches(hasErrorText("Start date cannot be in the past")));
     }
 }
