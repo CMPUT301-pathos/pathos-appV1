@@ -22,6 +22,7 @@ import com.example.eventlottery.controller.EventController;
 import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.ui.EventSummaryAdapter;
+import com.google.android.material.button.MaterialButton;
 
 /**
  * Fragment displaying the list of joinable events for entrants.
@@ -125,11 +126,29 @@ public class EventsFragment extends Fragment {
         adapter = new EventSummaryAdapter();
         adapter.setCriteriaClickListener(event -> {
             String criteria = eventController.getLotteryCriteria(event);
-            new android.app.AlertDialog.Builder(requireContext())
-                    .setTitle(event.getName())
-                    .setMessage(criteria)
-                    .setPositiveButton("Got it", null)
-                    .show();
+
+            View dialogView = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.dialog_lottery_criteria, null);
+
+            TextView tvName = dialogView.findViewById(R.id.tv_criteria_event_name);
+            TextView tvContent = dialogView.findViewById(R.id.tv_criteria_content);
+            MaterialButton btnGotIt = dialogView.findViewById(R.id.btn_criteria_got_it);
+
+            tvName.setText(event.getName());
+            tvContent.setText(criteria);
+
+            android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(requireContext())
+                    .setView(dialogView)
+                    .create();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new android.graphics.drawable.ColorDrawable(
+                                android.graphics.Color.TRANSPARENT));
+            }
+
+            btnGotIt.setOnClickListener(v -> dialog.dismiss());
+            dialog.show();
         });
 
 
@@ -201,20 +220,28 @@ public class EventsFragment extends Fragment {
     }
 
     private void showFilterDialog() {
-        LinearLayout layout = new LinearLayout(requireContext());
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(48, 32, 48, 16);
+        View dialogView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_filter_events, null);
 
-        // Category
-        TextView tvCategoryLabel = new TextView(requireContext());
+        TextView tvCategoryLabel = dialogView.findViewById(R.id.tv_filter_category_label);
+        MaterialButton btnPickCategory = dialogView.findViewById(R.id.btn_filter_pick_category);
+        EditText etLocation = dialogView.findViewById(R.id.et_filter_location);
+        TextView tvDateLabel = dialogView.findViewById(R.id.tv_filter_date_label);
+        MaterialButton btnPickDate = dialogView.findViewById(R.id.btn_filter_pick_date);
+        MaterialButton btnClearDate = dialogView.findViewById(R.id.btn_filter_clear_date);
+        CheckBox cbOpenOnly = dialogView.findViewById(R.id.cb_filter_open_only);
+        MaterialButton btnClear = dialogView.findViewById(R.id.btn_filter_clear);
+        MaterialButton btnApply = dialogView.findViewById(R.id.btn_filter_apply);
+
+        // Set current state
         tvCategoryLabel.setText("Category: " + selectedCategory);
-        tvCategoryLabel.setTextSize(14);
-        layout.addView(tvCategoryLabel);
+        etLocation.setText(selectedLocation);
+        cbOpenOnly.setChecked(openOnly);
+        long[] selectedDateMs = {selectedAfterDateMs};
+        updateDateLabel(tvDateLabel, selectedDateMs[0]);
 
-        Button btnPickCategory = new Button(requireContext());
-        btnPickCategory.setText("Pick Category");
         btnPickCategory.setOnClickListener(v -> {
-            new AlertDialog.Builder(requireContext())
+            new android.app.AlertDialog.Builder(requireContext())
                     .setTitle("Select Category")
                     .setItems(CATEGORIES, (d, which) -> {
                         selectedCategory = CATEGORIES[which];
@@ -222,81 +249,53 @@ public class EventsFragment extends Fragment {
                     })
                     .show();
         });
-        layout.addView(btnPickCategory);
 
-        // Location
-        TextView tvLocationLabel = new TextView(requireContext());
-        tvLocationLabel.setText("Location:");
-        tvLocationLabel.setTextSize(14);
-        tvLocationLabel.setPadding(0, 24, 0, 4);
-        layout.addView(tvLocationLabel);
-
-        EditText etLocation = new EditText(requireContext());
-        etLocation.setHint("e.g. Edmonton");
-        etLocation.setText(selectedLocation);
-        layout.addView(etLocation);
-
-        // Date picker
-        TextView tvDateLabel = new TextView(requireContext());
-        tvDateLabel.setTextSize(14);
-        tvDateLabel.setPadding(0, 24, 0, 4);
-        long[] selectedDateMs = {selectedAfterDateMs};
-        updateDateLabel(tvDateLabel, selectedDateMs[0]);
-        layout.addView(tvDateLabel);
-
-        Button btnPickDate = new Button(requireContext());
-        btnPickDate.setText(selectedAfterDateMs == 0 ? "Pick Date" : "Change Date");
         btnPickDate.setOnClickListener(v -> {
             java.util.Calendar cal = java.util.Calendar.getInstance();
             if (selectedDateMs[0] > 0) cal.setTimeInMillis(selectedDateMs[0]);
-
             new android.app.DatePickerDialog(requireContext(), (view, year, month, day) -> {
                 cal.set(year, month, day, 0, 0, 0);
                 selectedDateMs[0] = cal.getTimeInMillis();
                 updateDateLabel(tvDateLabel, selectedDateMs[0]);
-                btnPickDate.setText("Change Date");
             }, cal.get(java.util.Calendar.YEAR),
                     cal.get(java.util.Calendar.MONTH),
                     cal.get(java.util.Calendar.DAY_OF_MONTH)).show();
         });
-        layout.addView(btnPickDate);
 
-        // Clear date button
-        Button btnClearDate = new Button(requireContext());
-        btnClearDate.setText("Clear Date Filter");
         btnClearDate.setOnClickListener(v -> {
             selectedDateMs[0] = 0;
             updateDateLabel(tvDateLabel, 0);
-            btnPickDate.setText("Pick Date");
         });
-        layout.addView(btnClearDate);
 
-        // Availability checkbox
-        CheckBox cbOpenOnly = new CheckBox(requireContext());
-        cbOpenOnly.setText("Show only open registration");
-        cbOpenOnly.setChecked(openOnly);
-        cbOpenOnly.setPadding(0, 24, 0, 0);
-        layout.addView(cbOpenOnly);
+        android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .create();
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Filter Events")
-                .setView(layout)
-                .setPositiveButton("Apply", (dialog, which) -> {
-                    selectedLocation = etLocation.getText().toString().trim();
-                    openOnly = cbOpenOnly.isChecked();
-                    selectedAfterDateMs = selectedDateMs[0];
-                    applyFilters();
-                })
-                .setNegativeButton("Clear Filters", (dialog, which) -> {
-                    selectedCategory = "All";
-                    selectedLocation = "";
-                    openOnly = false;
-                    selectedAfterDateMs = 0;
-                    adapter.setFilteredItems(eventController.filterByCategoryAndAvailability("All", false));
-                    btnFilter.setText("Filter");
-                    empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-                })
-                .show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(
+                    new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+
+        btnClear.setOnClickListener(v -> {
+            selectedCategory = "All";
+            selectedLocation = "";
+            openOnly = false;
+            selectedAfterDateMs = 0;
+            adapter.setFilteredItems(eventController.filterByCategoryAndAvailability("All", false));
+            btnFilter.setText("Filter");
+            empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            dialog.dismiss();
+        });
+
+        btnApply.setOnClickListener(v -> {
+            selectedLocation = etLocation.getText().toString().trim();
+            openOnly = cbOpenOnly.isChecked();
+            selectedAfterDateMs = selectedDateMs[0];
+            applyFilters();
+            dialog.dismiss();
+        });
+
+        dialog.show();
     }
 
     private void updateDateLabel(TextView tv, long dateMs) {
