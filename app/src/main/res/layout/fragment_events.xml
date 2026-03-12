@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/eventsScroll"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/eventsRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient_header">
 
+    <!-- Header -->
     <LinearLayout
-        android:id="@+id/eventsRoot"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="20dp">
 
         <TextView
             android:id="@+id/tvEventsTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="DASHBOARD"
-            android:textSize="24sp"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:paddingBottom="10dp" />
+            android:textColor="#FFFFFF"
+            android:letterSpacing="0.1"
+            android:paddingBottom="16dp" />
 
         <TextView
             android:id="@+id/tvJoinEvent"
@@ -27,22 +33,30 @@
             android:layout_height="wrap_content"
             android:text="JOIN AN EVENT"
             android:textStyle="bold"
-            android:textSize="16sp"
-            android:paddingBottom="8dp" />
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:letterSpacing="0.08"
+            android:paddingBottom="10dp" />
 
         <Button
             android:id="@+id/btnQrScan"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="QR SCAN" />
+            android:layout_height="44dp"
+            android:text="QR SCAN"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:backgroundTint="#1A1A2E"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:stateListAnimator="@null" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="10dp">
+            android:layout_marginTop="20dp">
 
             <TextView
                 android:id="@+id/tvEventList"
@@ -51,29 +65,60 @@
                 android:layout_weight="1"
                 android:text="EVENT LIST"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:letterSpacing="0.08" />
 
             <Button
                 android:id="@+id/btnFilter"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Filter" />
+                android:layout_height="36dp"
+                android:text="Filter"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:backgroundTint="#33FFFFFF"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:stateListAnimator="@null" />
+
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_events_empty"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="No events yet."
-            android:gravity="center"
-            android:padding="12dp"
-            android:visibility="gone" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_events"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
-
     </LinearLayout>
-</ScrollView>
+
+    <!-- Event list — no background so gradient shows through -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_events_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No events yet."
+                android:gravity="center"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_events"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
