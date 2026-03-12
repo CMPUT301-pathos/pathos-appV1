@@ -1,35 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#A6BACC"
+    android:padding="32dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+    <!-- QR code card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginBottom="32dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#40FFFFFF">
 
         <ImageView
             android:id="@+id/iv_qr_code"
-            android:layout_width="260dp"
-            android:layout_height="260dp"
-            android:layout_gravity="center_horizontal"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
+            android:layout_gravity="center"
             android:contentDescription="QR code" />
 
-        <TextView
-            android:id="@+id/tv_qr_payload"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textAlignment="center"
-            android:textSize="14sp" />
+    </androidx.cardview.widget.CardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_share_qr"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="SHARE QR CODE" />
-    </LinearLayout>
-</ScrollView>
+    <!-- Success label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="QR CODE GENERATION SUCCESSFUL"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textAlignment="center"
+        android:letterSpacing="0.05"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Payload -->
+    <TextView
+        android:id="@+id/tv_qr_payload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textColor="#CCFFFFFF"
+        android:textSize="12sp"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Share button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_share_qr"
+        android:layout_width="200dp"
+        android:layout_height="52dp"
+        android:text="SHARE"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08"
+        app:backgroundTint="#1A1A2E"
+        app:cornerRadius="16dp" />
+
+</LinearLayout>
