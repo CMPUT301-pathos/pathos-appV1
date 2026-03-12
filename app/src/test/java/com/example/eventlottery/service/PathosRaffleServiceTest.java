@@ -105,6 +105,11 @@ public class PathosRaffleServiceTest {
             List<WaitListRecord> filtered = getRecordsByStatus(eventId, status);
             callback.onSuccess(new ArrayList<>(filtered));
         }
+
+        @Override
+        public void getRecordsByEventAsync(String eventId, WaitListCallBack callback) {
+            callback.onSuccess(records);
+        }
     }
 
     @Before
