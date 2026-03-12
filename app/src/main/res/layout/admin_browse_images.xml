@@ -5,15 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/white"
+    android:background="@drawable/bg_gradient_header"
     android:fitsSystemWindows="true"
     android:paddingTop="?attr/actionBarSize">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:padding="8dp"
-        android:background="@android:color/white">
+        android:padding="8dp">
 
         <ImageButton
             android:id="@+id/btnBack"
