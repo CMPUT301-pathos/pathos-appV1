@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:background="@android:color/white">
-     <RelativeLayout
+    android:background="@drawable/bg_gradient_header">
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:padding="8dp">
@@ -148,7 +148,7 @@
         android:layout_height="wrap_content"
         android:text="Showing 3 events"
         android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"
+        android:textColor="@android:color/black"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="8dp"
         android:visibility="gone" />

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@drawable/bg_gradient_header"
     android:fitsSystemWindows="true"
     android:paddingTop="?attr/actionBarSize">
 
@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:padding="8dp"
-        android:background="@android:color/white">
+        >
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -81,14 +81,14 @@
             android:text="No users found"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/gray_dark" />
+            android:textColor="@color/black" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Users will appear here once registered"
             android:textSize="14sp"
-            android:textColor="@color/gray_dark"
+            android:textColor="@color/black"
             android:layout_marginTop="6dp" />
     </LinearLayout>
 
