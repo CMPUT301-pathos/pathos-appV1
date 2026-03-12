@@ -16,6 +16,14 @@ import com.example.eventlottery.service.DeviceIdentityService;
 /**
  * SignupActivity
  *
+ Responsibilities:
+ * - Collect user information: name, email, optional phone.
+ * - Allow role selection: "entrant" or "admin".
+ * - Save profile to Firestore keyed by {@link DeviceIdentityService#getDeviceId}.
+ * - Route users to appropriate main activity based on role:
+ *      - "entrant" -> {@link MainActivity}
+ *      - "admin" -> {@link AdminMainActivity}
+ *
  * US 01.02.01: Create a profile (name/email/optional phone) stored in Firestore.
  * US 01.07.01: Profile is keyed by deviceId (no password login).
  *
@@ -52,6 +60,11 @@ public class SignupActivity extends AppCompatActivity {
         btnAdmin.setOnClickListener(v -> createProfileAndRoute("admin"));
     }
 
+    /**
+     * Validates input, creates a {@link UserProfile}, saves it, and routes based on role.
+     *
+     * @param role Role selected ("entrant" or "admin")
+     */
     private void createProfileAndRoute(String role) {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
@@ -91,6 +104,11 @@ public class SignupActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Routes the user to the main activity based on role.
+     *
+     * @param role "entrant" or "admin"
+     */
     private void routeToRoleHome(String role) {
         Intent i;
         if ("admin".equalsIgnoreCase(role)) {
@@ -101,6 +119,11 @@ public class SignupActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    /**
+     * Updates the state and text of role selection buttons.
+     *
+     * @param enabled true = buttons active; false = buttons disabled during network operation
+     */
     private void setButtonsEnabled(boolean enabled) {
         btnUser.setEnabled(enabled);
         btnAdmin.setEnabled(enabled);

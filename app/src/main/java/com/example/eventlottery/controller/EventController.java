@@ -46,6 +46,12 @@ public class EventController {
         });
     }
 
+    /**
+     * Filters cached events by category.
+     *
+     * @param category category to filter by, "All" or null returns all events
+     * @return list of events matching the category
+     */
     public List<EventSummary> filterByCategory(String category) {
         if (category == null || category.equals("All")) return allEvents;
         List<EventSummary> filtered = new ArrayList<>();
@@ -55,6 +61,12 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Filters cached events by location (case-insensitive substring match).
+     *
+     * @param location location text to filter by, null or empty returns all events
+     * @return list of events whose location contains the given string
+     */
     public List<EventSummary> filterByLocation(String location) {
         if (location == null || location.isEmpty()) return allEvents;
         List<EventSummary> filtered = new ArrayList<>();
@@ -66,6 +78,11 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Filters cached events by registration availability.
+     *
+     * @return list of events where registration is open
+     */
     public List<EventSummary> filterByRegistrationOpen() {
         List<EventSummary> filtered = new ArrayList<>();
         for (EventSummary e : allEvents) {
@@ -74,6 +91,13 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Filters cached events by category and availability.
+     *
+     * @param category category to filter by, "All" or null matches all
+     * @param openOnly if true, only include events with open registration
+     * @return list of events matching both criteria
+     */
     public List<EventSummary> filterByCategoryAndAvailability(String category, boolean openOnly) {
         List<EventSummary> filtered = new ArrayList<>();
         for (EventSummary e : allEvents) {
@@ -85,6 +109,15 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Generates a human-readable description of lottery criteria for a given event.
+     *
+     * Includes registration window, waiting list capacity, number of winners,
+     * and a summary of the selection process.
+     *
+     * @param event event to generate criteria for
+     * @return formatted string describing lottery criteria
+     */
     public String getLotteryCriteria(EventSummary event) {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
                 "MMM dd, yyyy", java.util.Locale.getDefault());

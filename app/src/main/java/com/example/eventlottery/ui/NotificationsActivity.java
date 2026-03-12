@@ -20,7 +20,24 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * NotificationsActivity
+ *
+ * Displays event lottery notifications to the user in a RecyclerView.
+ * Each notification card shows the event name and message, and may
+ * include action buttons (Accept/Decline) when the user wins the lottery.
+ *
+ * Features:
+ * - Displays notifications in a scrollable list
+ * - Allows users to accept or decline lottery invitations
+ * - Provides bottom navigation for switching between app screens
+ *
+ * Future integration:
+ * - Notifications will be retrieved from Firestore using a NotificationController.
+ *
+ * @author ???
+ * @version 1.0
+ */
 public class NotificationsActivity extends AppCompatActivity {
 
     private RecyclerView rv;

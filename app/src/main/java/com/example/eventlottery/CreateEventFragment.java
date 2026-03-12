@@ -81,10 +81,26 @@ public class CreateEventFragment extends Fragment {
         return PUBLISH_IDLING;
     }
 
+
+    /**
+     * Signals the start of an asynchronous publish operation.
+     *
+     * This method increments the IdlingResource counter so that
+     * testing frameworks know the app is busy
+     * performing a background task such as creating an event document.
+     */
     private static void beginPublishAsync() {
         PUBLISH_IDLING.increment();
     }
 
+
+    /**
+     * Signals the completion of an asynchronous publish operation.
+     *
+     * Decrements the IdlingResource counter when the background
+     * operation finishes so testing frameworks know the app
+     * is idle again.
+     */
     private static void endPublishAsync() {
         if (!PUBLISH_IDLING.isIdleNow()) {
             PUBLISH_IDLING.decrement();
@@ -93,6 +109,19 @@ public class CreateEventFragment extends Fragment {
 
     public CreateEventFragment() { }
 
+
+    /**
+     * Inflates the fragment layout and initializes all UI components.
+     *
+     * Sets up the image picker, date range picker, and button
+     * click listeners for selecting an event poster and publishing
+     * a new event.
+     *
+     * @param inflater layout inflater used to inflate the view
+     * @param container parent view container
+     * @param savedInstanceState previously saved state
+     * @return the root view for this fragment
+     */
     @Nullable
     @Override
     public View onCreateView(
@@ -121,6 +150,13 @@ public class CreateEventFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Configures the activity result launcher used to pick
+     * an event poster image from the device gallery.
+     *
+     * When an image is selected, it is previewed in the UI
+     * and stored as the selected poster URI.
+     */
     private void setupImagePicker() {
         pickPosterLauncher = registerForActivityResult(
                 new ActivityResultContracts.PickVisualMedia(),
@@ -133,6 +169,10 @@ public class CreateEventFragment extends Fragment {
         );
     }
 
+    /**
+     * Launches the system image picker allowing the organizer
+     * to select a poster image for the event.
+     */
     private void openPosterPicker() {
         pickPosterLauncher.launch(
                 new PickVisualMediaRequest.Builder()
@@ -141,12 +181,23 @@ public class CreateEventFragment extends Fragment {
         );
     }
 
+    /**
+     * Configures click listeners on the registration date fields
+     * to open the date range picker for selecting registration dates.
+     */
     private void setupDateRangePicker() {
         View.OnClickListener openPicker = v -> showDateRangePicker();
         etStart.setOnClickListener(openPicker);
         etEnd.setOnClickListener(openPicker);
     }
 
+    /**
+     * Displays a Material Date Range Picker that allows the organizer
+     * to select the start and end dates for event registration.
+     *
+     * The selected dates are formatted and displayed in the
+     * corresponding text fields.
+     */
     private void showDateRangePicker() {
         MaterialDatePicker<Pair<Long, Long>> picker =
                 MaterialDatePicker.Builder.dateRangePicker()
@@ -162,6 +213,13 @@ public class CreateEventFragment extends Fragment {
         picker.show(getChildFragmentManager(), "registration_date_range_picker");
     }
 
+    /**
+     * Validates the event input fields and initiates the event
+     * publishing process.
+     *
+     * If a poster image is selected, it is uploaded first.
+     * Otherwise, the event document is created directly in Firestore.
+     */
     private void publishEvent() {
         if (isPublishing) return; // prevent double publish
         isPublishing = true;
@@ -214,6 +272,14 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Uploads the selected event poster to Firebase Storage.
+     *
+     * After the upload completes successfully, the download URL
+     * is retrieved and used to create the event document in Firestore.
+     *
+     * If the upload fails, an error message is displayed to the user.
+     */
     private void uploadPosterAndCreateEvent(
             String name,
             String desc,
@@ -254,6 +320,14 @@ public class CreateEventFragment extends Fragment {
                 });
     }
 
+    /**
+     * Creates a new event document in the Firestore database.
+     *
+     * Event details such as name, description, location, registration
+     * dates, capacity, organizer ID, and poster URL are stored.
+     * After successful creation, the user is navigated to the
+     * QR code screen for the newly created event.
+     */
     private void createEventDocument(
             String name,
             String desc,
@@ -335,6 +409,16 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Updates the UI to reflect whether an event is being published.
+     *
+     * Disables or enables relevant input fields and buttons to prevent
+     * user interaction during publishing (or poster upload) and updates
+     * the publish button text to indicate the current state.
+     *
+     * @param publishing true if an event is currently being published; false otherwise
+     * @param buttonText the text to display on the publish button
+     */
     private void setPublishingState(boolean publishing, String buttonText) {
         btnPublish.setEnabled(!publishing);
         btnSelectPoster.setEnabled(!publishing);
@@ -343,10 +427,26 @@ public class CreateEventFragment extends Fragment {
         btnPublish.setText(buttonText);
     }
 
+    /**
+     * Converts a UTC timestamp (milliseconds) into a formatted date string.
+     *
+     * Uses the pattern "yyyy-MM-dd" and the device's default locale.
+     *
+     * @param utcMillis UTC time in milliseconds
+     * @return formatted date string (e.g., "2026-03-11")
+     */
     private String formatDate(long utcMillis) {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date(utcMillis));
     }
 
+    /**
+     * Safely retrieves the trimmed text from an EditText.
+     *
+     * Returns an empty string if the EditText or its content is null.
+     *
+     * @param et the EditText to read from
+     * @return the trimmed string, or "" if null
+     */
     private String safe(EditText et) {
         return et.getText() == null ? "" : et.getText().toString().trim();
     }

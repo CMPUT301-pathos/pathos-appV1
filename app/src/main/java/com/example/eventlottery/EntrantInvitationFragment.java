@@ -43,6 +43,14 @@ public class EntrantInvitationFragment extends Fragment {
 
     private WaitingListController waitingListController;
 
+    /**
+     * Creates a new instance of EntrantInvitationFragment with the specified event details.
+     *
+     * @param eventId   the ID of the event
+     * @param eventName the name of the event
+     * @param deviceId  the device ID of the current user
+     * @return a new instance of EntrantInvitationFragment
+     */
     public static EntrantInvitationFragment newInstance(String eventId, String eventName, String deviceId) {
         EntrantInvitationFragment fragment = new EntrantInvitationFragment();
         Bundle args = new Bundle();
@@ -53,6 +61,12 @@ public class EntrantInvitationFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes the fragment. Retrieves arguments for event and device IDs,
+     * and initializes the WaitingListController.
+     *
+     * @param savedInstanceState saved state bundle
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,6 +78,15 @@ public class EntrantInvitationFragment extends Fragment {
         waitingListController = new WaitingListController(new FirestoreWaitListRepository());
     }
 
+    /**
+     * Inflates the fragment layout and populates the notifications container
+     * with example win and lose lottery cards.
+     *
+     * @param inflater           LayoutInflater to inflate views
+     * @param container          parent container
+     * @param savedInstanceState saved state bundle
+     * @return the root view of the fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_entrant_invitation, container, false);
@@ -79,6 +102,14 @@ public class EntrantInvitationFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Adds a "win" notification card to the notifications container.
+     * Provides Accept and Decline buttons for the user to respond.
+     *
+     * @param inflater LayoutInflater to create the card view
+     * @param container the LinearLayout container to add the card to
+     * @param name the name of the event
+     */
     private void addWinNotification(LayoutInflater inflater, LinearLayout container, String name) {
         View card = inflater.inflate(R.layout.item_notification, container, false);
 
@@ -110,6 +141,14 @@ public class EntrantInvitationFragment extends Fragment {
         container.addView(card);
     }
 
+    /**
+     * Adds a "lose" notification card to the notifications container.
+     * Provides a Clear button for the user to remove the card.
+     *
+     * @param inflater LayoutInflater to create the card view
+     * @param container the LinearLayout container to add the card to
+     * @param name the name of the event
+     */
     private void addLoseNotification(LayoutInflater inflater, LinearLayout container, String name) {
         View card = inflater.inflate(R.layout.item_notification, container, false);
 

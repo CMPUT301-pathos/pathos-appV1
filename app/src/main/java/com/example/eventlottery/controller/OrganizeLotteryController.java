@@ -48,7 +48,7 @@ public class OrganizeLotteryController {
      * @param callback  returns the selected entrants
      */
     public void runInitialDraw(String eventId, String eventName, int count, LotteryCallback callback) {
-        raffleService.drawInitial(eventId, count, new PathosRaffleService.RaffleCallback() {
+        raffleService.drawInitial(eventId,   count, new PathosRaffleService.RaffleCallback() {
             @Override
             public void onDrawComplete(List<WaitListRecord> selected) {
                 for (WaitListRecord record : selected) {

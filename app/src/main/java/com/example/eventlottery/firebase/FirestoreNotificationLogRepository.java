@@ -9,10 +9,26 @@ import com.google.firebase.firestore.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Firestore implementation of the NotificationLogRepository.
+ *
+ * This repository is responsible for storing and retrieving notification
+ * records from the Firestore database. Notifications are stored in the
+ * "notifications" collection and can be queried for specific users.
+ */
 public class FirestoreNotificationLogRepository implements NotificationLogRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Adds a notification record to the Firestore "notifications" collection.
+     *
+     * A new document ID is generated and assigned to the record before it
+     * is saved to the database.
+     *
+     * @param record the notification record to store
+     * @return a Task representing the asynchronous write operation
+     */
     @Override
     public Task<Void> add(NotificationRecord record) {
         // notifications collection
@@ -22,6 +38,17 @@ public class FirestoreNotificationLogRepository implements NotificationLogReposi
         return doc.set(record);
     }
 
+    /**
+     * Retrieves a list of notifications for a specific user.
+     *
+     * The query filters notifications by recipient ID, orders them by
+     * creation time in descending order (newest first), and limits the
+     * number of results returned.
+     *
+     * @param userId the ID of the user receiving the notifications
+     * @param limit the maximum number of notifications to retrieve
+     * @return a Task containing a list of NotificationRecord objects
+     */
     @Override
     public Task<List<NotificationRecord>> listForUser(String userId, int limit) {
         return db.collection("notifications")

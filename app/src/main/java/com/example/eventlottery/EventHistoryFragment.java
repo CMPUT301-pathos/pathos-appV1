@@ -67,7 +67,7 @@ import java.util.List;
 /**
  * EventHistoryFragment
  *
- * Role: Displays a list of the entrant's past participation records.
+ * Responsibilities: Displays a list of the entrant's past participation records.
  * - Uses a RecyclerView + EventHistoryAdapter.
  * - Each row is defined by item_history.xml.
  *

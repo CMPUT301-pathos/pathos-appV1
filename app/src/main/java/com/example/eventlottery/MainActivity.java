@@ -14,6 +14,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  *
  * Hosts BottomNavigationView and swaps fragments into fragment_container.
  *
+ * Responsibilities:
+ * - Handle bottom navigation tab selection
+ * - Load the default landing fragment on app start
+ * - Swap fragments dynamically based on selected tab
+ *
  * Tabs:
  * - Home (DashboardFragment)
  * - Events (EventsFragment)
@@ -26,8 +31,16 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  */
 public class MainActivity extends AppCompatActivity {
 
+    /** Bottom navigation bar controlling fragment switching. */
     private BottomNavigationView bottomNav;
 
+    /**
+     * Lifecycle method called when the activity is created.
+     * Sets up the layout, initializes the BottomNavigationView,
+     * and loads the default fragment (Home/Dashboard).
+     *
+     * @param savedInstanceState saved instance state bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +88,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Replaces the current fragment in the container with the specified fragment.
+     *
+     * @param fragment fragment to display
+     */
     private void switchTo(@NonNull Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()

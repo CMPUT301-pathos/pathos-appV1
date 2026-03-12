@@ -53,23 +53,52 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         void onGeoDetailsClick(EventSummary event);
     }
 
+    /**
+     * Sets the listener that will be triggered when the user requests
+     * to view the lottery criteria for an event.
+     *
+     * @param listener callback invoked when the criteria button is clicked
+     */
     public void setCriteriaClickListener(OnCriteriaClickListener listener) {
         this.criteriaClickListener = listener;
     }
+    /**
+     * Sets the listener triggered when an event card is clicked.
+     *
+     * @param listener callback invoked when an event item is selected
+     */
     public void setItemClickListener(OnItemClickListener listener) {
         this.itemClickListener = listener;
     }
 
-
+    /**
+     * Sets the listener used for organizer-specific actions
+     * such as viewing QR codes, editing events, or viewing
+     * geolocation details.
+     *
+     * @param listener organizer action callback
+     */
     public void setOrganizerActionListener(OnOrganizerActionListener listener) {
         this.organizerActionListener = listener;
     }
 
+    /**
+     * Enables or disables organizer action buttons in each event card.
+     * When enabled, organizer controls (QR, edit, geo details) become visible.
+     *
+     * @param showOrganizerActions true to display organizer actions
+     */
     public void setShowOrganizerActions(boolean showOrganizerActions) {
         this.showOrganizerActions = showOrganizerActions;
         notifyDataSetChanged();
     }
 
+    /**
+     * Replaces the current list of events with a new dataset.
+     * This also resets the filtered list used for category filtering.
+     *
+     * @param list list of EventSummary objects to display
+     */
     public void setItems(List<EventSummary> list) {
         allItems.clear();
         if (list != null) allItems.addAll(list);
@@ -77,13 +106,22 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         items.addAll(allItems);
         notifyDataSetChanged();
     }
-
+    /**
+     * Updates the adapter with a filtered list of events.
+     *
+     * @param list filtered list of EventSummary objects
+     */
     public void setFilteredItems(List<EventSummary> list) {
         items.clear();
         if (list != null) items.addAll(list);
         notifyDataSetChanged();
     }
-
+    /**
+     * Filters the displayed events by category.
+     * If the category is "All", the full event list is restored.
+     *
+     * @param category category name used for filtering
+     */
     public void filterByCategory(String category) {
         items.clear();
         if (category == null || category.equals("All")) {
@@ -96,6 +134,14 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         notifyDataSetChanged();
     }
 
+
+    /**
+     * Inflates the event card layout and creates a new ViewHolder.
+     *
+     * @param parent parent view group
+     * @param viewType type of view
+     * @return ViewHolder containing the inflated event layout
+     */
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -104,6 +150,14 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         return new VH(v);
     }
 
+
+    /**
+     * Binds event data to a ViewHolder and configures click listeners
+     * for user and organizer interactions.
+     *
+     * @param h the ViewHolder representing the event card
+     * @param position position of the event in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         EventSummary e = items.get(position);
@@ -156,11 +210,21 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         });
     }
 
+
+    /**
+     * Returns the number of events currently displayed in the adapter.
+     *
+     * @return number of event items
+     */
     @Override
     public int getItemCount() {
         return items.size();
     }
 
+    /**
+     * ViewHolder class representing a single event card view.
+     * Holds references to UI components to improve RecyclerView performance.
+     */
     static class VH extends RecyclerView.ViewHolder {
         final TextView tvName, tvDesc, tvMeta;
         final Button btnLotteryCriteria, btnSeeQr, btnEditEvent, btnGeoDetails;

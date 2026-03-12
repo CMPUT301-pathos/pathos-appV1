@@ -49,6 +49,13 @@ public class ProfileFragment extends Fragment {
 
     boolean notificationsEnabled;
 
+    /**
+     * Lifecycle method called when fragment is created.
+     *
+     * Initializes ProfileController and deviceId.
+     *
+     * @param savedInstanceState Optional saved state
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +63,21 @@ public class ProfileFragment extends Fragment {
         deviceId = DeviceIdentityService.getDeviceId(requireContext());
     }
 
+    /**
+     * Lifecycle method called to inflate fragment layout and bind UI elements.
+     *
+     * Hooks up click listeners for:
+     * - Saving profile changes
+     * - Logout placeholder
+     * - Delete account confirmation
+     * - Event history navigation
+     * - Notification opt-out switch
+     *
+     * @param inflater LayoutInflater to inflate views
+     * @param container Parent container
+     * @param savedInstanceState Optional saved state
+     * @return Inflated root view
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
@@ -103,6 +125,11 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Loads the current user's profile from Firestore and populates the UI fields.
+     *
+     * Also sets the opt-out switch and attaches its listener for saving preference changes.
+     */
     private void loadCurrentProfile() {
         profileController.getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
@@ -150,6 +177,12 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Saves changes to the user's profile.
+     *
+     * Validates name and email fields before updating via ProfileController.
+     * Updates UI status and shows success/failure Toast messages.
+     */
     private void saveProfile() {
         String name = editName.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
@@ -188,6 +221,11 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Shows a confirmation dialog for deleting the user's account.
+     *
+     * If confirmed, calls ProfileController to delete the account and shows result via Toast.
+     */
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Account")

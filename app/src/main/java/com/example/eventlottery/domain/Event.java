@@ -81,7 +81,14 @@ public class Event {
         long now = System.currentTimeMillis();
         return now >= registrationStart && now <= registrationEnd;
     }
-
+    /**
+     * Converts the Event object into a key-value map representation.
+     *
+     * The map contains all event properties and is typically used for
+     * storing or updating event data in a database such as Firestore.
+     *
+     * @return a Map containing the event's fields and their corresponding values
+     */
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("name", name);

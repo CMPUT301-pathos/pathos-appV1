@@ -27,7 +27,10 @@ import java.io.IOException;
  *
  * Shows a generated QR code for a given payload.
  * Used by US 02.01.01 after event creation.
- *
+ * Responsibilities:
+ * - Generate and display QR code for a payload (e.g., event ID).
+ * - Show the payload text under the QR code.
+ * - Allow user to share the QR code image via Android sharing intents.
  * @author Kenneth Joseph
  * @version 1.1
  * @see: fragment_qr_code.xml, CreateEventFragment.java
@@ -42,6 +45,12 @@ public class QrCodeFragment extends Fragment {
 
     public QrCodeFragment() { }
 
+    /**
+     * Factory method to create a new instance of QrCodeFragment.
+     *
+     * @param payload The string to encode as a QR code
+     * @return QrCodeFragment instance with arguments set
+     */
     public static QrCodeFragment newInstance(String payload) {
         QrCodeFragment fragment = new QrCodeFragment();
         Bundle args = new Bundle();
@@ -50,6 +59,16 @@ public class QrCodeFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Lifecycle method called to inflate fragment layout and initialize UI.
+     *
+     * Inflates layout, binds views, generates QR code bitmap, and wires share button.
+     *
+     * @param inflater LayoutInflater to inflate views
+     * @param container Parent view container
+     * @param savedInstanceState Optional saved state
+     * @return Inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(
@@ -83,6 +102,12 @@ public class QrCodeFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Shares the generated QR code image via Android sharing intents.
+     *
+     * Saves the QR code bitmap to a temporary file and launches a chooser to share it.
+     * Handles exceptions and shows a Toast if sharing fails.
+     */
     private void shareQrCode() {
         if (qrBitmap == null) {
             Toast.makeText(requireContext(), "QR code not available", Toast.LENGTH_SHORT).show();

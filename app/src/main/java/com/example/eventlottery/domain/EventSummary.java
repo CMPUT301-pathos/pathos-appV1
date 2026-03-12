@@ -61,6 +61,16 @@ public class EventSummary {
     public int getCapacity() { return capacity; }
     public int getDrawSize() { return drawSize; }
 
+
+    /**
+     * Checks whether the event registration period is currently open.
+     *
+     * The method verifies that both the registration start and end times
+     * are valid and then compares the current system time to that range.
+     *
+     * @return true if the current time is within the registration window,
+     *         false otherwise.
+     */
     public boolean isRegistrationOpen() {
         if (registrationStart <= 0 || registrationEnd <= 0) {
             return false;
@@ -69,6 +79,18 @@ public class EventSummary {
         return now >= registrationStart && now <= registrationEnd;
     }
 
+    /**
+     * Creates an EventSummary object from a Firestore document.
+     *
+     * This method reads fields from the provided DocumentSnapshot,
+     * safely extracts their values, and converts them into an
+     * EventSummary instance used by the application.
+     *
+     * Missing or null fields are replaced with safe default values.
+     *
+     * @param doc Firestore document representing an event
+     * @return EventSummary object populated with event data
+     */
     public static EventSummary fromDoc(DocumentSnapshot doc) {
         String id = doc.getId();
         String name = safe(doc.getString("name"));
@@ -95,10 +117,29 @@ public class EventSummary {
                 draw == null ? 0 : draw.intValue());
     }
 
+    /**
+     * Returns a safe string value.
+     *
+     * If the input string is null, an empty string is returned instead
+     * to prevent null pointer errors.
+     *
+     * @param s input string
+     * @return the original string or an empty string if null
+     */
     private static String safe(String s) {
         return (s == null) ? "" : s;
     }
 
+    /**
+     * Safely retrieves a Long value from a Firestore document field.
+     *
+     * If the field does not exist or cannot be converted to Long,
+     * the method catches the exception and returns null instead.
+     *
+     * @param doc Firestore document
+     * @param field name of the field to retrieve
+     * @return Long value if available, otherwise null
+     */
     private static Long safeGetLong(DocumentSnapshot doc, String field) {
         try {
             return doc.getLong(field);

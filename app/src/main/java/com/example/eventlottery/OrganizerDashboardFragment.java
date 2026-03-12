@@ -22,6 +22,11 @@ import com.google.android.material.snackbar.Snackbar;
 
 /**
  * OrganizerDashboardFragment
+ *Responsibilities:
+ *   - Provides a landing page for event organizers.
+ *   - Displays a button to create a new event (US 02.01.01).
+ *   - Shows a list of events created by the current organizer.
+ *   - Allows viewing lottery criteria and organizer-specific actions on events (QR code, edit, geo-details
  *
  * Organizer tools landing page:
  * - Create an Event button (US 02.01.01)
@@ -42,6 +47,19 @@ public class OrganizerDashboardFragment extends Fragment {
 
     public OrganizerDashboardFragment() { }
 
+    /**
+     * Lifecycle method called to inflate the fragment layout and initialize UI components.
+     *
+     * Sets up:
+     * - "Create Event" button
+     * - RecyclerView for displaying organizer's events
+     * - EventSummaryAdapter with organizer actions and lottery criteria
+     *
+     * @param inflater LayoutInflater to inflate XML layouts
+     * @param container Optional parent view group
+     * @param savedInstanceState Bundle containing saved state
+     * @return root view of the fragment
+     */
     @Nullable
     @Override
     public View onCreateView(
@@ -65,6 +83,7 @@ public class OrganizerDashboardFragment extends Fragment {
         RecyclerView rv = root.findViewById(R.id.recycler_my_events);
         empty = root.findViewById(R.id.tv_my_events_empty);
 
+        // Setup adapter with organizer actions and criteria listener
         adapter = new EventSummaryAdapter();
         adapter.setShowOrganizerActions(true);
         adapter.setCriteriaClickListener(event -> {
@@ -77,14 +96,7 @@ public class OrganizerDashboardFragment extends Fragment {
         });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
-
-
-
-
-
-
-
-
+        // Set organizer-specific actions
         adapter.setOrganizerActionListener(new EventSummaryAdapter.OnOrganizerActionListener() {
             @Override
             public void onSeeQrClick(com.example.eventlottery.domain.EventSummary event) {
@@ -107,12 +119,19 @@ public class OrganizerDashboardFragment extends Fragment {
                 Snackbar.make(root, "Geo-details coming soon", Snackbar.LENGTH_SHORT).show();
             }
         });
-
+    // Load events for current organizer
         loadMyEvents();
 
         return root;
     }
 
+    /**
+     * Loads the current organizer's events from the repository.
+     *
+     * Uses {@link DeviceIdentityService} to identify the current organizer's device ID.
+     * Updates the adapter and toggles the empty view depending on results.
+     * Displays a Snackbar if loading fails.
+     */
     private void loadMyEvents() {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
 

@@ -54,8 +54,21 @@ public class EventsFragment extends Fragment {
             "All", "Sports", "Music", "Arts", "Education", "Community"
     };
 
+    /**
+     * Default constructor for the fragment.
+     */
+
     public EventsFragment() {}
 
+    /**
+     * Inflates the fragment layout and initializes UI components.
+     * Sets up event controller, RecyclerView, filter button, and QR scan button.
+     *
+     * @param inflater LayoutInflater to inflate views
+     * @param container parent ViewGroup
+     * @param savedInstanceState saved state bundle
+     * @return root view of the fragment
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -95,6 +108,10 @@ public class EventsFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Loads all events asynchronously via the EventController
+     * and updates the RecyclerView adapter. Shows a Toast if loading fails.
+     */
     private void loadEvents() {
         eventController.loadAllEvents(new EventRepository.ListCallback() {
             @Override
@@ -113,6 +130,11 @@ public class EventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Shows a filter dialog allowing the user to filter events by:
+     * category, location, date, and open registration.
+     * Updates the adapter based on selected filters.
+     */
     private void showFilterDialog() {
         LinearLayout layout = new LinearLayout(requireContext());
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -212,6 +234,12 @@ public class EventsFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Updates the date label for the filter dialog.
+     *
+     * @param tv     TextView to update
+     * @param dateMs UTC milliseconds; 0 indicates no date filter
+     */
     private void updateDateLabel(TextView tv, long dateMs) {
         if (dateMs == 0) {
             tv.setText("Show events after: Any date");
@@ -222,6 +250,10 @@ public class EventsFragment extends Fragment {
         }
     }
 
+    /**
+     * Applies the current filter state (category, location, date, open registration)
+     * to the events list and updates the adapter and filter button label.
+     */
     private void applyFilters() {
         java.util.List<com.example.eventlottery.domain.EventSummary> filtered =
                 eventController.filterByCategoryAndAvailability(selectedCategory, openOnly);

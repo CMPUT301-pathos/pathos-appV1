@@ -17,6 +17,15 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * US 01.07.01: Identify user by device (no username/password)
  * US 01.02.01: If no profile exists, route to SignupActivity to create it
  *
+ * Responsibilities:
+ *  * - Identify the device using {@link DeviceIdentityService}.
+ *  * - Lookup existing profile in Firestore via {@link FirestoreProfileRepository}.
+ *  * - Route users according to their role:
+ *  *      - "entrant" -> {@link MainActivity}
+ *  *      - "admin" -> {@link AdminMainActivity}
+ *  * - If no profile exists, launch {@link SignupActivity} to create a profile.
+ *  * - Handles fallback if Firestore lookup fails (routes to SignupActivity).
+ *
  * Flow:
  * - get deviceId
  * - look up profile in Firestore
@@ -71,6 +80,11 @@ public class RouterActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Routes the user to the appropriate main activity based on role.
+     *
+     * @param role The user's role string from profile
+     */
     private void routeToRoleHome(String role) {
         Intent i;
         if ("admin".equalsIgnoreCase(role)) {

@@ -40,6 +40,14 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         this.db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Adds a participant record to the waiting list in Firestore.
+     *
+     * The record is stored in the "waitlist" collection using a document ID
+     * composed of the event ID and device ID to guarantee uniqueness.
+     *
+     * @param record the WaitListRecord representing the participant
+     */
     @Override
     public void addToWaitList(WaitListRecord record) {
         db.collection(COLLECTION)
@@ -47,6 +55,15 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .set(record);
     }
 
+    /**
+     * Removes a participant from the waiting list.
+     *
+     * The corresponding document is deleted from the Firestore collection
+     * using the combined eventId_deviceId identifier.
+     *
+     * @param eventId the event identifier
+     * @param deviceId the participant device identifier
+     */
     @Override
     public void removeFromWaitList(String eventId, String deviceId) {
         db.collection(COLLECTION)
@@ -54,6 +71,16 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .delete();
     }
 
+    /**
+     * Updates the participation status of a waiting list record.
+     *
+     * The status field in Firestore is updated to reflect changes such as
+     * INVITED, ACCEPTED, or DECLINED.
+     *
+     * @param eventId the event identifier
+     * @param deviceId the participant device identifier
+     * @param newStatus the new waiting list status
+     */
     @Override
     public void updateStatus(String eventId, String deviceId, WaitStatus newStatus) {
         db.collection(COLLECTION)
@@ -61,24 +88,65 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .update("status", newStatus.name());
     }
 
+    /**
+     * Retrieves a specific waiting list record for an event and user.
+     *
+     * Note: Firestore operations are asynchronous, so this method is
+     * currently not implemented. Use asynchronous queries instead.
+     *
+     * @param eventId the event identifier
+     * @param deviceId the participant device identifier
+     * @return null (method not implemented)
+     */
     @Override
     public WaitListRecord getRecord(String eventId, String deviceId) {
         // Firestore reads are async — use getRecordsByEvent for now
         return null;
     }
 
+    /**
+     * Retrieves all waiting list records for a specific event.
+     *
+     * Note: Firestore operations are asynchronous, so this method currently
+     * returns an empty list. Snapshot listeners or async queries should be
+     * used instead.
+     *
+     * @param eventId the event identifier
+     * @return empty list (method not implemented)
+     */
     @Override
     public List<WaitListRecord> getRecordsByEvent(String eventId) {
         // Async — return empty list, use snapshot listeners in UI
         return new ArrayList<>();
     }
 
+    /**
+     * Retrieves waiting list records for a specific event filtered by status.
+     *
+     * Note: Firestore operations are asynchronous, so this method currently
+     * returns an empty list. Async queries should be used instead.
+     *
+     * @param eventId the event identifier
+     * @param status the waiting list status to filter by
+     * @return empty list (method not implemented)
+     */
     @Override
     public List<WaitListRecord> getRecordsByStatus(String eventId, WaitStatus status) {
         // Async — return empty list, use snapshot listeners in UI
         return new ArrayList<>();
     }
 
+    /**
+     * Asynchronously retrieves waiting list records for a given event
+     * filtered by participation status.
+     *
+     * The method queries Firestore and converts each document into a
+     * WaitListRecord object before returning the results via callback.
+     *
+     * @param eventId the event identifier
+     * @param status the waiting list status to filter by
+     * @param callback callback used to return the results or errors
+     */
     @Override
     public void getRecordsByStatusAsync(String eventId, WaitStatus status, WaitListCallBack callback) {
         db.collection(COLLECTION)

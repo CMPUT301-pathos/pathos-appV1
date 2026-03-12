@@ -50,6 +50,13 @@ public class OrganizerEventManagerFragment extends Fragment {
     private EditText etDrawCount;
     private Button btnRunDraw, btnDrawReplacement;
 
+    /**
+     * Factory method to create a new instance of this fragment for a specific event.
+     *
+     * @param eventId Event identifier
+     * @param eventName Event name
+     * @return A new instance of OrganizerEventManagerFragment
+     */
     public static OrganizerEventManagerFragment newInstance(String eventId, String eventName) {
         OrganizerEventManagerFragment fragment = new OrganizerEventManagerFragment();
         Bundle args = new Bundle();
@@ -59,6 +66,15 @@ public class OrganizerEventManagerFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Lifecycle method called when the fragment is created.
+     *
+     * Initializes:
+     * - Event arguments (ID and name)
+     * - Lottery controller with dependencies (waitlist repo, raffle service, notification service)
+     *
+     * @param savedInstanceState Optional saved state
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +89,16 @@ public class OrganizerEventManagerFragment extends Fragment {
         lotteryController = new OrganizeLotteryController(raffleService, notifyService);
     }
 
+    /**
+     * Lifecycle method called to inflate the fragment's UI.
+     *
+     * Initializes views, sets the event name, and hooks up draw buttons.
+     *
+     * @param inflater LayoutInflater to inflate views
+     * @param container Parent container
+     * @param savedInstanceState Optional saved state
+     * @return Inflated root view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -95,6 +121,15 @@ public class OrganizerEventManagerFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Executes the initial lottery draw for the event.
+     *
+     * - Reads the number of entrants from {@link #etDrawCount}.
+     * - Validates input.
+     * - Disables the run button and shows "Drawing..." status.
+     * - Calls {@link OrganizeLotteryController#runInitialDraw} to select entrants.
+     * - Updates {@link #tvDrawStatus} and re-enables button on completion.
+     */
     private void runInitialDraw() {
         String countStr = etDrawCount.getText().toString().trim();
         if (countStr.isEmpty()) {
@@ -136,6 +171,13 @@ public class OrganizerEventManagerFragment extends Fragment {
                 });
     }
 
+    /**
+     * Executes a replacement draw for the event.
+     *
+     * - Disables the replacement draw button and shows "Drawing..." status.
+     * - Calls {@link OrganizeLotteryController#runReplacementDraw}.
+     * - Updates {@link #tvDrawStatus} and re-enables the button on completion.
+     */
     private void runReplacementDraw() {
         btnDrawReplacement.setEnabled(false);
         btnDrawReplacement.setText("Drawing...");
