@@ -1,54 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:padding="20dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient_header">
 
-    <LinearLayout
+    <!-- Header -->
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:text="UPDATE EVENT POSTER"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:letterSpacing="0.05"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="24dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="UPDATE EVENT POSTER"
-            android:textStyle="bold"
-            android:textSize="24sp"
-            android:layout_marginBottom="16dp" />
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false">
 
-        <ImageView
-            android:id="@+id/iv_edit_poster_preview"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginBottom="12dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:contentDescription="Current event poster" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_edit_select_poster"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="SELECT NEW POSTER" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_edit_save_poster"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="SAVE POSTER" />
+            android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_edit_remove_poster"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:backgroundTint="#B00020"
-            android:text="REMOVE POSTER"
-            android:visibility="gone" />
+            <!-- Poster preview card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#40FFFFFF">
 
-    </LinearLayout>
-</ScrollView>
+                <ImageView
+                    android:id="@+id/iv_edit_poster_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:contentDescription="Current event poster" />
+
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_edit_select_poster"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="SELECT NEW POSTER"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_edit_save_poster"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="SAVE POSTER"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#1A1A2E"
+                app:cornerRadius="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_edit_remove_poster"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="REMOVE POSTER"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#B00020"
+                app:cornerRadius="12dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>
