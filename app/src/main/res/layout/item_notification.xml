@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginBottom="12dp"
-    android:padding="12dp"
-    app:cardBackgroundColor="#19FFFFFF">
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="#40FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
-        android:background="#19FFFFFF">
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/tvEventName"
@@ -20,18 +21,22 @@
             android:layout_height="wrap_content"
             android:text="[Event Name]"
             android:textStyle="bold"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:paddingBottom="8dp"
-            />
+            android:paddingBottom="6dp" />
 
         <TextView
             android:id="@+id/tvMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="You have won the lottery for this event!"
-            android:paddingBottom="10dp"/>
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:lineSpacingMultiplier="1.4"
+            android:paddingBottom="12dp" />
 
-        <!-- Accept/Decline buttons for win notifications -->
+        <!-- Accept/Decline row for win notifications -->
         <LinearLayout
             android:id="@+id/winButtonsRow"
             android:layout_width="match_parent"
@@ -39,30 +44,44 @@
             android:orientation="horizontal"
             android:visibility="gone">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAccept"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="Accept"/>
+                android:text="Accept"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#1A1A2E"
+                app:cornerRadius="12dp" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDecline"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_weight="1"
+                android:layout_marginStart="8dp"
                 android:text="Decline"
-                android:layout_marginStart="10dp"/>
+                android:textSize="12sp"
+                android:textColor="#1A1A2E"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp" />
+
         </LinearLayout>
 
         <!-- Clear button for lose notifications -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClear"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="end"
             android:text="Clear"
-            android:visibility="gone"/>
+            android:textSize="12sp"
+            android:textColor="#1A1A2E"
+            app:backgroundTint="#40FFFFFF"
+            app:cornerRadius="12dp"
+            android:visibility="gone" />
 
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>

@@ -23,11 +23,11 @@ public class EventFilterTest {
 
     // Helper methods
     private EventSummary makeSummary(String id, String name, String category) {
-        return new EventSummary(id, name, "desc", "", 0L, "org1", category, 0L, 0L, 0L, 0, 0);
+        return new EventSummary(id, name, "desc", "", 0L, "org1", category, 0L, 0L, 0L, 0, 0, null);
     }
 
     private EventSummary makeSummary(String id, String name, String category, String location) {
-        return new EventSummary(id, name, "desc", location, 0L, "org1", category, 0L, 0L, 0L, 0, 0);
+        return new EventSummary(id, name, "desc", location, 0L, "org1", category, 0L, 0L, 0L, 0, 0, null);
     }
 
     // --- Category filter tests ---
@@ -122,7 +122,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary openEvent = new EventSummary(
                 "1", "Open Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0, null);
 
         assertTrue(openEvent.isRegistrationOpen());
     }
@@ -132,7 +132,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary closedEvent = new EventSummary(
                 "2", "Closed Event", "desc", "Calgary",
-                now, "org1", "Music", now + 100000, now - 200000, now - 100000, 0, 0);
+                now, "org1", "Music", now + 100000, now - 200000, now - 100000, 0, 0, null);
 
         assertFalse(closedEvent.isRegistrationOpen());
     }
@@ -143,11 +143,11 @@ public class EventFilterTest {
 
         EventSummary openEvent = new EventSummary(
                 "1", "Open Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0, null);
 
         EventSummary closedEvent = new EventSummary(
                 "2", "Closed Event", "desc", "Calgary",
-                now, "org1", "Music", now + 100000, now - 200000, now - 100000, 0, 0);
+                now, "org1", "Music", now + 100000, now - 200000, now - 100000, 0, 0, null);
 
         List<EventSummary> events = new ArrayList<>();
         events.add(openEvent);
@@ -169,7 +169,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary event = new EventSummary(
                 "1", "Test Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 50, 10);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 50, 10, null);
 
         assertEquals(50, event.getCapacity());
     }
@@ -179,7 +179,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary event = new EventSummary(
                 "1", "Test Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 50, 10);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 50, 10, null);
 
         assertEquals(10, event.getDrawSize());
     }
@@ -189,7 +189,7 @@ public class EventFilterTest {
         long now = System.currentTimeMillis();
         EventSummary event = new EventSummary(
                 "1", "Test Event", "desc", "Edmonton",
-                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0);
+                now, "org1", "Sports", now + 100000, now - 100000, now + 100000, 0, 0, null);
 
         assertEquals(0, event.getCapacity());
     }

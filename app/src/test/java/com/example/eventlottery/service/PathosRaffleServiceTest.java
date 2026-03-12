@@ -45,8 +45,20 @@ public class PathosRaffleServiceTest {
         }
 
         @Override
+        public void addToWaitList(WaitListRecord r, OperationCallback callback) {
+            records.add(r);
+            callback.onSuccess();
+        }
+
+        @Override
         public void removeFromWaitList(String eventId, String deviceId) {
             records.removeIf(r -> r.getEventId().equals(eventId) && r.getDeviceId().equals(deviceId));
+        }
+
+        @Override
+        public void removeFromWaitList(String eventId, String deviceId, OperationCallback callback) {
+            records.removeIf(r -> r.getEventId().equals(eventId) && r.getDeviceId().equals(deviceId));
+            callback.onSuccess();
         }
 
         @Override
@@ -70,6 +82,11 @@ public class PathosRaffleServiceTest {
         }
 
         @Override
+        public void getRecordAsync(String eventId, String deviceId, SingleRecordCallback callback) {
+            callback.onSuccess(getRecord(eventId, deviceId));
+        }
+
+        @Override
         public List<WaitListRecord> getRecordsByEvent(String eventId) {
             return records.stream()
                     .filter(r -> r.getEventId().equals(eventId))
@@ -85,9 +102,13 @@ public class PathosRaffleServiceTest {
 
         @Override
         public void getRecordsByStatusAsync(String eventId, WaitStatus status, WaitListCallBack callback) {
-            // Simulate async by calling callback immediately with filtered results
             List<WaitListRecord> filtered = getRecordsByStatus(eventId, status);
             callback.onSuccess(new ArrayList<>(filtered));
+        }
+
+        @Override
+        public void getRecordsByEventAsync(String eventId, WaitListCallBack callback) {
+            callback.onSuccess(records);
         }
     }
 
@@ -212,7 +233,6 @@ public class PathosRaffleServiceTest {
             }
         });
 
-        // user2 from event2 should still be WAITING
         WaitListRecord event2Record = fakeRepo.getRecord("event2", "user2");
         assertEquals(WaitStatus.WAITING, event2Record.getStatus());
     }

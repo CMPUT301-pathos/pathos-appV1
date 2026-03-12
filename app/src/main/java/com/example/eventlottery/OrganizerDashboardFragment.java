@@ -18,6 +18,7 @@ import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.example.eventlottery.ui.EventSummaryAdapter;
 import com.example.eventlottery.controller.EventController;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
 /**
@@ -69,11 +70,29 @@ public class OrganizerDashboardFragment extends Fragment {
         adapter.setShowOrganizerActions(true);
         adapter.setCriteriaClickListener(event -> {
             String criteria = eventController.getLotteryCriteria(event);
-            new android.app.AlertDialog.Builder(requireContext())
-                    .setTitle(event.getName())
-                    .setMessage(criteria)
-                    .setPositiveButton("Got it", null)
-                    .show();
+
+            View dialogView = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.dialog_lottery_criteria, null);
+
+            TextView tvName = dialogView.findViewById(R.id.tv_criteria_event_name);
+            TextView tvContent = dialogView.findViewById(R.id.tv_criteria_content);
+            MaterialButton btnGotIt = dialogView.findViewById(R.id.btn_criteria_got_it);
+
+            tvName.setText(event.getName());
+            tvContent.setText(criteria);
+
+            android.app.AlertDialog dialog = new android.app.AlertDialog.Builder(requireContext())
+                    .setView(dialogView)
+                    .create();
+
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(
+                        new android.graphics.drawable.ColorDrawable(
+                                android.graphics.Color.TRANSPARENT));
+            }
+
+            btnGotIt.setOnClickListener(v -> dialog.dismiss());
+            dialog.show();
         });
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
@@ -99,13 +118,26 @@ public class OrganizerDashboardFragment extends Fragment {
 
             @Override
             public void onEditClick(com.example.eventlottery.domain.EventSummary event) {
-                Snackbar.make(root, "Edit coming soon", Snackbar.LENGTH_SHORT).show();
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, EditEventFragment.newInstance(event))
+                        .addToBackStack(null)
+                        .commit();
             }
 
             @Override
             public void onGeoDetailsClick(com.example.eventlottery.domain.EventSummary event) {
                 Snackbar.make(root, "Geo-details coming soon", Snackbar.LENGTH_SHORT).show();
             }
+        });
+
+        adapter.setItemClickListener(event -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container,
+                            OrganizerEventDetailFragment.newInstance(event))
+                    .addToBackStack(null)
+                    .commit();
         });
 
         loadMyEvents();
