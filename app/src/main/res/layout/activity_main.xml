@@ -13,6 +13,7 @@ Purpose: Hosts the fragment container and bottom navigation for the entrant UI.
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient_header"
     tools:context=".MainActivity">
 
     <androidx.fragment.app.FragmentContainerView
@@ -30,6 +31,7 @@ Purpose: Hosts the fragment container and bottom navigation for the entrant UI.
         android:id="@+id/bottom_nav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_gradient_header"
         app:menu="@menu/menu_entrant_bottom_nav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

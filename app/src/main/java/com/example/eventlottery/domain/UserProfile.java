@@ -1,6 +1,5 @@
 package com.example.eventlottery.domain;
 
-
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 
@@ -9,35 +8,36 @@ import java.util.List;
 
 /**
  * Represents a user profile in the application.
- * Stores personal information, role, and notification preferences.
- *
- * Extended to support notification opt-out preference.
+ * Stores personal information, role, notification preferences,
+ * and whether the required profile info has been completed.
  *
  * User stories supported:
- * - US 01.02.01/US 01.02.02: Provide/update personal info
+ * - US 01.02.01: Provide personal info
+ * - US 01.02.02: Update personal info
  * - US 01.02.03: View event history
  * - US 01.02.04: Delete profile
- * - US 01.04.03: Opt out of receiving notifications
+ * - US 01.04.03: Opt out of notifications
+ * - US 01.07.01: Be identified by device
  *
- * @author Dmitriy Limanets, Fawaz Mansoor
- * @version 1.1
+ * @author Dmitriy Limanets, Fawaz Mansoor, Kenneth Joseph
+ * @version 1.2
  * @see ProfileRepository
  * @see FirestoreProfileRepository
  */
-
 public class UserProfile {
     private String deviceId;
     private String name;
     private String email;
     private String phoneNumber;
-    private String role; //entrant, organizer, admin
+    private String role; // entrant, organizer, admin
+    private boolean profileCompleted;
+    private Boolean notificationsEnabled = true; // opt-in by default
+
     /**
      * List of event history records for this user.
      * Tracks all events the user has interacted with and their outcomes.
-     * Used for US 01.02.03 - Event History display. -Hasrat
      */
     private List<EventHistoryRecord> eventHistory;
-    private Boolean notificationsEnabled = true; // opt-in by default
     /**
      * Empty constructor required by Firestore to deserialize documents.
      */
@@ -45,39 +45,40 @@ public class UserProfile {
     }
 
     /**
-     * Creates a user profile with a default role of "entrant".
+     * Creates a user profile with default role "entrant".
+     * A user can exist by device ID even if their profile info is incomplete.
      *
-     * @param deviceId    the unique device identifier
-     * @param name        the user's name
-     * @param email       the user's email address
-     * @param phoneNumber the user's phone number (optional)
+     * @param deviceId    unique device identifier
+     * @param name        user's name
+     * @param email       user's email
+     * @param phoneNumber user's phone number (optional)
      */
     public UserProfile(String deviceId, String name, String email, String phoneNumber) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.role = "entrant"; //for now have it as entrant on default
+        this.role = "user";
+        this.profileCompleted = hasRequiredInfo();
     }
-
 
     /**
      * Creates a user profile with a specified role.
-     * Used for creating organizer or admin profiles.
      *
-     * @param deviceId    the unique device identifier
-     * @param name        the user's name
-     * @param email       the user's email address
-     * @param phoneNumber the user's phone number (optional)
-     * @param role        the user's role ("entrant", "organizer", or "admin")
+     * @param deviceId    unique device identifier
+     * @param name        user's name
+     * @param email       user's email
+     * @param phoneNumber user's phone number (optional)
+     * @param role        user's role
      */
-    //This one is for creating an organizer and an admin
+    //User or admin definitions
     public UserProfile(String deviceId, String name, String email, String phoneNumber, String role) {
         this.deviceId = deviceId;
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.role = role;
+        this.profileCompleted = hasRequiredInfo();
     }
 
     //Getters and Setters
@@ -96,6 +97,7 @@ public class UserProfile {
 
     public void setName(String name) {
         this.name = name;
+        this.profileCompleted = hasRequiredInfo();
     }
 
     public String getEmail() {
@@ -104,6 +106,7 @@ public class UserProfile {
 
     public void setEmail(String email) {
         this.email = email;
+        this.profileCompleted = hasRequiredInfo();
     }
 
     public String getPhoneNumber() {
@@ -112,6 +115,7 @@ public class UserProfile {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+        // phone is optional, so no effect on profileCompleted
     }
 
     public String getRole() {
@@ -120,6 +124,14 @@ public class UserProfile {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public boolean isProfileCompleted() {
+        return profileCompleted;
+    }
+
+    public void setProfileCompleted(boolean profileCompleted) {
+        this.profileCompleted = profileCompleted;
     }
 
     public boolean isNotificationsEnabled() {
@@ -131,13 +143,29 @@ public class UserProfile {
     }
 
     /**
-     * author : Hasrat
-     * Returns the user's event history list.
-     * Initializes an empty list if null (prevents NullPointerException).
-     *
-     * @return List of EventHistoryRecord objects
+     * Returns true if required profile fields are filled.
+     * Name and email are required. Phone number is optional.
      */
-    public List<EventHistoryRecord> getEventHistory() {  // ← ADD THIS METHOD
+    public boolean hasRequiredInfo() {
+        return deviceId != null && !deviceId.trim().isEmpty()
+                && name != null && !name.trim().isEmpty()
+                && email != null && !email.trim().isEmpty();
+    }
+
+    /**
+     * Recalculates and updates whether the profile is complete.
+     */
+    public void refreshProfileCompleted() {
+        this.profileCompleted = hasRequiredInfo();
+    }
+
+    /**
+     * Returns the user's event history list.
+     * Initializes an empty list if null.
+     *
+     * @return list of EventHistoryRecord objects
+     */
+    public List<EventHistoryRecord> getEventHistory() {
         if (eventHistory == null) {
             eventHistory = new ArrayList<>();
         }
@@ -147,31 +175,29 @@ public class UserProfile {
     /**
      * Sets the user's event history list.
      *
-     * @param eventHistory the list of EventHistoryRecord objects
+     * @param eventHistory list of EventHistoryRecord objects
      */
-    public void setEventHistory(List<EventHistoryRecord> eventHistory) {  // ← ADD THIS METHOD
+    public void setEventHistory(List<EventHistoryRecord> eventHistory) {
         this.eventHistory = eventHistory;
     }
 
     /**
-     * Helper method to add a single record to event history.
-     * Automatically initializes the list if needed.
+     * Adds a single record to event history.
+     * Newest records are inserted first.
      *
-     * @param record the EventHistoryRecord to add
+     * @param record event history record to add
      */
-    public void addToHistory(EventHistoryRecord record) {  // ← ADD THIS METHOD
+    public void addToHistory(EventHistoryRecord record) {
         if (eventHistory == null) {
             eventHistory = new ArrayList<>();
         }
-        // Add to beginning for newest first
         eventHistory.add(0, record);
     }
 
     /**
      * Clears all event history for this user.
-     * Useful when resetting or deleting account.
      */
-    public void clearHistory() {  // ← ADD THIS METHOD
+    public void clearHistory() {
         if (eventHistory != null) {
             eventHistory.clear();
         }
