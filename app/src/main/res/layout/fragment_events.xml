@@ -42,7 +42,7 @@
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:letterSpacing="0.5" />
+                android:letterSpacing="0.1" />
         </LinearLayout>
 
         <TextView
