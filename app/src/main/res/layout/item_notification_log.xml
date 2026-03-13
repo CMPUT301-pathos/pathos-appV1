@@ -8,15 +8,15 @@
     app:cardElevation="2dp"
     app:cardCornerRadius="8dp"
     android:clickable="true"
-    android:focusable="true"
-    app:cardBackgroundColor="#19FFFFFF">
+    android:focusable="true">
+    <!--app:cardBackgroundColor="#19FFFFFF" -->
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="#19FFFFFF">
+        android:padding="16dp">
+        <!--android:background="#19FFFFFF"-->
 
         <!-- Top Row: Sender and Status -->
         <LinearLayout
@@ -43,7 +43,6 @@
                 android:text="sent"
                 android:textSize="11sp"
                 android:background="#19FFFFFF"
-                android:background="@android:color/black"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
                 android:layout_marginStart="8dp" />
