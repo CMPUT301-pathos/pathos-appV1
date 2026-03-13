@@ -5,30 +5,29 @@
  * @see: activity_admin_main.xml
  */
 /**public class AdminMainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_main);
-    }
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+super.onCreate(savedInstanceState);
+setContentView(R.layout.activity_admin_main);
+}
 }*/
 package com.example.eventlottery;
-
-import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.TextView;
 import android.util.Log;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
 import androidx.cardview.widget.CardView;
-import com.example.eventlottery.admin.AdminBrowseImages;
+
 import com.example.eventlottery.admin.AdminBrowseEventsActivity;
+import com.example.eventlottery.admin.AdminBrowseImages;
 import com.example.eventlottery.admin.AdminBrowseUsersActivity;
 import com.example.eventlottery.admin.AdminNotificationLogs;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 
 

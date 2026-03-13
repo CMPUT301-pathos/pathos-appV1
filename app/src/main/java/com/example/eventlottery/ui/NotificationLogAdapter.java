@@ -11,8 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventlottery.R;
 import com.example.eventlottery.domain.NotificationLog;
-import java.text.SimpleDateFormat;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

@@ -14,10 +14,10 @@ import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.data.WaitListRepository;
+import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
-import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.PathosRaffleService;

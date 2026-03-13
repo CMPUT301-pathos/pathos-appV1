@@ -5,7 +5,7 @@ package com.example.eventlottery.admin;
  * @author hasratsinghchauhan
  * * P.S do not change the contents of the file w/o informing/collaboratng (with) the author.
  */
-import android.app.ProgressDialog;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,20 +16,19 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.example.eventlottery.domain.PolicyViolation;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventlottery.R;
-import com.example.eventlottery.ui.AdminUserAdapter;
+import com.example.eventlottery.domain.PolicyViolation;
 import com.example.eventlottery.domain.UserProfile;
+import com.example.eventlottery.ui.AdminUserAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;

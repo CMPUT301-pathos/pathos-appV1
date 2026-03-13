@@ -3,6 +3,7 @@ package com.example.eventlottery.admin;
 /**
  *  View notification logs (US 03.08.01)
  */
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -14,7 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,8 +25,6 @@ import com.example.eventlottery.R;
 import com.example.eventlottery.domain.NotificationLog;
 import com.example.eventlottery.ui.NotificationLogAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

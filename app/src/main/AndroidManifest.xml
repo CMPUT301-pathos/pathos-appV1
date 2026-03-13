@@ -29,7 +29,7 @@
 
         <activity
             android:name=".AdminMainActivity"
-            android:exported="false" />
+            android:exported="true" />
 
         <activity
             android:name=".admin.AdminBrowseEventsActivity"

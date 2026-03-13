@@ -11,7 +11,6 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.WaitingListController;
-import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
