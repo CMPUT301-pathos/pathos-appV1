@@ -66,6 +66,8 @@ dependencies {
     implementation(libs.espresso.idling.resource)
     implementation(libs.espresso.contrib)
 
+    // REQUIRED for GrantPermissionRule
+    androidTestImplementation("androidx.test:rules:1.5.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

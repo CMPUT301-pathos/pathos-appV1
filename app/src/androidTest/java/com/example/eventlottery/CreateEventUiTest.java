@@ -2,10 +2,14 @@ package com.example.eventlottery;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.IdlingRegistry;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -13,6 +17,9 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
 import static org.junit.Assert.*;
+
+
+
 
 /**
  * Instrumented UI test for US 02.01.01 (Create Event + QR generation).
@@ -29,8 +36,19 @@ import static org.junit.Assert.*;
  * @author Kenneth Joseph
  * @version 1.2
  */
+
+
 @RunWith(AndroidJUnit4.class)
 public class CreateEventUiTest {
+
+
+    @Rule
+    public GrantPermissionRule permissionRule =
+            GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS);
+
+    @Rule
+    public ActivityScenarioRule<MainActivity> activityRule =
+            new ActivityScenarioRule<>(MainActivity.class);
 
     @Before
     public void registerIdling() {
@@ -46,8 +64,6 @@ public class CreateEventUiTest {
 
     @Test
     public void createEvent_showsQrAfterPublish() {
-        ActivityScenario.launch(MainActivity.class);
-
         // Go to Organizer tab
         onView(withId(R.id.nav_organizer)).perform(click());
 
@@ -66,8 +82,9 @@ public class CreateEventUiTest {
         onView(withId(R.id.et_event_start)).perform(replaceText("2026-03-10"), closeSoftKeyboard());
         onView(withId(R.id.et_event_end)).perform(replaceText("2026-03-12"), closeSoftKeyboard());
 
-        // Publish
-        onView(withId(R.id.btn_publish_event)).perform(click());
+        // Scroll to button, then Publish
+        onView(withId(R.id.btn_publish_event))
+                .perform(scrollTo(), click());
 
         // QR screen should appear
         // We assert the QR ImageView and payload text exist
