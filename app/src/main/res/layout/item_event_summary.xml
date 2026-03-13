@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Meta"
-            android:textSize="11sp"
+            android:textSize="15sp"
             android:textColor="#FFFFFF"
             android:drawableStart="@android:drawable/ic_dialog_map"
             android:drawablePadding="4dp"
