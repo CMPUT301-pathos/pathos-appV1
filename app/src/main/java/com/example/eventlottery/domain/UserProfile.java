@@ -58,7 +58,7 @@ public class UserProfile {
         this.name = name;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.role = "user";
+        this.role = "entrant";
         this.profileCompleted = hasRequiredInfo();
     }
 

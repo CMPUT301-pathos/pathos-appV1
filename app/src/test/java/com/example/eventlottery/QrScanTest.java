@@ -1,5 +1,7 @@
 package com.example.eventlottery;
 
+import com.example.eventlottery.controller.EventController;
+import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.service.BeaconQrService;
 
 import org.junit.Before;
@@ -18,11 +20,11 @@ import static org.junit.Assert.*;
 public class QrScanTest {
 
     private BeaconQrService beaconQrService;
+    private EventController controller;
 
     @Before
     public void setUp() {
-        // Use fake repository - no Firebase needed
-        beaconQrService = new BeaconQrService(new com.example.eventlottery.data.EventRepository() {
+        controller = new EventController(new EventRepository() {
             @Override
             public void createEvent(Object event, CreateCallback callback) {}
 
@@ -31,7 +33,12 @@ public class QrScanTest {
 
             @Override
             public void getEventsByOrganizer(String organizerDeviceId, ListCallback callback) {}
+
+            @Override
+            public void deleteEvent(String eventId, OperationCallback callback) {}
         });
+
+        beaconQrService = new BeaconQrService(null);
     }
 
     @Test

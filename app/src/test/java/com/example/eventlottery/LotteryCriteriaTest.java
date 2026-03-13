@@ -35,6 +35,9 @@ public class LotteryCriteriaTest {
 
             @Override
             public void getEventsByOrganizer(String organizerDeviceId, ListCallback callback) {}
+
+            @Override
+            public void deleteEvent(String eventId, OperationCallback callback) {}
         });
     }
 
