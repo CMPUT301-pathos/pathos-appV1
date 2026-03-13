@@ -104,6 +104,25 @@ public class ProfileController {
      * @param notificationsEnabled true to opt in, false to opt out
      * @param callback             the callback to handle success or failure
      */
+//    public void setNotificationsEnabled(String deviceId, boolean notificationsEnabled,
+//                                        ProfileRepository.ProfileCallback callback) {
+//        getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+//            @Override
+//            public void onSuccess(UserProfile profile) {
+//                if (profile != null) {
+//                    profile.setNotificationsEnabled(notificationsEnabled);
+//                    saveProfile(profile, callback);
+//                } else {
+//                    callback.onFailure(new Exception("Profile not found for deviceId: " + deviceId));
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//                callback.onFailure(e);
+//            }
+//        });
+//    }
     public void setNotificationsEnabled(String deviceId, boolean notificationsEnabled,
                                         ProfileRepository.ProfileCallback callback) {
         getProfile(deviceId, new ProfileRepository.ProfileCallback() {
