@@ -6,9 +6,20 @@ import com.example.eventlottery.domain.NotificationType;
 import com.google.android.gms.tasks.Task;
 
 /**
- * Sends entrant-facing notifications and logs them through {@link NotificationLogRepository}.
+ * Service responsible for sending and logging entrant-facing notifications.
  *
- * MVP scope for US 01.04.01: create a WIN notification record when an entrant is selected.
+ * Responsibilities:
+ * - Create WIN notification records when an entrant is selected from the lottery
+ * - Persist notification records via {@link NotificationLogRepository}
+ *
+ * User stories supported:
+ * - US 01.04.01: Receive notification when chosen from waiting list
+ * - US 01.04.02: Receive notification when not chosen from waiting list
+ *
+ * @author Fawaz Mansoor
+ * @version 1.0
+ * @see NotificationLogRepository
+ * @see NotificationRecord
  */
 public class PathosNotifyService {
 

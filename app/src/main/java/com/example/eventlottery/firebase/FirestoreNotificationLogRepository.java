@@ -9,6 +9,23 @@ import com.google.firebase.firestore.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Firestore implementation of {@link NotificationLogRepository}.
+ * Stores and retrieves notification records from the "notifications" collection.
+ *
+ * Responsibilities:
+ * - Persist notification records to Firestore
+ * - Retrieve notification history for a specific user, ordered by most recent
+ *
+ * User stories supported:
+ * - US 01.04.01: Receive notification when chosen from waiting list
+ * - US 01.04.02: Receive notification when not chosen from waiting list
+ *
+ * @author Fawaz Mansoor
+ * @version 1.0
+ * @see NotificationLogRepository
+ * @see NotificationRecord
+ */
 public class FirestoreNotificationLogRepository implements NotificationLogRepository {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
