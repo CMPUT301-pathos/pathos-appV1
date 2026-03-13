@@ -46,7 +46,9 @@ Includes:
             android:layout_marginBottom="4dp"
             android:src="@drawable/ic_profile_placeholder_forstyledlayout"
             app:civ_border_width="2dp"
-            app:civ_border_color="#FFFFFF" />
+            app:civ_border_color="#FFFFFF"
+            app:civ_circle_background_color="#D3D3D3"
+            />
 
         <TextView
             android:id="@+id/change_photo_text"
