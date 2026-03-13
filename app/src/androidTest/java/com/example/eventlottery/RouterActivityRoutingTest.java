@@ -49,32 +49,30 @@ public class RouterActivityRoutingTest {
     public GrantPermissionRule permissionRule =
             GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS);
 
-    @Rule
-    public ActivityScenarioRule<RouterActivity> activityRule =
-            new ActivityScenarioRule<>(RouterActivity.class);
-
     @Before
     public void setup() throws Exception {
+
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         deviceId = DeviceIdentityService.getDeviceId(context);
 
         db = FirebaseFirestore.getInstance();
 
-        // Ensure no profile exists before routing test
         CountDownLatch latch = new CountDownLatch(1);
+
         db.collection("users").document(deviceId)
                 .delete()
                 .addOnSuccessListener(v -> latch.countDown())
                 .addOnFailureListener(e -> latch.countDown());
 
-        // don't hard-fail if delete fails, but wait a bit
         latch.await(5, TimeUnit.SECONDS);
     }
 
     @Test
-    public void router_withoutExistingProfile_opensSignup() throws Exception {
-        // Signup UI should be visible (uses activity_signup.xml IDs)
-        // If your signup screen uses different IDs, update the withId() lines.
+    public void router_withoutExistingProfile_opensSignup() {
+
+        // Launch AFTER deletion
+        ActivityScenario.launch(RouterActivity.class);
+
         onView(withId(R.id.signup_name)).check(matches(isDisplayed()));
         onView(withId(R.id.btnSignUpUser)).check(matches(isDisplayed()));
     }
