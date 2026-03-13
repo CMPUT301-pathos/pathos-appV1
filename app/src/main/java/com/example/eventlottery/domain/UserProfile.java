@@ -32,6 +32,7 @@ public class UserProfile {
     private String role; // entrant, organizer, admin
     private boolean profileCompleted;
     private Boolean notificationsEnabled = true; // opt-in by default
+    private String profilePhotoUri;
 
     /**
      * List of event history records for this user.
@@ -71,7 +72,6 @@ public class UserProfile {
      * @param phoneNumber user's phone number (optional)
      * @param role        user's role
      */
-    //User or admin definitions
     public UserProfile(String deviceId, String name, String email, String phoneNumber, String role) {
         this.deviceId = deviceId;
         this.name = name;
@@ -115,7 +115,6 @@ public class UserProfile {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-        // phone is optional, so no effect on profileCompleted
     }
 
     public String getRole() {
@@ -140,6 +139,14 @@ public class UserProfile {
 
     public void setNotificationsEnabled(boolean notificationsEnabled) {
         this.notificationsEnabled = notificationsEnabled;
+    }
+
+    public String getProfilePhotoUri() {
+        return profilePhotoUri;
+    }
+
+    public void setProfilePhotoUri(String profilePhotoUri) {
+        this.profilePhotoUri = profilePhotoUri;
     }
 
     /**
