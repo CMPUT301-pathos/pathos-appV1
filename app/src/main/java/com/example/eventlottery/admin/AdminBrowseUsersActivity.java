@@ -3,7 +3,7 @@ package com.example.eventlottery.admin;
 /**
  * Browse/delete users (US 03.05.01, 03.02.01)
  * @author hasratsinghchauhan
- *  * P.S do not change the contents of the file w/o informing/collaboratng (with)  the author.
+ * * P.S do not change the contents of the file w/o informing/collaboratng (with) the author.
  */
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
@@ -21,7 +21,7 @@ import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.example.eventlottery.domain.PolicyViolation;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,7 +35,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Admin activity for browsing and managing user profiles.
@@ -71,6 +73,28 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         setupSearch();
         setupRecyclerView();
         loadUsers();
+    }
+    private void savePolicyViolationRecord(UserProfile user, String reason) {
+        String adminName = "Admin"; // You might want to get actual admin name
+
+        PolicyViolation violation = new PolicyViolation(
+                user.getDeviceId(),
+                user.getName(),
+                user.getEmail(),
+                adminName,
+                reason
+        );
+
+        // Save to Firestore
+        db.collection("policy_violations")
+                .add(violation)
+                .addOnSuccessListener(docRef -> {
+                    Log.d("AdminUsers", "✅ Policy violation saved with ID: " + docRef.getId());
+                    Toast.makeText(this, "Policy violation recorded", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("AdminUsers", "❌ Error saving policy violation", e);
+                });
     }
 
     private void initViews() {
@@ -156,47 +180,47 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
     }
 
     /*private void showDeleteConfirmation(UserProfile user) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete User")
-                .setMessage("Delete user \"" + user.getName() + "\"?\n\nThis cannot be undone.")
-                .setPositiveButton("Delete", (dialog, which) -> deleteUser(user))
-                .setNegativeButton("Cancel", null)
-                .show();
+    new AlertDialog.Builder(this)
+    .setTitle("Delete User")
+    .setMessage("Delete user \"" + user.getName() + "\"?\n\nThis cannot be undone.")
+    .setPositiveButton("Delete", (dialog, which) -> deleteUser(user))
+    .setNegativeButton("Cancel", null)
+    .show();
     }
 
     private void deleteUser(UserProfile user) {
-        db.collection("users")
-                .document(user.getDeviceId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
-                    userList.remove(user);
-                    updateUI();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+    db.collection("users")
+    .document(user.getDeviceId())
+    .delete()
+    .addOnSuccessListener(aVoid -> {
+    Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
+    userList.remove(user);
+    updateUI();
+    })
+    .addOnFailureListener(e -> {
+    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+    });
     }*/
-    /*private void showDeleteConfirmation(UserProfile user) {
-        // Options for deletion reasons
-        String[] options = {
-                "Violated app policy",
-                "Inactive account",
-                "Duplicate account",
-                "User requested",
-                "Other reason"
-        };
+ /*private void showDeleteConfirmation(UserProfile user) {
+ // Options for deletion reasons
+ String[] options = {
+ "Violated app policy",
+ "Inactive account",
+ "Duplicate account",
+ "User requested",
+ "Other reason"
+ };
 
-        new AlertDialog.Builder(this)
-                .setTitle("Delete User")
-                .setMessage("Delete user \"" + user.getName() + "\"?")
-                .setItems(options, (dialog, which) -> {
-                    String reason = options[which];
-                    deleteUser(user, reason);
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
-    }
+ new AlertDialog.Builder(this)
+ .setTitle("Delete User")
+ .setMessage("Delete user \"" + user.getName() + "\"?")
+ .setItems(options, (dialog, which) -> {
+ String reason = options[which];
+ deleteUser(user, reason);
+ })
+ .setNegativeButton("Cancel", null)
+ .show();
+ }
 */
     private void showDeleteConfirmation(UserProfile user) {
         LayoutInflater inflater = getLayoutInflater();
@@ -236,7 +260,7 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
 
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Delete User")
-                .setView(scrollView)  // Use scrollView instead of dialogView
+                .setView(scrollView) // Use scrollView instead of dialogView
                 .setPositiveButton("Delete", (dialog, which) -> {
                     String reason = "No reason specified";
 
@@ -258,90 +282,126 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                 .show();
     }
     /*private void deleteUser(UserProfile user, String reason) {
-        boolean isPolicyViolation = reason.equals("Violated app policy");
+    boolean isPolicyViolation = reason.equals("Violated app policy");
 
-        // Delete from Firestore
-        db.collection("users")
-                .document(user.getDeviceId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    // If policy violation, increment counter
-                    if (isPolicyViolation) {
-                        incrementPolicyViolationCount();
-                    }
+    // Delete from Firestore
+    db.collection("users")
+    .document(user.getDeviceId())
+    .delete()
+    .addOnSuccessListener(aVoid -> {
+    // If policy violation, increment counter
+    if (isPolicyViolation) {
+    incrementPolicyViolationCount();
+    }
 
-                    Toast.makeText(this, "User deleted: " + reason, Toast.LENGTH_SHORT).show();
-                    userList.remove(user);
-                    updateUI();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+    Toast.makeText(this, "User deleted: " + reason, Toast.LENGTH_SHORT).show();
+    userList.remove(user);
+    updateUI();
+    })
+    .addOnFailureListener(e -> {
+    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+    });
     }*/
-       /*private void deleteUser(UserProfile user, String reason) {
-        boolean isPolicyViolation = reason.equals("Violated app policy");
+ /*private void deleteUser(UserProfile user, String reason) {
+ boolean isPolicyViolation = reason.equals("Violated app policy");
 
-        // Show loading
-        ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Deleting user...");
-        progressDialog.show();
+ // Show loading
+ ProgressDialog progressDialog = new ProgressDialog(this);
+ progressDialog.setMessage("Deleting user...");
+ progressDialog.show();
 
-        // Delete from Firestore
-        db.collection("users")
-                .document(user.getDeviceId())
-                .delete()
-                .addOnSuccessListener(aVoid -> {
-                    progressDialog.dismiss();
+ // Delete from Firestore
+ db.collection("users")
+ .document(user.getDeviceId())
+ .delete()
+ .addOnSuccessListener(aVoid -> {
+ progressDialog.dismiss();
 
-                    // If policy violation, increment counter
-                    if (isPolicyViolation) {
-                        incrementPolicyViolationCount();
-                        Toast.makeText(this, "⚠️ User deleted for policy violation", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "User deleted: " + reason, Toast.LENGTH_SHORT).show();
-                    }
+ // If policy violation, increment counter
+ if (isPolicyViolation) {
+ incrementPolicyViolationCount();
+ Toast.makeText(this, " User deleted for policy violation", Toast.LENGTH_LONG).show();
+ } else {
+ Toast.makeText(this, "User deleted: " + reason, Toast.LENGTH_SHORT).show();
+ }
 
-                    userList.remove(user);
-                    updateUI();
-                })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }*/
+ userList.remove(user);
+ updateUI();
+ })
+ .addOnFailureListener(e -> {
+ progressDialog.dismiss();
+ Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+ });
+ }*/
+ /* private void deleteUser(UserProfile user, String reason) {
+ boolean isPolicyViolation = reason.equals("Violated app policy");
+
+ // Show loading
+ ProgressDialog progressDialog = new ProgressDialog(this);
+ progressDialog.setMessage("Deleting user...");
+ progressDialog.setCancelable(false);
+ progressDialog.show();
+
+ // Delete from Firestore
+ db.collection("users")
+ .document(user.getDeviceId())
+ .delete()
+ .addOnSuccessListener(aVoid -> {
+ progressDialog.dismiss();
+
+ // If policy violation, increment counter
+ if (isPolicyViolation) {
+ incrementPolicyViolationCount();
+ Toast.makeText(this, " User deleted for policy violation", Toast.LENGTH_LONG).show();
+ } else {
+ Toast.makeText(this, "User deleted: " + reason, Toast.LENGTH_SHORT).show();
+ }
+
+ userList.remove(user);
+ updateUI();
+ })
+ .addOnFailureListener(e -> {
+ progressDialog.dismiss();
+ Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+ });
+ }
+*/
     private void deleteUser(UserProfile user, String reason) {
         boolean isPolicyViolation = reason.equals("Violated app policy");
 
-        // Show loading
-        ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Deleting user...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        // If policy violation, SAVE TO FIRESTORE FIRST
+        if (isPolicyViolation) {
+            Map<String, Object> violation = new HashMap<>();
+            violation.put("userId", user.getDeviceId());
+            violation.put("userName", user.getName());
+            violation.put("userEmail", user.getEmail());
+            violation.put("deletedAt", System.currentTimeMillis());
+            violation.put("reason", reason);
 
-        // Delete from Firestore
+            // Save to Firestore
+            db.collection("policy_violations")
+                    .add(violation)
+                    .addOnSuccessListener(docRef -> {
+                        Log.d("Admin", " Violation saved: " + user.getName());
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Admin", " Failed to save violation", e);
+                    });
+        }
+
+        // Then delete the user
         db.collection("users")
                 .document(user.getDeviceId())
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    progressDialog.dismiss();
-
-                    // If policy violation, increment counter
                     if (isPolicyViolation) {
                         incrementPolicyViolationCount();
-                        Toast.makeText(this, "⚠️ User deleted for policy violation", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(this, "User deleted: " + reason, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, " User deleted for policy violation", Toast.LENGTH_LONG).show();
                     }
-
                     userList.remove(user);
                     updateUI();
-                })
-                .addOnFailureListener(e -> {
-                    progressDialog.dismiss();
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-
     private void incrementPolicyViolationCount() {
         try {
             // Use MODE_PRIVATE to ensure proper access
@@ -355,7 +415,7 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
             editor.apply(); // apply() is asynchronous but usually fine
 
             // Log for debugging
-            Log.d("AdminUsers", "✅ Policy violation incremented: " + currentCount + " → " + newCount);
+            Log.d("AdminUsers", " Policy violation incremented: " + currentCount + " → " + newCount);
 
             // Optional: Show toast for confirmation
             Toast.makeText(this, "Policy violation recorded! Total: " + newCount, Toast.LENGTH_SHORT).show();
@@ -382,7 +442,7 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
     private void removeOrganizerRole(UserProfile user) {
         db.collection("users")
                 .document(user.getDeviceId())
-                .update("role", "entrant")  // Demote to entrant
+                .update("role", "entrant") // Demote to entrant
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Organizer role removed", Toast.LENGTH_SHORT).show();
                     user.setRole("entrant");

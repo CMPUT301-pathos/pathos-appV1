@@ -21,12 +21,15 @@ import android.os.Bundle;
 import android.widget.TextView;
 import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
 import androidx.cardview.widget.CardView;
 import com.example.eventlottery.admin.AdminBrowseImages;
 import com.example.eventlottery.admin.AdminBrowseEventsActivity;
 import com.example.eventlottery.admin.AdminBrowseUsersActivity;
 import com.example.eventlottery.admin.AdminNotificationLogs;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
+
 
 
 /**
@@ -56,6 +59,8 @@ public class AdminMainActivity extends AppCompatActivity {
     private TextView tvEventsCount, tvUsersCount, tvOrganizersCount;
     private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages;
     private FirebaseFirestore db;
+    private CardView cardPolicyDetails;  // ← Make sure this line exists
+
     private TextView tvPolicyViolations;
 
     private CardView cardNotificationLogs;  // ADD THIS
@@ -84,6 +89,8 @@ public class AdminMainActivity extends AppCompatActivity {
         cardBrowseUsers = findViewById(R.id.cardBrowseUsers);
         cardBrowseImages = findViewById(R.id.cardBrowseImages);
         cardNotificationLogs = findViewById(R.id.cardNotificationLogs);
+        cardPolicyDetails = findViewById(R.id.cardPolicyDetails);
+
     }
     /**
      * Configures click listeners for all navigation cards.
@@ -102,6 +109,9 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardNotificationLogs.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminNotificationLogs.class)));
+
+        cardPolicyDetails.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminPolicyViolationsActivity.class)));
     }
     /**
      * Loads and displays platform statistics from Firebase.
