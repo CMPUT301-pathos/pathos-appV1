@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -17,6 +18,9 @@ import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * ProfileFragment (Account Info)
@@ -47,6 +51,10 @@ public class ProfileFragment extends Fragment {
     private Button saveButton, deleteButton, eventHistoryButton;
     private Switch optOutSwitch;
 
+    // Add these:
+    private CircleImageView profileImage;
+    private ActivityResultLauncher<String> pickImageLauncher;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,10 +66,15 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
+
         // Bind views
         editName = view.findViewById(R.id.edit_name);
         editEmail = view.findViewById(R.id.edit_email);
         editPhone = view.findViewById(R.id.edit_phone);
+
+        profileImage = view.findViewById(R.id.profile_image);
+        TextView changePhotoText = view.findViewById(R.id.change_photo_text);
+
 
         saveButton = view.findViewById(R.id.button_save_profile);
         deleteButton = view.findViewById(R.id.button_delete_account);
@@ -82,6 +95,29 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
+        pickImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        profileImage.setImageURI(uri);
+                        profileController.updateProfilePhoto(deviceId, uri.toString(),
+                                new ProfileRepository.ProfileCallback() {
+                                    @Override
+                                    public void onSuccess(UserProfile profile) {
+                                        Toast.makeText(getContext(), "Photo updated!", Toast.LENGTH_SHORT).show();
+                                    }
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Toast.makeText(getContext(), "Failed to save photo", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                }
+        );
+
+        View.OnClickListener photoClickListener = v -> pickImageLauncher.launch("image/*");
+        profileImage.setOnClickListener(photoClickListener);
+        changePhotoText.setOnClickListener(photoClickListener);
         // Delete account
         deleteButton.setOnClickListener(v -> showDeleteConfirmDialog());
 
@@ -97,6 +133,11 @@ public class ProfileFragment extends Fragment {
                     editName.setText(profile.getName());
                     editEmail.setText(profile.getEmail());
                     editPhone.setText(profile.getPhoneNumber());
+
+                    // Load saved profile photo
+                    if (profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
+                        profileImage.setImageURI(android.net.Uri.parse(profile.getProfilePhotoUri()));
+                    }
 
                     optOutSwitch.setOnCheckedChangeListener(null);
                     optOutSwitch.setChecked(!profile.isNotificationsEnabled());

@@ -104,6 +104,34 @@ public class ProfileController {
     }
 
     /**
+     * Updates the profile photo URI for a user.
+     *
+     * @param deviceId the unique device identifier
+     * @param photoUri the URI string of the selected photo
+     * @param callback the callback to handle success or failure
+     */
+    public void updateProfilePhoto(String deviceId, String photoUri,
+                                   ProfileRepository.ProfileCallback callback) {
+        getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (profile != null) {
+                    profile.setProfilePhotoUri(photoUri);
+                    saveProfile(profile, callback);
+                } else {
+                    callback.onFailure(
+                            new Exception("Profile not found for deviceId: " + deviceId));
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
+    /**
      * Toggles notification preferences for a user profile.
      * Supports US 01.04.03 - Opt out of receiving notifications.
      *
@@ -111,25 +139,6 @@ public class ProfileController {
      * @param notificationsEnabled true to opt in, false to opt out
      * @param callback             the callback to handle success or failure
      */
-//    public void setNotificationsEnabled(String deviceId, boolean notificationsEnabled,
-//                                        ProfileRepository.ProfileCallback callback) {
-//        getProfile(deviceId, new ProfileRepository.ProfileCallback() {
-//            @Override
-//            public void onSuccess(UserProfile profile) {
-//                if (profile != null) {
-//                    profile.setNotificationsEnabled(notificationsEnabled);
-//                    saveProfile(profile, callback);
-//                } else {
-//                    callback.onFailure(new Exception("Profile not found for deviceId: " + deviceId));
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//                callback.onFailure(e);
-//            }
-//        });
-//    }
     public void setNotificationsEnabled(String deviceId, boolean notificationsEnabled,
                                         ProfileRepository.ProfileCallback callback) {
         getProfile(deviceId, new ProfileRepository.ProfileCallback() {

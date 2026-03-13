@@ -30,13 +30,35 @@ Includes:
             android:id="@+id/tvAccountInfoTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="ACCOUNT INFO"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="#FFFFFF"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="ACCOUNT INFO"
+            android:textColor="#FFFFFF"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile_image"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="4dp"
+            android:src="@drawable/ic_profile_placeholder_forstyledlayout"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/change_photo_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:text="Change Photo"
+            android:textColor="#80CBC4"
+            android:textSize="14sp"
+            android:clickable="true"
+            android:focusable="true" />
 
         <!-- Edit Info section -->
         <TextView
