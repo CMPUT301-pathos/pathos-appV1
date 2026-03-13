@@ -35,7 +35,7 @@
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:letterSpacing="0.05" />
+            android:letterSpacing="0.1" />
     </LinearLayout>
 
     <ScrollView
