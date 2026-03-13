@@ -1,0 +1,11 @@
+com.example.eventlottery
+com.example.eventlottery.admin
+com.example.eventlottery.adminTest
+com.example.eventlottery.controller
+com.example.eventlottery.data
+com.example.eventlottery.data.memory
+com.example.eventlottery.domain
+com.example.eventlottery.firebase
+com.example.eventlottery.service
+com.example.eventlottery.ui
+com.example.eventlottery.util
