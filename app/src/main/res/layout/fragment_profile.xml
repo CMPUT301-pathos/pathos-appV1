@@ -11,6 +11,7 @@ Includes:
 -->
 
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/profileScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -111,14 +112,21 @@ Includes:
             android:layout_marginBottom="16dp" />
 
         <!-- Save button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button_save_profile"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SAVE CHANGES"
-            android:backgroundTint="#4CAF50"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:text="Save Changes"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="16dp" />
+            app:backgroundTint="#43A047"
+            app:cornerRadius="18dp"
+            app:elevation="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
 
         <!-- Notification opt-out (placeholder until wired) -->
         <TextView
@@ -150,14 +158,23 @@ Includes:
             android:layout_marginBottom="16dp" />
 
         <!--  Added: Event History button -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button_event_history"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="VIEW EVENT HISTORY"
-            android:backgroundTint="#212121"
+            android:layout_height="56dp"
+            android:layout_marginBottom="20dp"
+            android:text="View Event History"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginBottom="20dp" />
+            app:backgroundTint="#00000000"
+            app:strokeColor="#CCFFFFFF"
+            app:strokeWidth="2dp"
+            app:cornerRadius="18dp"
+            app:elevation="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp" />
 
         <!-- Account security -->
         <TextView
@@ -177,15 +194,20 @@ Includes:
             android:layout_marginBottom="16dp">
 
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_delete_account"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="DELETE ACCOUNT"
-                android:backgroundTint="#D32F2F"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Delete Account"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:layout_marginStart="8dp" />
+                app:backgroundTint="#C62828"
+                app:cornerRadius="18dp"
+                app:elevation="2dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp" />
         </LinearLayout>
 
     </LinearLayout>
