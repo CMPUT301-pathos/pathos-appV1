@@ -10,7 +10,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
+/*
+ * UI test for US 01.02.03 (Event History).
+ *NOT IMPLEMENTED
+ */
 @RunWith(AndroidJUnit4.class)
 public class EventHistoryUiTest {
 

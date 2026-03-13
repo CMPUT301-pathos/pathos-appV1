@@ -2,10 +2,10 @@ package com.example.eventlottery;
 
 import android.content.Context;
 
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.GrantPermissionRule;
-import androidx.test.core.app.ActivityScenario;
 
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -26,23 +26,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Instrumented test for RouterActivity routing logic.
+ * Instrumented test verifying:
+ * - launching RouterActivity with no existing profile creates a default Firestore profile
+ * - relaunching RouterActivity still finds that profile for the same device
  *
- * Validates device-based routing behavior:
- * - if no profile exists for the current device, RouterActivity creates a default
- *   blank profile in Firestore
- * - the created default profile should have role "user"
- * - the created default profile should have profileCompleted set to false
- *
- * Notes:
- * - this test uses real Firestore and assumes collection "users"
- * - notification permission is granted up front to avoid system permission UI
+ * Uses real Firestore (collection "users") and the current deviceId.
  *
  * @author Kenneth Joseph
  * @version 1.3
  */
 @RunWith(AndroidJUnit4.class)
-public class RouterActivityRoutingTest {
+public class RouterCreatesProfileAndAutoLoginTest {
 
     @Rule
     public GrantPermissionRule permissionRule =
@@ -67,19 +61,34 @@ public class RouterActivityRoutingTest {
     }
 
     @Test
-    public void router_withoutExistingProfile_createsDefaultProfile_andOpensMain() throws Exception {
-        androidx.test.core.app.ActivityScenario.launch(RouterActivity.class);
+    public void router_createsDefaultFirestoreDoc_andFindsItAgainAfterRelaunch() throws Exception {
+        ActivityScenario<RouterActivity> scenario1 = ActivityScenario.launch(RouterActivity.class);
 
-        DocumentSnapshot doc = waitForUserDoc(deviceId, 10);
-        assertNotNull("Profile document should be created", doc);
-        assertTrue("Profile document should exist", doc.exists());
+        DocumentSnapshot firstDoc = waitForUserDoc(deviceId, 10);
+        assertNotNull("Profile document should be created", firstDoc);
+        assertTrue("Profile document should exist after first launch", firstDoc.exists());
+        assertEquals(deviceId, firstDoc.getString("deviceId"));
+        assertEquals("user", firstDoc.getString("role"));
 
-        assertEquals(deviceId, doc.getString("deviceId"));
-        assertEquals("user", doc.getString("role"));
+        Boolean firstCompleted = firstDoc.getBoolean("profileCompleted");
+        assertNotNull("profileCompleted should exist", firstCompleted);
+        assertFalse("Default created profile should be incomplete", firstCompleted);
 
-        Boolean profileCompleted = doc.getBoolean("profileCompleted");
-        assertNotNull("profileCompleted field should exist", profileCompleted);
-        assertFalse("Default created profile should be incomplete", profileCompleted);
+        scenario1.close();
+
+        ActivityScenario<RouterActivity> scenario2 = ActivityScenario.launch(RouterActivity.class);
+
+        DocumentSnapshot secondDoc = waitForUserDoc(deviceId, 10);
+        assertNotNull("Profile document should still exist after relaunch", secondDoc);
+        assertTrue("Profile document should still exist after relaunch", secondDoc.exists());
+        assertEquals(deviceId, secondDoc.getString("deviceId"));
+        assertEquals("user", secondDoc.getString("role"));
+
+        Boolean secondCompleted = secondDoc.getBoolean("profileCompleted");
+        assertNotNull("profileCompleted should still exist after relaunch", secondCompleted);
+        assertFalse("Profile should still be incomplete until user fills it", secondCompleted);
+
+        scenario2.close();
     }
 
     private DocumentSnapshot waitForUserDoc(String id, int timeoutSeconds) throws Exception {
@@ -104,7 +113,7 @@ public class RouterActivityRoutingTest {
                 return doc;
             }
 
-            Thread.sleep(300);
+            Thread.sleep(250);
         }
 
         return null;

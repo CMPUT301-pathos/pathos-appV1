@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Unit tests for US 01.02.03 (Event History).
+ * Unit tests for US 01.02.03 (Event History).(NOT IMPLEMENTED)
  *
  * These tests should validate:
  * 1) history list returns records for a user/device
