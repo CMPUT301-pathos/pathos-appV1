@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.service.NotificationListenerService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
@@ -17,21 +19,49 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * Tabs:
  * - Home (DashboardFragment)
  * - Events (EventsFragment)
- * - Organize (OrganizerDashboardFragment)  <-- NEW
+ * - Organize (OrganizerDashboardFragment)
  * - Notifications (EntrantInvitationFragment)
  * - Profile (ProfileFragment)
  *
- * @author Kenneth Joseph
- * @version 1.0
+ * Also starts a Firestore real-time listener for push-style notifications
+ * when the entrant is invited to an event.
+ *
+ * @author Kenneth Joseph, Fawaz Mansoor
+ * @version 1.1
  */
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
+    private NotificationListenerService notificationListenerService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Start real-time notification listener
+        String deviceId = DeviceIdentityService.getDeviceId(this);
+        notificationListenerService = new NotificationListenerService(this, deviceId);
+        notificationListenerService.startListening();
+        notificationListenerService.setOnInviteReceivedListener(eventName -> {
+            runOnUiThread(() ->
+                    new android.app.AlertDialog.Builder(this)
+                            .setTitle("🎉 You've been selected!")
+                            .setMessage("You have been invited to join: " + eventName)
+                            .setPositiveButton("View Notifications", (d, w) -> {
+                                bottomNav.setSelectedItemId(R.id.nav_notifications);
+                            })
+                            .setNegativeButton("Later", null)
+                            .show()
+            );
+        });
+
+        // Request notification permission on Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(new String[]{
+                    android.Manifest.permission.POST_NOTIFICATIONS
+            }, 1001);
+        }
 
         bottomNav = findViewById(R.id.bottom_nav);
 
@@ -54,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            // NEW: Organizer tab
             if (id == R.id.nav_organizer) {
                 switchTo(new OrganizerDashboardFragment());
                 return true;
@@ -73,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Unknown tab", Toast.LENGTH_SHORT).show();
             return false;
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (notificationListenerService != null) {
+            notificationListenerService.stopListening();
+        }
     }
 
     private void switchTo(@NonNull Fragment fragment) {

@@ -37,7 +37,7 @@ public class UserProfile {
      * Used for US 01.02.03 - Event History display. -Hasrat
      */
     private List<EventHistoryRecord> eventHistory;
-    private boolean notificationsEnabled = true; // opt-in by default
+    private Boolean notificationsEnabled = true; // opt-in by default
     /**
      * Empty constructor required by Firestore to deserialize documents.
      */
@@ -123,7 +123,7 @@ public class UserProfile {
     }
 
     public boolean isNotificationsEnabled() {
-        return notificationsEnabled;
+        return notificationsEnabled == null || notificationsEnabled;
     }
 
     public void setNotificationsEnabled(boolean notificationsEnabled) {

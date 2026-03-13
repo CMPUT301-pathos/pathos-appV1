@@ -98,35 +98,42 @@ public class ProfileFragment extends Fragment {
         profileController.getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
             public void onSuccess(UserProfile profile) {
+                if (getActivity() == null) return;
                 if (profile != null) {
                     editName.setText(profile.getName());
                     editEmail.setText(profile.getEmail());
                     editPhone.setText(profile.getPhoneNumber());
 
-                    // Set switch state BEFORE attaching listener to avoid triggering save
                     optOutSwitch.setOnCheckedChangeListener(null);
                     optOutSwitch.setChecked(!profile.isNotificationsEnabled());
                     optOutSwitch.jumpDrawablesToCurrentState();
                 }
 
-                // Attach listener AFTER setting initial state
                 optOutSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    profileController.setNotificationsEnabled(deviceId, !isChecked,
+                    boolean notificationsEnabled = !isChecked;
+                    android.content.Context appContext = requireContext().getApplicationContext();
+                    profileController.setNotificationsEnabled(deviceId, notificationsEnabled,
                             new ProfileRepository.ProfileCallback() {
                                 @Override
-                                public void onSuccess(UserProfile profile) {
-                                    Toast.makeText(getContext(),
-                                            isChecked ? "Notifications disabled" : "Notifications enabled",
-                                            Toast.LENGTH_SHORT).show();
+                                public void onSuccess(UserProfile updatedProfile) {
+                                    String msg = notificationsEnabled
+                                            ? "Notifications enabled ✓"
+                                            : "Notifications disabled — you won't receive lottery alerts.";
+                                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
+                                            Toast.makeText(appContext, msg, Toast.LENGTH_LONG).show()
+                                    );
                                 }
 
                                 @Override
                                 public void onFailure(Exception e) {
-                                    Toast.makeText(getContext(),
-                                            "Failed to update notification preference",
-                                            Toast.LENGTH_SHORT).show();
-                                    optOutSwitch.setOnCheckedChangeListener(null);
-                                    optOutSwitch.setChecked(!isChecked);
+                                    new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                                        Toast.makeText(appContext,
+                                                "Failed to update notification preference",
+                                                Toast.LENGTH_SHORT).show();
+                                        optOutSwitch.setOnCheckedChangeListener(null);
+                                        optOutSwitch.setChecked(!isChecked);
+                                        optOutSwitch.jumpDrawablesToCurrentState();
+                                    });
                                 }
                             });
                 });
@@ -134,7 +141,8 @@ public class ProfileFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(getContext(), "Failed to load profile", Toast.LENGTH_SHORT).show();
+                if (getActivity() == null) return;
+                Toast.makeText(getActivity(), "Failed to load profile", Toast.LENGTH_SHORT).show();
             }
         });
     }

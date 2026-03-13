@@ -30,13 +30,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="WAITING"
-            android:textColor="#FFFFFF"
+            android:textColor="#CCFFFFFF"
             android:textSize="11sp"
             android:background="@drawable/bg_filter_input"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="4dp"
-            android:paddingBottom="4dp" />
+            android:paddingBottom="4dp"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_remove_entrant"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="✕"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:backgroundTint="#B00020"
+            app:cornerRadius="8dp"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
 
     </LinearLayout>
 

@@ -133,14 +133,14 @@ public class OrganizerEventDetailFragment extends Fragment {
     }
 
     private void addEntrantRow(LinearLayout container, String deviceId, WaitStatus status) {
-        // Inflate row and set deviceId as placeholder, then load name async
         View row = LayoutInflater.from(getContext())
                 .inflate(R.layout.item_entrant_row, container, false);
 
         TextView tvName = row.findViewById(R.id.tv_entrant_name);
         TextView tvStatus = row.findViewById(R.id.tv_entrant_status);
+        MaterialButton btnRemove = row.findViewById(R.id.btn_remove_entrant);
 
-        tvName.setText(deviceId); // placeholder until profile loads
+        tvName.setText(deviceId);
         tvStatus.setText(status.name());
 
         container.addView(row);
@@ -156,10 +156,57 @@ public class OrganizerEventDetailFragment extends Fragment {
             }
 
             @Override
-            public void onFailure(Exception e) {
-                // Keep deviceId as fallback
-            }
+            public void onFailure(Exception e) { }
         });
+
+        // Remove button — only show for WAITING and INVITED entrants
+        if (status == WaitStatus.WAITING || status == WaitStatus.INVITED) {
+            btnRemove.setVisibility(View.VISIBLE);
+            btnRemove.setOnClickListener(v -> {
+                new android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Remove Entrant")
+                        .setMessage("Remove " + tvName.getText() + " from the waitlist? They will be notified.")
+                        .setPositiveButton("Remove", (dialog, which) -> {
+                            removeEntrant(container, row, deviceId);
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        } else {
+            btnRemove.setVisibility(View.GONE);
+        }
+    }
+
+    private void removeEntrant(LinearLayout container, View row, String deviceId) {
+        // 1. Update status to CANCELLED in Firestore
+        waitListRepository.updateStatus(eventId, deviceId, WaitStatus.CANCELLED);
+
+        // 2. Write a notification document so the entrant sees it
+        java.util.Map<String, Object> notifData = new java.util.HashMap<>();
+        notifData.put("deviceId", deviceId);
+        notifData.put("eventId", eventId);
+        notifData.put("type", "CANCELLED");
+        notifData.put("message", "You have been removed from the waitlist for: " + eventName);
+        notifData.put("timestamp", System.currentTimeMillis());
+        notifData.put("read", false);
+
+        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("notifications")
+                .add(notifData)
+                .addOnSuccessListener(ref -> {
+                    if (getActivity() == null) return;
+                    Toast.makeText(getContext(),
+                            "Entrant removed and notified.",
+                            Toast.LENGTH_SHORT).show();
+                    container.removeView(row);
+                })
+                .addOnFailureListener(e -> {
+                    if (getActivity() == null) return;
+                    Toast.makeText(getContext(),
+                            "Removed but failed to send notification.",
+                            Toast.LENGTH_SHORT).show();
+                    container.removeView(row);
+                });
     }
 
     private void showLotteryDrawDialog() {
