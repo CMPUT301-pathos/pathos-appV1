@@ -239,6 +239,7 @@ public class ProfileFragment extends Fragment {
                         @Override
                         public void onSuccess(UserProfile profile) {
                             Toast.makeText(getContext(), "Account deleted successfully.", Toast.LENGTH_SHORT).show();
+                            requireActivity().finishAffinity();
                         }
 
                         @Override
