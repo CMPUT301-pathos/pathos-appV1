@@ -20,7 +20,7 @@
             android:id="@+id/tvOrgTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="DASHBOARD"
+            android:text="ORGANIZER DASHBOARD"
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
