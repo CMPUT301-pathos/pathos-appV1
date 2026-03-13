@@ -6,6 +6,20 @@ import com.example.eventlottery.domain.WaitStatus;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * Unit tests for core domain logic across multiple user stories.
+ *
+ * User stories covered:
+ * - US 01.05.02: Entrant accepts or declines an invitation from the waiting list
+ * - US 01.02.02: Entrant can update their personal profile information
+ * - US 01.07.01: Entrant is identified by their device
+ *
+ * @author Fawaz Mansoor, Hasrat Singh Chauhan
+ * @version 1.2
+ * @see WaitListRecord
+ * @see UserProfile
+ */
+
 public class ExampleUnitTest {
 
     @Test
