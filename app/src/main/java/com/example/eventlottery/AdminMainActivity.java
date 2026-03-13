@@ -1,9 +1,3 @@
-//package com.example.eventlottery;
-
-//import android.os.Bundle;
-
-//import androidx.appcompat.app.AppCompatActivity;
-
 /**
  * @author hasratsinghchauhan
  *  * P.S do not change the contents of the file w/o informing/collaboratng (with)  the author.
@@ -19,19 +13,21 @@
 }*/
 package com.example.eventlottery;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
-
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import com.example.eventlottery.admin.AdminBrowseImages;
-import android.content.Intent;
 import com.example.eventlottery.admin.AdminBrowseEventsActivity;
 import com.example.eventlottery.admin.AdminBrowseUsersActivity;
 import com.example.eventlottery.admin.AdminNotificationLogs;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 
 /**
  * Admin Main Dashboard Activity
@@ -60,6 +56,8 @@ public class AdminMainActivity extends AppCompatActivity {
     private TextView tvEventsCount, tvUsersCount, tvOrganizersCount;
     private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages;
     private FirebaseFirestore db;
+    private TextView tvPolicyViolations;
+
     private CardView cardNotificationLogs;  // ADD THIS
 
     @Override
@@ -81,6 +79,7 @@ public class AdminMainActivity extends AppCompatActivity {
         tvEventsCount = findViewById(R.id.tvEventsCount);
         tvUsersCount = findViewById(R.id.tvUsersCount);
         tvOrganizersCount = findViewById(R.id.tvOrganizersCount);
+        tvPolicyViolations = findViewById(R.id.tvPolicyViolations);
         cardBrowseEvents = findViewById(R.id.cardBrowseEvents);
         cardBrowseUsers = findViewById(R.id.cardBrowseUsers);
         cardBrowseImages = findViewById(R.id.cardBrowseImages);
@@ -90,7 +89,8 @@ public class AdminMainActivity extends AppCompatActivity {
      * Configures click listeners for all navigation cards.
      * Each card launches its corresponding admin management activity.
      */
-    private void setupClickListeners() {
+    private void setupClickListeners()
+    {
         cardBrowseEvents.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminBrowseEventsActivity.class)));
 
@@ -99,6 +99,7 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardBrowseImages.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminBrowseImages.class)));
+
         cardNotificationLogs.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminNotificationLogs.class)));
     }
@@ -112,6 +113,30 @@ public class AdminMainActivity extends AppCompatActivity {
      *
      * Each query runs independently to prevent one failure from affecting others.
      */
+   /* private void loadStatistics() {
+        // Count events
+        db.collection("events")
+                .get()
+                .addOnSuccessListener(query ->
+                        tvEventsCount.setText(String.valueOf(query.size())));
+
+        // Count users
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(query ->
+                        tvUsersCount.setText(String.valueOf(query.size())));
+
+        // Count organizers
+        db.collection("users")
+                .whereEqualTo("role", "organizer")
+                .get()
+                .addOnSuccessListener(query ->
+                        tvOrganizersCount.setText(String.valueOf(query.size())));
+
+        SharedPreferences prefs = getSharedPreferences("AdminStats", MODE_PRIVATE);
+        int violations = prefs.getInt("policyViolations", 0);
+        tvPolicyViolations.setText(String.valueOf(violations));
+    }*/
     private void loadStatistics() {
         // Count events
         db.collection("events")
@@ -131,8 +156,20 @@ public class AdminMainActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(query ->
                         tvOrganizersCount.setText(String.valueOf(query.size())));
-    }
 
+        // Load policy violations count - FIXED VERSION
+        try {
+            SharedPreferences prefs = getSharedPreferences("AdminStats", MODE_PRIVATE);
+            int violations = prefs.getInt("policyViolations", 0);
+            tvPolicyViolations.setText(String.valueOf(violations));
+
+            // Debug log
+            Log.d("AdminMain", "📊 Policy violations loaded: " + violations);
+        } catch (Exception e) {
+            Log.e("AdminMain", "Error loading policy violations", e);
+            tvPolicyViolations.setText("0");
+        }
+    }
     /**
      * Handles the Up navigation button in the action bar.
      * Closes the current activity and returns to the previous screen.

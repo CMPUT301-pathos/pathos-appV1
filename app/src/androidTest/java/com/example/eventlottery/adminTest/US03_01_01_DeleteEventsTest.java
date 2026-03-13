@@ -21,6 +21,13 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.action.ViewActions;
 
 /**
  * Test for US 03.01.01 - As an administrator, I want to be able to remove events.
@@ -42,9 +49,6 @@ public class US03_01_01_DeleteEventsTest {
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
     }
 
-    @Test
-    public void testDeleteConfirmationDialogAppears() {
-        // Click delete on first item - would need to mock
-        // This test verifies the dialog shows when delete is clicked
-    }
+
+
 }
