@@ -26,9 +26,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  *
  * Behavior:
  * - Receives the user's profile completion state from RouterActivity
- * - Restricts access to protected tabs until the user's required profile
- *   information has been completed
- * - Opens the Profile tab first for incomplete profiles
+ * - Allows users to browse the app even if their profile is incomplete
+ * - Restricts protected actions inside relevant fragments until the user's
+ *   required profile information has been completed
  * - Starts a Firestore real-time listener for entrant event invitations
  * - Requests notification permission on Android 13+
  *
@@ -38,9 +38,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * - US 01.07.01: User is identified by device
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.2
+ * @version 1.3
  */
-
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
@@ -63,14 +62,7 @@ public class MainActivity extends AppCompatActivity {
                             .setTitle("🎉 You've been selected!")
                             .setMessage("You have been invited to join: " + eventName)
                             .setPositiveButton("View Notifications", (d, w) -> {
-                                if (profileCompleted) {
-                                    bottomNav.setSelectedItemId(R.id.nav_notifications);
-                                } else {
-                                    Toast.makeText(this,
-                                            "Complete your profile first.",
-                                            Toast.LENGTH_SHORT).show();
-                                    bottomNav.setSelectedItemId(R.id.nav_profile);
-                                }
+                                bottomNav.setSelectedItemId(R.id.nav_notifications);
                             })
                             .setNegativeButton("Later", null)
                             .show()
@@ -86,34 +78,18 @@ public class MainActivity extends AppCompatActivity {
         bottomNav = findViewById(R.id.bottom_nav);
 
         if (savedInstanceState == null) {
-            if (profileCompleted) {
-                switchTo(new DashboardFragment());
-                bottomNav.setSelectedItemId(R.id.nav_home);
-            } else {
-                switchTo(new ProfileFragment());
-                bottomNav.setSelectedItemId(R.id.nav_profile);
+            switchTo(new DashboardFragment());
+            bottomNav.setSelectedItemId(R.id.nav_home);
+
+            if (!profileCompleted) {
                 Toast.makeText(this,
-                        "Please complete your profile before using the app.",
+                        "Complete your profile to join or create events.",
                         Toast.LENGTH_LONG).show();
             }
         }
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            if (id == R.id.nav_profile) {
-                switchTo(new ProfileFragment());
-                return true;
-            }
-
-            if (!profileCompleted) {
-                Toast.makeText(this,
-                        "Complete your profile first.",
-                        Toast.LENGTH_SHORT).show();
-                switchTo(new ProfileFragment());
-                bottomNav.setSelectedItemId(R.id.nav_profile);
-                return false;
-            }
 
             if (id == R.id.nav_home) {
                 switchTo(new DashboardFragment());
@@ -132,6 +108,11 @@ public class MainActivity extends AppCompatActivity {
 
             if (id == R.id.nav_notifications) {
                 switchTo(new EntrantInvitationFragment());
+                return true;
+            }
+
+            if (id == R.id.nav_profile) {
+                switchTo(new ProfileFragment());
                 return true;
             }
 
@@ -166,13 +147,11 @@ public class MainActivity extends AppCompatActivity {
                             profileCompleted = profile.isProfileCompleted();
 
                             if (!wasCompleted && profileCompleted) {
-                                runOnUiThread(() -> {
-                                    Toast.makeText(MainActivity.this,
-                                            "Profile completed. App unlocked!",
-                                            Toast.LENGTH_SHORT).show();
-                                    switchTo(new DashboardFragment());
-                                    bottomNav.setSelectedItemId(R.id.nav_home);
-                                });
+                                runOnUiThread(() ->
+                                        Toast.makeText(MainActivity.this,
+                                                "Profile completed. App unlocked!",
+                                                Toast.LENGTH_SHORT).show()
+                                );
                             }
                         }
                     }
