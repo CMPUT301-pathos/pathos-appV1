@@ -3,13 +3,16 @@ package com.example.eventlottery;
 import android.content.Context;
 
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,6 +44,14 @@ public class SignupCreatesProfileAndAutoLoginTest {
     private FirebaseFirestore db;
     private String deviceId;
 
+    @Rule
+    public GrantPermissionRule permissionRule =
+            GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS);
+
+    @Rule
+    public ActivityScenarioRule<RouterActivity> activityRule =
+            new ActivityScenarioRule<>(RouterActivity.class);
+
     @Before
     public void setup() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
@@ -59,9 +70,6 @@ public class SignupCreatesProfileAndAutoLoginTest {
     @Test
     public void signup_createsFirestoreDoc_andRouterSkipsSignupAfterwards() throws Exception {
 
-        // Launch Router -> should land on Signup
-        ActivityScenario<RouterActivity> routerScenario = ActivityScenario.launch(RouterActivity.class);
-
         // Fill fields on Signup
         onView(withId(R.id.signup_name)).perform(clearText(), typeText("Kenneth Test"), closeSoftKeyboard());
         onView(withId(R.id.signup_email)).perform(clearText(), typeText("kenneth@test.com"), closeSoftKeyboard());
@@ -74,8 +82,6 @@ public class SignupCreatesProfileAndAutoLoginTest {
         assertTrue("Profile doc was not created in Firestore",
                 waitForUserDocExists(deviceId, 8));
 
-        // Close and relaunch Router to simulate app restart
-        routerScenario.close();
 
         ActivityScenario<RouterActivity> routerScenario2 = ActivityScenario.launch(RouterActivity.class);
 

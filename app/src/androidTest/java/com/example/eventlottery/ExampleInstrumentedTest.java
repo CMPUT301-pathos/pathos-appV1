@@ -17,10 +17,14 @@ import static org.junit.Assert.*;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
+
     @Test
     public void useAppContext() {
-        // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.myapplication", appContext.getPackageName());
+        // Obtain the context of the application under test
+        Context appContext =
+                InstrumentationRegistry.getInstrumentation().getTargetContext();
+
+        // Verify that the package name is correct
+        assertEquals("com.example.pathos.eventlottery", appContext.getPackageName());
     }
 }

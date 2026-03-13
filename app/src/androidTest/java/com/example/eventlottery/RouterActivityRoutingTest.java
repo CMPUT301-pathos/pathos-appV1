@@ -5,11 +5,13 @@ import android.content.Context;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -20,6 +22,9 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.junit.Assert.assertTrue;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import org.junit.Rule;
 
 /**
  * Instrumented test for RouterActivity routing logic.
@@ -39,6 +44,14 @@ public class RouterActivityRoutingTest {
 
     private FirebaseFirestore db;
     private String deviceId;
+
+    @Rule
+    public GrantPermissionRule permissionRule =
+            GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS);
+
+    @Rule
+    public ActivityScenarioRule<RouterActivity> activityRule =
+            new ActivityScenarioRule<>(RouterActivity.class);
 
     @Before
     public void setup() throws Exception {
@@ -60,8 +73,6 @@ public class RouterActivityRoutingTest {
 
     @Test
     public void router_withoutExistingProfile_opensSignup() throws Exception {
-        ActivityScenario.launch(RouterActivity.class);
-
         // Signup UI should be visible (uses activity_signup.xml IDs)
         // If your signup screen uses different IDs, update the withId() lines.
         onView(withId(R.id.signup_name)).check(matches(isDisplayed()));
