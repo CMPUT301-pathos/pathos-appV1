@@ -9,8 +9,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * Handles reading, saving, and deleting user profiles from Firestore.
  * Profiles are stored in the "users" collection with the device ID as the document key.
  *
- * @author Dmitriy Limanets
- * @version 1.0
+ * Stored profile data includes:
+ * - deviceId
+ * - name
+ * - email
+ * - phoneNumber
+ * - role
+ * - profileCompleted
+ * - notificationsEnabled
+ * - eventHistory
+ *
+ * @author Dmitriy Limanets, Kenneth Joseph
+ * @version 1.1
  * @see ProfileRepository
  * @see UserProfile
  */
@@ -60,12 +70,16 @@ public class FirestoreProfileRepository implements ProfileRepository {
      */
     @Override
     public void saveProfile(UserProfile profile, ProfileCallback callback){
+        if (profile == null || profile.getDeviceId() == null || profile.getDeviceId().trim().isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("Profile or deviceId cannot be null/empty"));
+            return;
+        }
+
         db.collection(COLLECTION_NAME).document(profile.getDeviceId())
                 .set(profile)
                 .addOnSuccessListener(aVoid -> callback.onSuccess(profile))
                 .addOnFailureListener(callback::onFailure);
     }
-
     /**
      * Deletes a user profile from Firestore by device ID.
      * Returns null via onSuccess callback upon successful deletion.

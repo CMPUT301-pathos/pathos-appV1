@@ -15,16 +15,16 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * RouterActivity (Launcher)
  *
  * US 01.07.01: Identify user by device (no username/password)
- * US 01.02.01: If no profile exists, route to SignupActivity to create it
+ * US 01.02.01 / 01.02.02: User may provide/update profile info later
  *
  * Flow:
  * - get deviceId
  * - look up profile in Firestore
- * - if found -> route based on role (entrant/organizer/admin)
- * - else -> SignupActivity
+ * - if found -> route based on role
+ * - if not found -> create blank profile and then route
  *
  * @author Kenneth Joseph
- * @version 1.1
+ * @version 1.3
  */
 public class RouterActivity extends AppCompatActivity {
 
@@ -43,17 +43,11 @@ public class RouterActivity extends AppCompatActivity {
             @Override
             public void onSuccess(UserProfile profile) {
                 if (profile == null) {
-                    Intent i = new Intent(RouterActivity.this, SignupActivity.class);
-                    i.putExtra("deviceId", deviceId);
-                    startActivity(i);
-                    finish();
+                    createDefaultProfile(deviceId);
                     return;
                 }
 
-                // Route existing user based on role
-                String role = profile.getRole();
-                routeToRoleHome(role);
-                finish();
+                routeToRoleHome(profile);
             }
 
             @Override
@@ -62,22 +56,46 @@ public class RouterActivity extends AppCompatActivity {
                         "Profile lookup failed: " + e.getMessage(),
                         Toast.LENGTH_SHORT).show();
 
-                // Still allow signup as fallback
-                Intent i = new Intent(RouterActivity.this, SignupActivity.class);
-                i.putExtra("deviceId", deviceId);
-                startActivity(i);
+                // Optional fallback: try creating a default profile anyway
+                createDefaultProfile(deviceId);
+            }
+        });
+    }
+
+    private void createDefaultProfile(String deviceId) {
+        UserProfile newProfile = new UserProfile(deviceId, "", "", "", "user");
+        newProfile.setProfileCompleted(false);
+        newProfile.setNotificationsEnabled(true);
+
+        repo.saveProfile(newProfile, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                routeToRoleHome(profile);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(RouterActivity.this,
+                        "Failed to create profile: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
     }
 
-    private void routeToRoleHome(String role) {
+    private void routeToRoleHome(UserProfile profile) {
         Intent i;
-        if ("admin".equalsIgnoreCase(role)) {
+
+        if ("admin".equalsIgnoreCase(profile.getRole())) {
             i = new Intent(this, AdminMainActivity.class);
         } else {
-            i = new Intent(this, MainActivity.class); // default entrant
+            i = new Intent(this, MainActivity.class);
         }
+
+        i.putExtra("deviceId", profile.getDeviceId());
+        i.putExtra("profileCompleted", profile.isProfileCompleted());
+
         startActivity(i);
+        finish();
     }
 }
