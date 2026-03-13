@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,25 +19,39 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventlottery.controller.EventController;
 import com.example.eventlottery.data.EventRepository;
+import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
+import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.ui.EventSummaryAdapter;
 import com.google.android.material.button.MaterialButton;
 
 /**
- * Fragment displaying the list of joinable events for entrants.
+ * EventsFragment
+ *
+ * Displays the list of browseable events for regular users.
  *
  * Responsibilities:
- * - Display all available events in a RecyclerView
- * - Provide filter dialog for category, location, date, and availability
- * - Navigate to event details when an event card is tapped
+ * - display all available events in a RecyclerView
+ * - provide filter dialog for category, location, date, and availability
+ * - allow users to browse event details
+ * - block participation-related actions until the user's profile is completed
+ *
+ * Profile-completion protection:
+ * - browsing is allowed without a completed profile
+ * - QR scanning and QR-based participation flow are blocked until the
+ *   required profile information is completed
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
+ * - US 01.02.01: Entrant provides personal information
+ * - US 01.02.02: Entrant updates personal information
  * - US 01.06.02: Sign up for an event from the event details
+ * - US 01.07.01: User is identified by device
  *
- * @author Fawaz Mansoor, Edwin David
- * @version 1.1
+ * @author Fawaz Mansoor, Edwin David, Kenneth Joseph
+ * @version 1.2
  */
 public class EventsFragment extends Fragment {
 
@@ -52,6 +65,7 @@ public class EventsFragment extends Fragment {
     private String selectedLocation = "";
     private boolean openOnly = false;
     private long selectedAfterDateMs = 0;
+
     private com.example.eventlottery.service.BeaconQrService beaconQrService;
     private androidx.activity.result.ActivityResultLauncher<com.journeyapps.barcodescanner.ScanOptions> scanLauncher;
 
@@ -72,49 +86,14 @@ public class EventsFragment extends Fragment {
         Button btnQrScan = root.findViewById(R.id.btnQrScan);
         btnFilter = root.findViewById(R.id.btnFilter);
 
-        btnQrScan.setOnClickListener(v -> {
-            com.journeyapps.barcodescanner.ScanContract scanContract =
-                    new com.journeyapps.barcodescanner.ScanContract();
-            scanLauncher.launch(new com.journeyapps.barcodescanner.ScanOptions()
-                    .setPrompt("Scan an event QR code")
-                    .setBeepEnabled(true)
-                    .setOrientationLocked(true));
-        });
-
-        // TEMPORARY TEST BUTTON - remove before submitting
-//        Button btnTestQr = root.findViewById(R.id.btnQrScan);
-//        // Simulate scanning the QR code directly
-//        Button btnDirectTest = new Button(requireContext());
-//        btnDirectTest.setText("Test QR (Debug)");
-//        btnDirectTest.setOnClickListener(v -> {
-//            String testPayload = "eventId:n0luv6NL4JoAuL0J4ZkE";
-//            beaconQrService.resolveQrScan(testPayload,
-//                    new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {
-//                        @Override
-//                        public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
-//                            EventDetailFragment fragment = EventDetailFragment.newInstance(
-//                                    event.getId(),
-//                                    event.getName(),
-//                                    event.getDescription()
-//                            );
-//                            getParentFragmentManager().beginTransaction()
-//                                    .replace(R.id.fragment_container, fragment)
-//                                    .addToBackStack(null)
-//                                    .commit();
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Exception e) {
-//                            Toast.makeText(requireContext(),
-//                                    "Event not found: " + e.getMessage(),
-//                                    Toast.LENGTH_SHORT).show();
-//                        }
-//                    });
-//        });
-//
-//        // Add button to root layout temporarily
-//        ((android.widget.LinearLayout) root.findViewById(R.id.eventsRoot))
-//                .addView(btnDirectTest, 0);
+        btnQrScan.setOnClickListener(v ->
+                requireCompletedProfile(() -> {
+                    scanLauncher.launch(new com.journeyapps.barcodescanner.ScanOptions()
+                            .setPrompt("Scan an event QR code")
+                            .setBeepEnabled(true)
+                            .setOrientationLocked(true));
+                })
+        );
 
         btnFilter.setOnClickListener(v -> showFilterDialog());
 
@@ -151,56 +130,68 @@ public class EventsFragment extends Fragment {
             dialog.show();
         });
 
-
-        // US 01.06.02: When event card is clicked, navigate to EventDetailFragment
+        // Browsing event details is allowed even if the profile is incomplete.
         adapter.setItemClickListener(event -> {
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, EventDetailFragment.newInstance(
                             event.getId(), event.getName(), event.getDescription()))
-                    .addToBackStack(null) //return to the events list.
-
+                    .addToBackStack(null)
                     .commit();
         });
+
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         rv.setAdapter(adapter);
 
-        beaconQrService = new com.example.eventlottery.service.BeaconQrService(new FirestoreEventRepository());
+        beaconQrService = new com.example.eventlottery.service.BeaconQrService(
+                new FirestoreEventRepository()
+        );
 
-        scanLauncher = registerForActivityResult(new com.journeyapps.barcodescanner.ScanContract(), result -> {
-            if (result.getContents() != null) {
-                String payload = result.getContents();
-                beaconQrService.resolveQrScan(payload, new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {                    @Override
-                    public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
-                        // Navigate to event details
-                        EventDetailFragment fragment = EventDetailFragment.newInstance(
-                                event.getId(),
-                                event.getName(),
-                                event.getDescription()
-                        );
-                        getParentFragmentManager().beginTransaction()
-                                .replace(R.id.fragment_container, fragment)
-                                .addToBackStack(null)
-                                .commit();
-                    }
+        scanLauncher = registerForActivityResult(
+                new com.journeyapps.barcodescanner.ScanContract(),
+                result -> {
+                    if (result.getContents() != null) {
+                        requireCompletedProfile(() -> {
+                            String payload = result.getContents();
 
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(requireContext(),
-                                "Event not found: " + e.getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                            beaconQrService.resolveQrScan(payload,
+                                    new com.example.eventlottery.service.BeaconQrService.ResolveCallback() {
+                                        @Override
+                                        public void onSuccess(com.example.eventlottery.domain.EventSummary event) {
+                                            EventDetailFragment fragment = EventDetailFragment.newInstance(
+                                                    event.getId(),
+                                                    event.getName(),
+                                                    event.getDescription()
+                                            );
+                                            getParentFragmentManager().beginTransaction()
+                                                    .replace(R.id.fragment_container, fragment)
+                                                    .addToBackStack(null)
+                                                    .commit();
+                                        }
+
+                                        @Override
+                                        public void onFailure(Exception e) {
+                                            Toast.makeText(requireContext(),
+                                                    "Event not found: " + e.getMessage(),
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        });
+                    } else {
+                        Toast.makeText(requireContext(), "Scan cancelled", Toast.LENGTH_SHORT).show();
                     }
-                });
-            } else {
-                Toast.makeText(requireContext(), "Scan cancelled", Toast.LENGTH_SHORT).show();
-            }
-        });
+                }
+        );
 
         loadEvents();
 
         return root;
     }
 
+    /**
+     * Loads all available events for browsing.
+     * Browsing is allowed even if the user's profile is not yet completed.
+     */
     private void loadEvents() {
         eventController.loadAllEvents(new EventRepository.ListCallback() {
             @Override
@@ -219,6 +210,9 @@ public class EventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Shows the filter dialog for event browsing.
+     */
     private void showFilterDialog() {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_filter_events, null);
@@ -233,15 +227,15 @@ public class EventsFragment extends Fragment {
         MaterialButton btnClear = dialogView.findViewById(R.id.btn_filter_clear);
         MaterialButton btnApply = dialogView.findViewById(R.id.btn_filter_apply);
 
-        // Set current state
         tvCategoryLabel.setText("Category: " + selectedCategory);
         etLocation.setText(selectedLocation);
         cbOpenOnly.setChecked(openOnly);
+
         long[] selectedDateMs = {selectedAfterDateMs};
         updateDateLabel(tvDateLabel, selectedDateMs[0]);
 
         btnPickCategory.setOnClickListener(v -> {
-            new android.app.AlertDialog.Builder(requireContext())
+            new AlertDialog.Builder(requireContext())
                     .setTitle("Select Category")
                     .setItems(CATEGORIES, (d, which) -> {
                         selectedCategory = CATEGORIES[which];
@@ -252,7 +246,10 @@ public class EventsFragment extends Fragment {
 
         btnPickDate.setOnClickListener(v -> {
             java.util.Calendar cal = java.util.Calendar.getInstance();
-            if (selectedDateMs[0] > 0) cal.setTimeInMillis(selectedDateMs[0]);
+            if (selectedDateMs[0] > 0) {
+                cal.setTimeInMillis(selectedDateMs[0]);
+            }
+
             new android.app.DatePickerDialog(requireContext(), (view, year, month, day) -> {
                 cal.set(year, month, day, 0, 0, 0);
                 selectedDateMs[0] = cal.getTimeInMillis();
@@ -281,7 +278,11 @@ public class EventsFragment extends Fragment {
             selectedLocation = "";
             openOnly = false;
             selectedAfterDateMs = 0;
-            adapter.setFilteredItems(eventController.filterByCategoryAndAvailability("All", false));
+
+            adapter.setFilteredItems(
+                    eventController.filterByCategoryAndAvailability("All", false)
+            );
+
             btnFilter.setText("Filter");
             empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
             dialog.dismiss();
@@ -298,6 +299,12 @@ public class EventsFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Updates the label showing the currently selected "after date" filter.
+     *
+     * @param tv     text view to update
+     * @param dateMs selected date in milliseconds, or 0 for no date filter
+     */
     private void updateDateLabel(TextView tv, long dateMs) {
         if (dateMs == 0) {
             tv.setText("Show events after: Any date");
@@ -308,13 +315,17 @@ public class EventsFragment extends Fragment {
         }
     }
 
+    /**
+     * Applies all selected filters to the loaded event list and updates the UI.
+     */
     private void applyFilters() {
         java.util.List<com.example.eventlottery.domain.EventSummary> filtered =
                 eventController.filterByCategoryAndAvailability(selectedCategory, openOnly);
 
-        // Location filter
         if (!selectedLocation.isEmpty()) {
-            java.util.List<com.example.eventlottery.domain.EventSummary> locationFiltered = new java.util.ArrayList<>();
+            java.util.List<com.example.eventlottery.domain.EventSummary> locationFiltered =
+                    new java.util.ArrayList<>();
+
             for (com.example.eventlottery.domain.EventSummary e : filtered) {
                 if (e.getLocation().toLowerCase().contains(selectedLocation.toLowerCase())) {
                     locationFiltered.add(e);
@@ -323,9 +334,10 @@ public class EventsFragment extends Fragment {
             filtered = locationFiltered;
         }
 
-        // Date filter
         if (selectedAfterDateMs > 0) {
-            java.util.List<com.example.eventlottery.domain.EventSummary> dateFiltered = new java.util.ArrayList<>();
+            java.util.List<com.example.eventlottery.domain.EventSummary> dateFiltered =
+                    new java.util.ArrayList<>();
+
             for (com.example.eventlottery.domain.EventSummary e : filtered) {
                 if (e.getEventDate() >= selectedAfterDateMs) {
                     dateFiltered.add(e);
@@ -336,18 +348,53 @@ public class EventsFragment extends Fragment {
 
         adapter.setFilteredItems(filtered);
 
-        // Update filter button label
         String filterLabel = "Filter";
-        if (!selectedCategory.equals("All")) filterLabel += ": " + selectedCategory;
-        if (!selectedLocation.isEmpty()) filterLabel += " 📍" + selectedLocation;
+        if (!selectedCategory.equals("All")) {
+            filterLabel += ": " + selectedCategory;
+        }
+        if (!selectedLocation.isEmpty()) {
+            filterLabel += " 📍" + selectedLocation;
+        }
         if (selectedAfterDateMs > 0) {
             String date = new java.text.SimpleDateFormat("MMM dd", java.util.Locale.getDefault())
                     .format(new java.util.Date(selectedAfterDateMs));
             filterLabel += " 📅" + date;
         }
-        if (openOnly) filterLabel += " ✓Open";
-        btnFilter.setText(filterLabel);
+        if (openOnly) {
+            filterLabel += " ✓Open";
+        }
 
+        btnFilter.setText(filterLabel);
         empty.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * Verifies that the current user's profile is completed before allowing
+     * participation-related actions such as QR scanning.
+     *
+     * @param onAllowed logic to run only if the profile is completed
+     */
+    private void requireCompletedProfile(Runnable onAllowed) {
+        String deviceId = com.example.eventlottery.service.DeviceIdentityService.getDeviceId(requireContext());
+
+        new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (profile != null && profile.isProfileCompleted()) {
+                    onAllowed.run();
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Complete your profile first to participate in events.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(requireContext(),
+                        "Could not verify profile.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

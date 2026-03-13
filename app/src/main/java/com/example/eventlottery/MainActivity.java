@@ -14,7 +14,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 /**
  * MainActivity
  *
- * Hosts BottomNavigationView and swaps fragments into fragment_container.
+ * Hosts the main bottom-navigation experience for regular users and swaps
+ * fragments into the fragment container.
  *
  * Tabs:
  * - Home (DashboardFragment)
@@ -23,23 +24,35 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  * - Notifications (EntrantInvitationFragment)
  * - Profile (ProfileFragment)
  *
- * Also starts a Firestore real-time listener for push-style notifications
- * when the entrant is invited to an event.
+ * Behavior:
+ * - Receives the user's profile completion state from RouterActivity
+ * - Allows users to browse the app even if their profile is incomplete
+ * - Restricts protected actions inside relevant fragments until the user's
+ *   required profile information has been completed
+ * - Starts a Firestore real-time listener for entrant event invitations
+ * - Requests notification permission on Android 13+
+ *
+ * User stories supported:
+ * - US 01.02.01: Entrant provides personal information
+ * - US 01.02.02: Entrant updates profile information
+ * - US 01.07.01: User is identified by device
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.1
+ * @version 1.3
  */
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
     private NotificationListenerService notificationListenerService;
+    private boolean profileCompleted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Start real-time notification listener
+        profileCompleted = getIntent().getBooleanExtra("profileCompleted", false);
+
         String deviceId = DeviceIdentityService.getDeviceId(this);
         notificationListenerService = new NotificationListenerService(this, deviceId);
         notificationListenerService.startListening();
@@ -56,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
             );
         });
 
-        // Request notification permission on Android 13+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(new String[]{
                     android.Manifest.permission.POST_NOTIFICATIONS
@@ -65,10 +77,15 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = findViewById(R.id.bottom_nav);
 
-        // Default landing screen = Home
         if (savedInstanceState == null) {
             switchTo(new DashboardFragment());
             bottomNav.setSelectedItemId(R.id.nav_home);
+
+            if (!profileCompleted) {
+                Toast.makeText(this,
+                        "Complete your profile to join or create events.",
+                        Toast.LENGTH_LONG).show();
+            }
         }
 
         bottomNav.setOnItemSelectedListener(item -> {
@@ -105,11 +122,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        refreshProfileCompletionIfNeeded();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (notificationListenerService != null) {
             notificationListenerService.stopListening();
         }
+    }
+
+    private void refreshProfileCompletionIfNeeded() {
+        String deviceId = DeviceIdentityService.getDeviceId(this);
+
+        new com.example.eventlottery.firebase.FirestoreProfileRepository()
+                .getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+                    @Override
+                    public void onSuccess(com.example.eventlottery.domain.UserProfile profile) {
+                        if (profile != null) {
+                            boolean wasCompleted = profileCompleted;
+                            profileCompleted = profile.isProfileCompleted();
+
+                            if (!wasCompleted && profileCompleted) {
+                                runOnUiThread(() ->
+                                        Toast.makeText(MainActivity.this,
+                                                "Profile completed. App unlocked!",
+                                                Toast.LENGTH_SHORT).show()
+                                );
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                    }
+                });
     }
 
     private void switchTo(@NonNull Fragment fragment) {

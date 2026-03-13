@@ -12,10 +12,16 @@ import java.util.List;
 
 /**
  * Firestore implementation of EventRepository.
- * Stores events in collection: "events"
+ * Stores event documents in the "events" collection.
+ *
+ * Supports:
+ * - creating events
+ * - loading all events
+ * - loading events for a specific organizer
+ * - deleting a specific event by document ID
  *
  * @author Kenneth Joseph
- * @version 1.1
+ * @version 1.2
  */
 public class FirestoreEventRepository implements EventRepository {
 
@@ -43,8 +49,10 @@ public class FirestoreEventRepository implements EventRepository {
                     for (QueryDocumentSnapshot doc : snap) {
                         out.add(EventSummary.fromDoc(doc));
                     }
-                    // Sort newest first if createdAt exists
-                    Collections.sort(out, Comparator.comparingLong(EventSummary::getCreatedAt).reversed());
+
+                    Collections.sort(out,
+                            Comparator.comparingLong(EventSummary::getCreatedAt).reversed());
+
                     callback.onSuccess(out);
                 })
                 .addOnFailureListener(callback::onFailure);
@@ -60,10 +68,21 @@ public class FirestoreEventRepository implements EventRepository {
                     for (QueryDocumentSnapshot doc : snap) {
                         out.add(EventSummary.fromDoc(doc));
                     }
-                    // Sort newest first in-memory (avoids Firestore composite index requirement)
-                    Collections.sort(out, Comparator.comparingLong(EventSummary::getCreatedAt).reversed());
+
+                    Collections.sort(out,
+                            Comparator.comparingLong(EventSummary::getCreatedAt).reversed());
+
                     callback.onSuccess(out);
                 })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    @Override
+    public void deleteEvent(String eventId, OperationCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId)
+                .delete()
+                .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }
 }

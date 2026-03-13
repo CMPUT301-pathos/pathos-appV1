@@ -10,9 +10,10 @@ import java.util.List;
  * Supports:
  * - US 02.01.01: create event
  * - Event list screens: load all events / load events for a specific organizer
+ * - Organizer/account cleanup: delete owned events
  *
  * @author Kenneth Joseph and hasratsinghchauhan
- * @version 1.1
+ * @version 1.2
  */
 public interface EventRepository {
 
@@ -23,6 +24,11 @@ public interface EventRepository {
 
     interface ListCallback {
         void onSuccess(List<EventSummary> events);
+        void onFailure(Exception e);
+    }
+
+    interface OperationCallback {
+        void onSuccess();
         void onFailure(Exception e);
     }
 
@@ -37,4 +43,9 @@ public interface EventRepository {
      * Returns only events created by the specified organizer (deviceId).
      */
     void getEventsByOrganizer(String organizerDeviceId, ListCallback callback);
+
+    /**
+     * Deletes a single event by its Firestore document ID.
+     */
+    void deleteEvent(String eventId, OperationCallback callback);
 }

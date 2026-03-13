@@ -29,7 +29,7 @@ public class UserProfile {
     private String name;
     private String email;
     private String phoneNumber;
-    private String role; // entrant, organizer, admin
+    private String role; // user, admin
     private boolean profileCompleted;
     private Boolean notificationsEnabled = true; // opt-in by default
 
@@ -89,6 +89,7 @@ public class UserProfile {
 
     public void setDeviceId(String deviceId) {
         this.deviceId = deviceId;
+        this.profileCompleted = hasRequiredInfo();
     }
 
     public String getName() {
