@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.espresso.idling.resource)
     implementation(libs.espresso.contrib)
+    implementation(libs.rules)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -1,35 +1,50 @@
 package com.example.eventlottery.controller;
 
+import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Controller for managing user profile operations.
- * Acts as an intermediary between the UI and the ProfileRepository.
+ * Acts as an intermediary between the UI and repositories.
  *
- * Extended to support notification preference toggling.
+ * Supports:
+ * - profile retrieval and updates
+ * - profile deletion
+ * - notification preference toggling
+ * - deletion of organizer-owned events during account deletion
  *
  * User stories supported:
- * - US 01.02.01/US 01.02.02: Provide/update personal info
+ * - US 01.02.01 / US 01.02.02: Provide/update personal info
  * - US 01.02.04: Delete profile
  * - US 01.04.03: Opt out of receiving notifications
  *
  * @author Dmitriy Limanets, Fawaz Mansoor, Kenneth Joseph
- * @version 1.2
+ * @version 1.3
  * @see ProfileRepository
+ * @see EventRepository
  * @see UserProfile
  */
-
 public class ProfileController {
-    private final ProfileRepository profileRepository;
-    /**
-     * Creates a new ProfileController with the given repository.
-     *
-     * @param profileRepository the repository to use for profile operations
-     */
 
-    public ProfileController(ProfileRepository profileRepository) {
+    private final ProfileRepository profileRepository;
+    private final EventRepository eventRepository;
+
+    /**
+     * Creates a new ProfileController with the given repositories.
+     *
+     * @param profileRepository repository for profile operations
+     * @param eventRepository repository for event operations
+     */
+    public ProfileController(ProfileRepository profileRepository, EventRepository eventRepository) {
         this.profileRepository = profileRepository;
+        this.eventRepository = eventRepository;
     }
+
     /**
      * Retrieves a user profile by device ID.
      *
@@ -41,10 +56,9 @@ public class ProfileController {
     }
 
     /**
-     * author: Kenneth
      * Saves a user profile.
      *
-     * @param profile  the user profile to save
+     * @param profile the user profile to save
      * @param callback the callback to handle success or failure
      */
     public void saveProfile(UserProfile profile, ProfileRepository.ProfileCallback callback) {
@@ -55,7 +69,7 @@ public class ProfileController {
     }
 
     /**
-     * Deletes a user profile by device ID.
+     * Deletes a user profile by device ID only.
      *
      * @param deviceId the unique device identifier of the profile to delete
      * @param callback the callback to handle success or failure
@@ -63,12 +77,60 @@ public class ProfileController {
     public void deleteProfile(String deviceId, ProfileRepository.ProfileCallback callback) {
         profileRepository.deleteProfile(deviceId, callback);
     }
+
     /**
-     * author : hasrat, Kenneth
-     * Verison 1.2
+     * Deletes the user profile and all events organized by that user.
+     *
+     * Flow:
+     * - find events owned by the organizer device ID
+     * - delete each owned event
+     * - delete the profile last
+     *
+     * @param deviceId the unique organizer device identifier
+     * @param callback the callback to handle success or failure
+     */
+    public void deleteProfileAndOwnedEvents(String deviceId, ProfileRepository.ProfileCallback callback) {
+        eventRepository.getEventsByOrganizer(deviceId, new EventRepository.ListCallback() {
+            @Override
+            public void onSuccess(List<EventSummary> events) {
+                if (events == null || events.isEmpty()) {
+                    profileRepository.deleteProfile(deviceId, callback);
+                    return;
+                }
+
+                AtomicInteger remaining = new AtomicInteger(events.size());
+                final boolean[] failed = {false};
+
+                for (EventSummary event : events) {
+                    eventRepository.deleteEvent(event.getId(), new EventRepository.OperationCallback() {
+                        @Override
+                        public void onSuccess() {
+                            if (remaining.decrementAndGet() == 0 && !failed[0]) {
+                                profileRepository.deleteProfile(deviceId, callback);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            if (!failed[0]) {
+                                failed[0] = true;
+                                callback.onFailure(e);
+                            }
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
+    /**
      * Updates an existing user profile or creates a new one.
-     * This method supports US 01.02.02 - Update profile information.
-     * in conjunction with the Editprofile Fragment
+     *
      * @param deviceId the unique device identifier
      * @param name the updated name
      * @param email the updated email
@@ -81,17 +143,15 @@ public class ProfileController {
             @Override
             public void onSuccess(UserProfile profile) {
                 if (profile != null) {
-                    // Update existing profile
                     profile.setDeviceId(deviceId);
                     profile.setName(name);
                     profile.setEmail(email);
                     profile.setPhoneNumber(phone);
-                    profile.refreshProfileCompleted();   // important
+                    profile.refreshProfileCompleted();
                     saveProfile(profile, callback);
                 } else {
-                    // Create new profile if it doesn't exist
-                    UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "entrant");
-                    newProfile.refreshProfileCompleted(); // important
+                    UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "user");
+                    newProfile.refreshProfileCompleted();
                     saveProfile(newProfile, callback);
                 }
             }
@@ -133,11 +193,10 @@ public class ProfileController {
 
     /**
      * Toggles notification preferences for a user profile.
-     * Supports US 01.04.03 - Opt out of receiving notifications.
      *
-     * @param deviceId             the unique device identifier
+     * @param deviceId the unique device identifier
      * @param notificationsEnabled true to opt in, false to opt out
-     * @param callback             the callback to handle success or failure
+     * @param callback the callback to handle success or failure
      */
     public void setNotificationsEnabled(String deviceId, boolean notificationsEnabled,
                                         ProfileRepository.ProfileCallback callback) {

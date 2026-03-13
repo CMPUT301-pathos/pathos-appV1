@@ -58,7 +58,10 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        profileController = new ProfileController(new FirestoreProfileRepository());
+        profileController = new ProfileController(
+                new FirestoreProfileRepository(),
+                new com.example.eventlottery.firebase.FirestoreEventRepository()
+        );
         deviceId = DeviceIdentityService.getDeviceId(requireContext());
     }
 
@@ -232,7 +235,7 @@ public class ProfileFragment extends Fragment {
                 .setTitle("Delete Account")
                 .setMessage("Are you sure you want to delete your account? This cannot be undone.")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    profileController.deleteProfile(deviceId, new ProfileRepository.ProfileCallback() {
+                    profileController.deleteProfileAndOwnedEvents(deviceId, new ProfileRepository.ProfileCallback() {
                         @Override
                         public void onSuccess(UserProfile profile) {
                             Toast.makeText(getContext(), "Account deleted successfully.", Toast.LENGTH_SHORT).show();
