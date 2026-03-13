@@ -43,9 +43,16 @@ public class FirestoreWaitListRepository implements WaitListRepository {
 
     @Override
     public void addToWaitList(WaitListRecord record) {
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("eventId", record.getEventId());
+        data.put("deviceId", record.getDeviceId());
+        data.put("status", record.getStatus().name());
+        data.put("joinTimeMs", record.getJoinTimeMs());
+        data.put("notified", false);
+
         db.collection(COLLECTION)
                 .document(record.getEventId() + "_" + record.getDeviceId())
-                .set(record);
+                .set(data);
     }
 
     @Override
@@ -124,9 +131,16 @@ public class FirestoreWaitListRepository implements WaitListRepository {
 
     @Override
     public void addToWaitList(WaitListRecord record, OperationCallback callback) {
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("eventId", record.getEventId());
+        data.put("deviceId", record.getDeviceId());
+        data.put("status", record.getStatus().name());
+        data.put("joinTimeMs", record.getJoinTimeMs());
+        data.put("notified", false);
+
         db.collection(COLLECTION)
                 .document(record.getEventId() + "_" + record.getDeviceId())
-                .set(record)
+                .set(data)
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }

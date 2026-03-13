@@ -14,7 +14,6 @@ import com.example.eventlottery.controller.WaitingListController;
 import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
-import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
@@ -29,8 +28,9 @@ import java.util.List;
  *
  * Responsibilities:
  * - Load all waitlist records for the current device from Firestore
+ * - Load cancellation notifications from the notifications collection
  * - Display win notifications (INVITED status) with Accept/Decline buttons
- * - Display lose notifications (DECLINED/CANCELLED) with Clear button
+ * - Display lose/cancelled notifications with Clear button
  * - Allow entrant to accept or decline an invitation
  *
  * User stories supported:
@@ -40,7 +40,7 @@ import java.util.List;
  * - US 01.05.03: Decline an invitation when chosen
  *
  * @author Fawaz Mansoor
- * @version 1.1
+ * @version 1.2
  */
 public class EntrantInvitationFragment extends Fragment {
 
@@ -61,7 +61,6 @@ public class EntrantInvitationFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_entrant_invitation, container, false);
         notificationsContainer = view.findViewById(R.id.notifications_container);
 
-        // Add empty state TextView dynamically
         tvEmpty = new TextView(requireContext());
         tvEmpty.setText("No notifications yet.");
         tvEmpty.setTextColor(0xCCFFFFFF);
@@ -76,16 +75,17 @@ public class EntrantInvitationFragment extends Fragment {
     }
 
     private void loadNotifications(LayoutInflater inflater) {
-        // Query all waitlist records for this device
+        notificationsContainer.removeAllViews();
+        notificationsContainer.addView(tvEmpty);
+        tvEmpty.setVisibility(View.VISIBLE);
+
+        // Query 1: waitlist records (INVITED, DECLINED)
         FirebaseFirestore.getInstance()
                 .collection("waitlist")
                 .whereEqualTo("deviceId", deviceId)
                 .get()
                 .addOnSuccessListener(snap -> {
                     if (getActivity() == null) return;
-
-                    notificationsContainer.removeAllViews();
-                    notificationsContainer.addView(tvEmpty);
 
                     List<WaitListRecord> records = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : snap) {
@@ -102,29 +102,42 @@ public class EntrantInvitationFragment extends Fragment {
                         records.add(record);
                     }
 
-                    // Only show INVITED and DECLINED records as notifications
-                    int notifCount = 0;
                     for (WaitListRecord record : records) {
                         if (record.getStatus() == WaitStatus.INVITED) {
                             loadEventNameAndAddCard(inflater, record, true);
-                            notifCount++;
                         } else if (record.getStatus() == WaitStatus.DECLINED) {
                             loadEventNameAndAddCard(inflater, record, false);
-                            notifCount++;
                         }
                     }
 
-                    tvEmpty.setVisibility(notifCount == 0 ? View.VISIBLE : View.GONE);
+                    checkEmpty();
                 })
                 .addOnFailureListener(e -> {
                     if (getActivity() == null) return;
                     Toast.makeText(getContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show();
                 });
+
+        // Query 2: cancellation notifications from organizer
+        FirebaseFirestore.getInstance()
+                .collection("notifications")
+                .whereEqualTo("deviceId", deviceId)
+                .whereEqualTo("read", false)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (getActivity() == null) return;
+                    for (QueryDocumentSnapshot doc : snap) {
+                        String message = doc.getString("message");
+                        String docId = doc.getId();
+                        if (message != null) {
+                            addCancelNotification(inflater, message, docId);
+                        }
+                    }
+                    checkEmpty();
+                });
     }
 
     private void loadEventNameAndAddCard(LayoutInflater inflater,
                                          WaitListRecord record, boolean isWin) {
-        // Look up event name from Firestore
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .document(record.getEventId())
@@ -139,6 +152,7 @@ public class EntrantInvitationFragment extends Fragment {
                     } else {
                         addLoseNotification(inflater, eventName, record);
                     }
+                    checkEmpty();
                 })
                 .addOnFailureListener(e -> {
                     if (getActivity() == null) return;
@@ -147,6 +161,7 @@ public class EntrantInvitationFragment extends Fragment {
                     } else {
                         addLoseNotification(inflater, record.getEventId(), record);
                     }
+                    checkEmpty();
                 });
     }
 
@@ -199,6 +214,33 @@ public class EntrantInvitationFragment extends Fragment {
         btnClear.setVisibility(View.VISIBLE);
 
         btnClear.setOnClickListener(v -> {
+            notificationsContainer.removeView(card);
+            checkEmpty();
+        });
+
+        notificationsContainer.addView(card);
+        tvEmpty.setVisibility(View.GONE);
+    }
+
+    private void addCancelNotification(LayoutInflater inflater, String message, String docId) {
+        View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
+
+        TextView tvEventName = card.findViewById(R.id.tvEventName);
+        TextView tvMessage = card.findViewById(R.id.tvMessage);
+        LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
+        MaterialButton btnClear = card.findViewById(R.id.btnClear);
+
+        tvEventName.setText("Waitlist Update");
+        tvMessage.setText(message);
+        winButtonsRow.setVisibility(View.GONE);
+        btnClear.setVisibility(View.VISIBLE);
+
+        btnClear.setOnClickListener(v -> {
+            // Mark as read in Firestore so it doesn't reappear
+            FirebaseFirestore.getInstance()
+                    .collection("notifications")
+                    .document(docId)
+                    .update("read", true);
             notificationsContainer.removeView(card);
             checkEmpty();
         });
