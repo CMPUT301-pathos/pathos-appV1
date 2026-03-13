@@ -44,7 +44,7 @@ public class LotteryCriteriaTest {
         return new EventSummary(
                 "1", "Test Event", "desc", "Edmonton",
                 now, "org1", "Sports",
-                now + 100000, regStart, regEnd, capacity, drawSize);
+                now + 100000, regStart, regEnd, capacity, drawSize, null);
     }
 
     @Test
