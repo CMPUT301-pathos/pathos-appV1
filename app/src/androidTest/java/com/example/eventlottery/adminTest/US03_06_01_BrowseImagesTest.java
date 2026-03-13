@@ -2,6 +2,7 @@ package com.example.eventlottery.adminTest;
 
 
 import androidx.test.core.app.ActivityScenario;
+import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.eventlottery.R;
@@ -29,9 +30,16 @@ public class US03_06_01_BrowseImagesTest {
         ActivityScenario.launch(AdminBrowseImages.class);
     }
 
+    //we have no images initially
+//    @Test
+//    public void testImagesGridIsDisplayed() {
+//        onView(withId(R.id.recyclerViewImages)).check(matches(isDisplayed()));
+//    }
     @Test
-    public void testImagesGridIsDisplayed() {
-        onView(withId(R.id.recyclerViewImages)).check(matches(isDisplayed()));
+    public void testRecyclerViewExists() {
+        onView(withId(R.id.recyclerViewImages)).check(matches(
+                ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.GONE)
+        ));
     }
 
     @Test
