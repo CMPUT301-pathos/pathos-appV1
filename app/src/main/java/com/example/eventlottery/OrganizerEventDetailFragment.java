@@ -35,7 +35,7 @@ import java.util.List;
  * - US 02.06.02: View a list of all entrants who enrolled for the event
  *
  * @author Fawaz Mansoor
- * @version 1.0
+ * @version 1.1
  */
 public class OrganizerEventDetailFragment extends Fragment {
 
@@ -145,7 +145,6 @@ public class OrganizerEventDetailFragment extends Fragment {
 
         container.addView(row);
 
-        // Load actual name from profile
         profileRepository.getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
             public void onSuccess(UserProfile profile) {
@@ -159,7 +158,6 @@ public class OrganizerEventDetailFragment extends Fragment {
             public void onFailure(Exception e) { }
         });
 
-        // Remove button — only show for WAITING and INVITED entrants
         if (status == WaitStatus.WAITING || status == WaitStatus.INVITED) {
             btnRemove.setVisibility(View.VISIBLE);
             btnRemove.setOnClickListener(v -> {
@@ -178,10 +176,8 @@ public class OrganizerEventDetailFragment extends Fragment {
     }
 
     private void removeEntrant(LinearLayout container, View row, String deviceId) {
-        // 1. Update status to CANCELLED in Firestore
         waitListRepository.updateStatus(eventId, deviceId, WaitStatus.CANCELLED);
 
-        // 2. Write a notification document so the entrant sees it
         java.util.Map<String, Object> notifData = new java.util.HashMap<>();
         notifData.put("deviceId", deviceId);
         notifData.put("eventId", eventId);
@@ -246,7 +242,6 @@ public class OrganizerEventDetailFragment extends Fragment {
                             selected.size() + " entrant(s) invited!",
                             Toast.LENGTH_SHORT).show();
                 }
-                // Refresh the list
                 loadEntrants();
             }
 
