@@ -31,7 +31,7 @@ Purpose: Hosts the fragment container and bottom navigation for the entrant UI.
         android:id="@+id/bottom_nav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_gradient_header"
+        android:background="#D9D9D9"
         app:menu="@menu/menu_entrant_bottom_nav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

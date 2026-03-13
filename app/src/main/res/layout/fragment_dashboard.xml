@@ -1,112 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-fragment_dashboard.xml
-Purpose: Placeholder Dashboard UI for the entrant's home view.
-Currently shows a title and a placeholder subtitle.
--->
-
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/dashboardScroll"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient_header">
 
-    <LinearLayout
-        android:id="@+id/dashboardRoot"
+    <!-- Header -->
+    <TextView
+        android:id="@+id/tvDashboardTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:text="DASHBOARD"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:letterSpacing="0.05"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="48dp"
+        android:paddingBottom="24dp" />
 
-        <TextView
-            android:id="@+id/tvDashboardTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="DASHBOARD"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
-
-        <!-- Upcoming events -->
-        <TextView
-            android:id="@+id/tvUpcomingTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="YOUR UPCOMING EVENTS"
-            android:textStyle="bold"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
-
-        <!-- Placeholder cards -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="#E0E0E0"
-            android:text="(Placeholder) Event Card 1"
-            android:gravity="center_vertical"
-            android:padding="12dp"
-            android:layout_marginBottom="10dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="#E0E0E0"
-            android:text="(Placeholder) Event Card 2"
-            android:gravity="center_vertical"
-            android:padding="12dp"
-            android:layout_marginBottom="18dp" />
-
-        <!-- On the waitlist -->
-        <TextView
-            android:id="@+id/tvWaitlistTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="ON-THE WAITLIST"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
-
-        <!-- Placeholder waitlist rows with LEAVE buttons -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="10dp"
-            android:background="#E0E0E0"
-            android:layout_marginBottom="10dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="(Placeholder) Waitlisted Event 1" />
-
-            <Button
-                android:id="@+id/btnLeave1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LEAVE" />
-        </LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="10dp"
-            android:background="#E0E0E0"
-            android:layout_marginBottom="18dp">
+            android:orientation="vertical">
 
+            <!-- Upcoming events label -->
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/tvUpcomingTitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="(Placeholder) Waitlisted Event 2" />
+                android:text="YOUR UPCOMING EVENTS"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="8dp" />
 
-            <Button
-                android:id="@+id/btnLeave2"
-                android:layout_width="wrap_content"
+            <!-- Placeholder cards -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="10dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#40FFFFFF">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="(Placeholder) Event Card 1"
+                    android:textColor="#FFFFFF"
+                    android:gravity="center_vertical"
+                    android:padding="12dp" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#40FFFFFF">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="(Placeholder) Event Card 2"
+                    android:textColor="#FFFFFF"
+                    android:gravity="center_vertical"
+                    android:padding="12dp" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Waitlist label -->
+            <TextView
+                android:id="@+id/tvWaitlistTitle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="LEAVE" />
+                android:text="ON-THE WAITLIST"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Waitlist row 1 -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#40FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="(Placeholder) Waitlisted Event 1"
+                        android:textColor="#FFFFFF" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLeave1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="LEAVE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        app:backgroundTint="#1A1A2E"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Waitlist row 2 -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#40FFFFFF">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="(Placeholder) Waitlisted Event 2"
+                        android:textColor="#FFFFFF" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLeave2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="LEAVE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        app:backgroundTint="#1A1A2E"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
         </LinearLayout>
+    </ScrollView>
 
-    </LinearLayout>
-</ScrollView>
+</LinearLayout>
