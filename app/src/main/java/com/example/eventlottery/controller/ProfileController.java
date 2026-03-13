@@ -13,8 +13,8 @@ import com.example.eventlottery.domain.UserProfile;
  * - US 01.02.04: Delete profile
  * - US 01.04.03: Opt out of receiving notifications
  *
- * @author Dmitriy Limanets, Fawaz Mansoor
- * @version 1.1
+ * @author Dmitriy Limanets, Fawaz Mansoor, Kenneth Joseph
+ * @version 1.2
  * @see ProfileRepository
  * @see UserProfile
  */
@@ -41,12 +41,16 @@ public class ProfileController {
     }
 
     /**
+     * author: Kenneth
      * Saves a user profile.
      *
      * @param profile  the user profile to save
      * @param callback the callback to handle success or failure
      */
     public void saveProfile(UserProfile profile, ProfileRepository.ProfileCallback callback) {
+        if (profile != null) {
+            profile.refreshProfileCompleted();
+        }
         profileRepository.saveProfile(profile, callback);
     }
 
@@ -60,7 +64,8 @@ public class ProfileController {
         profileRepository.deleteProfile(deviceId, callback);
     }
     /**
-     * author : hasrat
+     * author : hasrat, Kenneth
+     * Verison 1.2
      * Updates an existing user profile or creates a new one.
      * This method supports US 01.02.02 - Update profile information.
      * in conjunction with the Editprofile Fragment
@@ -72,19 +77,21 @@ public class ProfileController {
      */
     public void updateProfile(String deviceId, String name, String email, String phone,
                               ProfileRepository.ProfileCallback callback) {
-        // First try to get existing profile
         getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
             public void onSuccess(UserProfile profile) {
                 if (profile != null) {
                     // Update existing profile
+                    profile.setDeviceId(deviceId);
                     profile.setName(name);
                     profile.setEmail(email);
                     profile.setPhoneNumber(phone);
+                    profile.refreshProfileCompleted();   // important
                     saveProfile(profile, callback);
                 } else {
                     // Create new profile if it doesn't exist
                     UserProfile newProfile = new UserProfile(deviceId, name, email, phone, "entrant");
+                    newProfile.refreshProfileCompleted(); // important
                     saveProfile(newProfile, callback);
                 }
             }

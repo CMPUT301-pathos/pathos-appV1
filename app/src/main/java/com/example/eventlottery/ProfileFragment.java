@@ -44,7 +44,7 @@ public class ProfileFragment extends Fragment {
     private String deviceId;
 
     private EditText editName, editEmail, editPhone;
-    private Button saveButton, logoutButton, deleteButton, eventHistoryButton;
+    private Button saveButton, deleteButton, eventHistoryButton;
     private Switch optOutSwitch;
 
     @Override
@@ -64,7 +64,6 @@ public class ProfileFragment extends Fragment {
         editPhone = view.findViewById(R.id.edit_phone);
 
         saveButton = view.findViewById(R.id.button_save_profile);
-        logoutButton = view.findViewById(R.id.button_logout);
         deleteButton = view.findViewById(R.id.button_delete_account);
         eventHistoryButton = view.findViewById(R.id.button_event_history);
         optOutSwitch = view.findViewById(R.id.switch_opt_out);
@@ -82,11 +81,6 @@ public class ProfileFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
-
-        // Logout placeholder
-        logoutButton.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Logout not wired yet", Toast.LENGTH_SHORT).show()
-        );
 
         // Delete account
         deleteButton.setOnClickListener(v -> showDeleteConfirmDialog());
@@ -152,10 +146,14 @@ public class ProfileFragment extends Fragment {
         String email = editEmail.getText().toString().trim();
         String phone = editPhone.getText().toString().trim();
 
+        editName.setError(null);
+        editEmail.setError(null);
+
         if (name.isEmpty()) {
             editName.setError("Name is required");
             return;
         }
+
         if (email.isEmpty()) {
             editEmail.setError("Email is required");
             return;
@@ -169,14 +167,21 @@ public class ProfileFragment extends Fragment {
             public void onSuccess(UserProfile profile) {
                 saveButton.setEnabled(true);
                 saveButton.setText("SAVE CHANGES");
-                Toast.makeText(getContext(), "Profile updated!", Toast.LENGTH_SHORT).show();
+
+                if (profile != null && profile.isProfileCompleted()) {
+                    Toast.makeText(getContext(), "Profile updated!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Profile saved, but still incomplete.", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onFailure(Exception e) {
                 saveButton.setEnabled(true);
                 saveButton.setText("SAVE CHANGES");
-                Toast.makeText(getContext(), "Failed to update profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),
+                        "Failed to update profile: " + e.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
