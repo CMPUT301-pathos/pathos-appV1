@@ -7,19 +7,36 @@
     android:background="@drawable/bg_gradient_header">
 
     <!-- Header -->
-    <TextView
-        android:id="@+id/tvDashboardTitle"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="DASHBOARD"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:letterSpacing="0.05"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:paddingTop="48dp"
-        android:paddingBottom="24dp" />
+        android:paddingBottom="24dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/ivProfilePhoto"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_profile_placeholder_forstyledlayout"
+            android:layout_marginEnd="12dp"
+            app:civ_circle_background_color="#E0E0E0"
+            app:civ_border_width="1dp"
+            app:civ_border_color="#FFFFFF" />
+
+        <TextView
+            android:id="@+id/tvDashboardTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DASHBOARD"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:letterSpacing="0.05" />
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
