@@ -7,7 +7,6 @@ package com.example.eventlottery.admin;
  */
 
 
-
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -23,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.eventlottery.R;
 import com.example.eventlottery.ui.AdminImageAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 

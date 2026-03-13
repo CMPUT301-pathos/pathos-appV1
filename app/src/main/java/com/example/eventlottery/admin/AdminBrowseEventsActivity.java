@@ -1,4 +1,5 @@
 package com.example.eventlottery.admin;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -10,38 +11,24 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.eventlottery.R;
+import com.example.eventlottery.domain.Event;
+import com.example.eventlottery.ui.AdminEventAdapter;
 import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Locale;
-
-/**
- * Browse/delete events (US 03.04.01, 03.01.01)
- * @author hasratsinghchauhan
- *  * P.S do not change the contents of the file w/o informing/collaboratng (with)  the author.
- */
-//public class AdminBrowseEventsActivity {
-
-//}
-
-
-
-import androidx.appcompat.app.AlertDialog;
-
-
-import com.example.eventlottery.R;
-import com.example.eventlottery.ui.AdminEventAdapter;
-import com.example.eventlottery.domain.Event;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Admin activity for browsing and managing events.

@@ -17,8 +17,8 @@ import androidx.fragment.app.Fragment;
 import com.example.eventlottery.controller.OrganizeLotteryController;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
-import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
+import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.PathosNotifyService;
 import com.example.eventlottery.service.PathosRaffleService;
 

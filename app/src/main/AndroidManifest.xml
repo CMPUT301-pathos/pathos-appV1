@@ -29,11 +29,13 @@
 
         <activity
             android:name=".AdminMainActivity"
-            android:exported="false" />
+            android:exported="true" />
 
         <activity
             android:name=".admin.AdminBrowseEventsActivity"
             android:theme="@style/Theme.MyApplication" />
+
+        <activity android:name=".admin.AdminPolicyViolationsActivity" />
 
         <activity
             android:name=".admin.AdminBrowseUsersActivity"
@@ -45,6 +47,7 @@
 
         <activity android:name=".admin.AdminBrowseImages" />
 
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -54,6 +57,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
 
     </application>
 

@@ -1,9 +1,9 @@
 package com.example.eventlottery.domain;
 
+import com.google.firebase.Timestamp;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.firebase.Timestamp;
 
 /**
  * Audit log for all notifications sent in the system.

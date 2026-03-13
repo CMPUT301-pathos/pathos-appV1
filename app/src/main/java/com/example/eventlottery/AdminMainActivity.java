@@ -5,28 +5,30 @@
  * @see: activity_admin_main.xml
  */
 /**public class AdminMainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_main);
-    }
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+super.onCreate(savedInstanceState);
+setContentView(R.layout.activity_admin_main);
+}
 }*/
 package com.example.eventlottery;
-
-import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.TextView;
 import android.util.Log;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import com.example.eventlottery.admin.AdminBrowseImages;
+
 import com.example.eventlottery.admin.AdminBrowseEventsActivity;
+import com.example.eventlottery.admin.AdminBrowseImages;
 import com.example.eventlottery.admin.AdminBrowseUsersActivity;
 import com.example.eventlottery.admin.AdminNotificationLogs;
+import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 
 
 /**
@@ -56,6 +58,8 @@ public class AdminMainActivity extends AppCompatActivity {
     private TextView tvEventsCount, tvUsersCount, tvOrganizersCount;
     private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages;
     private FirebaseFirestore db;
+    private CardView cardPolicyDetails;  // ← Make sure this line exists
+
     private TextView tvPolicyViolations;
 
     private CardView cardNotificationLogs;  // ADD THIS
@@ -84,6 +88,8 @@ public class AdminMainActivity extends AppCompatActivity {
         cardBrowseUsers = findViewById(R.id.cardBrowseUsers);
         cardBrowseImages = findViewById(R.id.cardBrowseImages);
         cardNotificationLogs = findViewById(R.id.cardNotificationLogs);
+        cardPolicyDetails = findViewById(R.id.cardPolicyDetails);
+
     }
     /**
      * Configures click listeners for all navigation cards.
@@ -102,6 +108,9 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardNotificationLogs.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminNotificationLogs.class)));
+
+        cardPolicyDetails.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminPolicyViolationsActivity.class)));
     }
     /**
      * Loads and displays platform statistics from Firebase.

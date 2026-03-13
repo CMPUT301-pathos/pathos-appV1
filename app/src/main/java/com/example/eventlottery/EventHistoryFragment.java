@@ -46,7 +46,6 @@ public class EventHistoryFragment extends Fragment {
 package com.example.eventlottery;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
