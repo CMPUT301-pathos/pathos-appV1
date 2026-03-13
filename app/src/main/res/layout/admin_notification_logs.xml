@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:text="Filter:"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@android:color/black"
             android:layout_marginEnd="12dp" />
 
         <Spinner
