@@ -10,14 +10,20 @@ package com.example.eventlottery.domain;
  * - ACCEPTED: entrant has accepted the invitation
  * - DECLINED: entrant has declined the invitation
  * - CANCELLED: entrant has been cancelled
+ * - NOT_SELECTED: entrant participated in a raffle draw but was not chosen
+ *
+ * Semantic note:
+ * - DECLINED means the entrant was invited and then chose not to attend
+ * - NOT_SELECTED means the entrant was never invited in that raffle round
  *
  * @author Fawaz Mansoor
- * @version 1.0
+ * @version 1.1
  */
 public enum WaitStatus {
     WAITING,
     INVITED,
     ACCEPTED,
     DECLINED,
-    CANCELLED
+    CANCELLED,
+    NOT_SELECTED
 }
