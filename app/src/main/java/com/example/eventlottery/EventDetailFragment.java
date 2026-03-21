@@ -33,10 +33,17 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * - allow browsing of event details regardless of profile completion
  * - block waiting-list participation until the user's required profile
  *   information has been completed
+ * - prevent an organizer from joining the waiting list of an event
+ *   they created
  *
  * Profile-completion protection:
  * - users with incomplete profiles may still browse event details
  * - users with incomplete profiles may not join or leave the waiting list
+ *
+ * Organizer participation protection:
+ * - users are identified by device ID
+ * - if the current user's device ID matches the creator device ID
+ *   of the event, the join button is disabled
  *
  * User stories supported:
  * - US 01.05.04: Know how many total entrants are on the waiting list for an event
@@ -45,39 +52,51 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * - US 01.02.02: Entrant updates profile information
  * - US 01.07.01: User is identified by device
  *
+ * Revision note:
+ * - Original event detail and waitlist functionality by Edwin David and Kenneth Joseph
+ * - Organizer self-signup restriction using deviceId-based ownership added by Kenneth Joseph
+ *
  * @author Edwin David, Kenneth Joseph
- * @version 1.1
+ * @version 1.2
  */
 public class EventDetailFragment extends Fragment {
 
     private static final String ARG_EVENT_ID = "eventId";
     private static final String ARG_EVENT_NAME = "eventName";
     private static final String ARG_DESCRIPTION = "description";
+    private static final String ARG_ORGANIZER_DEVICE_ID = "organizerDeviceId";
 
     private String eventId;
     private String eventName;
     private String description;
+    private String organizerDeviceId;
 
     private WaitingListController waitingListController;
     private String deviceId;
 
     public EventDetailFragment() {
+        // Required empty public constructor
     }
 
     /**
      * Creates a new instance of EventDetailFragment for a specific event.
      *
-     * @param eventId      Firestore ID of the event
-     * @param eventName    display name of the event
-     * @param description  event description
+     * @param eventId Firestore ID of the event
+     * @param eventName display name of the event
+     * @param description event description
+     * @param organizerDeviceId device ID of the organizer who created the event
      * @return configured EventDetailFragment instance
      */
-    public static EventDetailFragment newInstance(String eventId, String eventName, String description) {
+    public static EventDetailFragment newInstance(String eventId,
+                                                  String eventName,
+                                                  String description,
+                                                  String organizerDeviceId) {
         EventDetailFragment fragment = new EventDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_EVENT_ID, eventId);
         args.putString(ARG_EVENT_NAME, eventName);
         args.putString(ARG_DESCRIPTION, description);
+        args.putString(ARG_ORGANIZER_DEVICE_ID, organizerDeviceId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -90,6 +109,7 @@ public class EventDetailFragment extends Fragment {
             eventId = getArguments().getString(ARG_EVENT_ID);
             eventName = getArguments().getString(ARG_EVENT_NAME);
             description = getArguments().getString(ARG_DESCRIPTION);
+            organizerDeviceId = getArguments().getString(ARG_ORGANIZER_DEVICE_ID);
         }
 
         waitingListController = new WaitingListController(new FirestoreWaitListRepository());
@@ -118,13 +138,19 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     * Configures the waiting-list button based on whether the user's profile
-     * is complete and whether they are already on the waiting list.
+     * Configures the waiting-list button based on organizer ownership,
+     * profile completion, and current waiting-list membership.
      *
      * @param buttonJoin the join/leave waiting list button
      * @param textWaitCount the waiting list count label
      */
     private void configureParticipationButton(Button buttonJoin, TextView textWaitCount) {
+        if (organizerDeviceId != null && organizerDeviceId.equals(deviceId)) {
+            buttonJoin.setEnabled(false);
+            buttonJoin.setText("You cannot join your own event");
+            return;
+        }
+
         requireCompletedProfile(new ProfileCheckCallback() {
             @Override
             public void onResult(boolean isCompleted) {
