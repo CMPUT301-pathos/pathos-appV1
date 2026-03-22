@@ -288,7 +288,7 @@ public class EventDetailFragment extends Fragment {
 
             @Override
             public void onFailure(Exception e) {
-                // Comments unavailable — list stays empty, no disruption to event view
+                // Comments unavailable — list stays empty
             }
         });
 
