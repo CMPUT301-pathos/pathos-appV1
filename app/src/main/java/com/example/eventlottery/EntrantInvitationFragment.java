@@ -1,6 +1,7 @@
 package com.example.eventlottery;
 
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,14 +24,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fragment displaying the notifications/invitations screen for entrants.
+ * Fragment displaying entrant-facing invitations and waitlist notifications.
  *
  * Responsibilities:
- * - Load all waitlist records for the current device from Firestore
- * - Load cancellation notifications from the notifications collection
- * - Display win notifications (INVITED status) with Accept/Decline buttons
- * - Display lose/cancelled notifications with Clear button
- * - Allow entrant to accept or decline an invitation
+ * - Load waitlist records for the current device
+ * - Display invitation cards for INVITED entries
+ * - Display not-selected cards for NOT_SELECTED entries
+ * - Display cancellation cards for CANCELLED entries
+ * - Allow entrants to accept or decline an invitation
+ * - Allow generic notification cards to be cleared
+ *
+ * Waitlist display semantics:
+ * - INVITED: entrant was selected and can accept or decline
+ * - NOT_SELECTED: entrant participated in a raffle draw but was not chosen
+ * - DECLINED: entrant declined an invitation and should not be shown as
+ *   "not selected"
+ * - CANCELLED: entrant's invitation/participation was cancelled
  *
  * User stories supported:
  * - US 01.04.01: Receive notification when chosen from waiting list
@@ -38,8 +47,12 @@ import java.util.List;
  * - US 01.05.02: Accept the invitation to register for an event
  * - US 01.05.03: Decline an invitation when chosen
  *
- * @author Fawaz Mansoor
- * @version 1.2
+ * Revision note:
+ * - Updated to use NOT_SELECTED instead of DECLINED for the
+ *   "You were not selected" entrant notification state.
+ *
+ * @author Fawaz Mansoor, Kenneth Joseph
+ * @version 1.4
  */
 public class EntrantInvitationFragment extends Fragment {
 
@@ -63,7 +76,7 @@ public class EntrantInvitationFragment extends Fragment {
         tvEmpty = new TextView(requireContext());
         tvEmpty.setText("No notifications yet.");
         tvEmpty.setTextColor(0xCCFFFFFF);
-        tvEmpty.setGravity(android.view.Gravity.CENTER);
+        tvEmpty.setGravity(Gravity.CENTER);
         tvEmpty.setPadding(0, 48, 0, 0);
         tvEmpty.setVisibility(View.GONE);
         notificationsContainer.addView(tvEmpty);
@@ -73,12 +86,17 @@ public class EntrantInvitationFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Loads waitlist-driven entrant notifications and unread generic
+     * notifications for the current device.
+     *
+     * @param inflater inflater used to create notification cards
+     */
     private void loadNotifications(LayoutInflater inflater) {
         notificationsContainer.removeAllViews();
         notificationsContainer.addView(tvEmpty);
         tvEmpty.setVisibility(View.VISIBLE);
 
-        // Query 1: waitlist records (INVITED, DECLINED)
         FirebaseFirestore.getInstance()
                 .collection("waitlist")
                 .whereEqualTo("deviceId", deviceId)
@@ -92,20 +110,24 @@ public class EntrantInvitationFragment extends Fragment {
                                 doc.getString("eventId"),
                                 doc.getString("deviceId")
                         );
+
                         String statusStr = doc.getString("status");
                         if (statusStr != null) {
                             try {
                                 record.setStatus(WaitStatus.valueOf(statusStr));
-                            } catch (IllegalArgumentException ignored) {}
+                            } catch (IllegalArgumentException ignored) {
+                            }
                         }
                         records.add(record);
                     }
 
                     for (WaitListRecord record : records) {
                         if (record.getStatus() == WaitStatus.INVITED) {
-                            loadEventNameAndAddCard(inflater, record, true);
-                        } else if (record.getStatus() == WaitStatus.DECLINED) {
-                            loadEventNameAndAddCard(inflater, record, false);
+                            loadEventNameAndAddCard(inflater, record, WaitStatus.INVITED);
+                        } else if (record.getStatus() == WaitStatus.NOT_SELECTED) {
+                            loadEventNameAndAddCard(inflater, record, WaitStatus.NOT_SELECTED);
+                        } else if (record.getStatus() == WaitStatus.CANCELLED) {
+                            loadEventNameAndAddCard(inflater, record, WaitStatus.CANCELLED);
                         }
                     }
 
@@ -116,7 +138,6 @@ public class EntrantInvitationFragment extends Fragment {
                     Toast.makeText(getContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show();
                 });
 
-        // Query 2: cancellation notifications from organizer
         FirebaseFirestore.getInstance()
                 .collection("notifications")
                 .whereEqualTo("deviceId", deviceId)
@@ -124,47 +145,79 @@ public class EntrantInvitationFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(snap -> {
                     if (getActivity() == null) return;
+
                     for (QueryDocumentSnapshot doc : snap) {
                         String message = doc.getString("message");
                         String docId = doc.getId();
                         if (message != null) {
-                            addCancelNotification(inflater, message, docId);
+                            addGenericNotification(inflater, message, docId);
                         }
                     }
                     checkEmpty();
                 });
     }
 
+    /**
+     * Loads the event name and adds the appropriate card for the supplied status.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param record waitlist record for the current entrant
+     * @param status status to render
+     */
     private void loadEventNameAndAddCard(LayoutInflater inflater,
-                                         WaitListRecord record, boolean isWin) {
+                                         WaitListRecord record,
+                                         WaitStatus status) {
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .document(record.getEventId())
                 .get()
                 .addOnSuccessListener(doc -> {
                     if (getActivity() == null) return;
+
                     String eventName = doc.exists() && doc.getString("name") != null
                             ? doc.getString("name")
                             : record.getEventId();
-                    if (isWin) {
-                        addWinNotification(inflater, eventName, record);
-                    } else {
-                        addLoseNotification(inflater, eventName, record);
-                    }
+
+                    addCardForStatus(inflater, eventName, record, status);
                     checkEmpty();
                 })
                 .addOnFailureListener(e -> {
                     if (getActivity() == null) return;
-                    if (isWin) {
-                        addWinNotification(inflater, record.getEventId(), record);
-                    } else {
-                        addLoseNotification(inflater, record.getEventId(), record);
-                    }
+                    addCardForStatus(inflater, record.getEventId(), record, status);
                     checkEmpty();
                 });
     }
 
-    private void addWinNotification(LayoutInflater inflater, String eventName,
+    /**
+     * Routes status values to the correct notification card UI.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param eventName display name of the event
+     * @param record waitlist record backing this notification
+     * @param status waitlist status to render
+     */
+    private void addCardForStatus(LayoutInflater inflater,
+                                  String eventName,
+                                  WaitListRecord record,
+                                  WaitStatus status) {
+        if (status == WaitStatus.INVITED) {
+            addWinNotification(inflater, eventName, record);
+        } else if (status == WaitStatus.NOT_SELECTED) {
+            addNotSelectedNotification(inflater, eventName);
+        } else if (status == WaitStatus.CANCELLED) {
+            addCancelledNotification(inflater, eventName);
+        }
+    }
+
+    /**
+     * Adds an invitation card for an entrant who was selected.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param eventName display name of the event
+     * @param record waitlist record backing this invitation
+     */
+    private void addWinNotification(LayoutInflater inflater,
+                                    String eventName,
                                     WaitListRecord record) {
         View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
 
@@ -198,8 +251,13 @@ public class EntrantInvitationFragment extends Fragment {
         tvEmpty.setVisibility(View.GONE);
     }
 
-    private void addLoseNotification(LayoutInflater inflater, String eventName,
-                                     WaitListRecord record) {
+    /**
+     * Adds a notification card for an entrant who was not selected in the raffle.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param eventName display name of the event
+     */
+    private void addNotSelectedNotification(LayoutInflater inflater, String eventName) {
         View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
 
         TextView tvEventName = card.findViewById(R.id.tvEventName);
@@ -221,7 +279,42 @@ public class EntrantInvitationFragment extends Fragment {
         tvEmpty.setVisibility(View.GONE);
     }
 
-    private void addCancelNotification(LayoutInflater inflater, String message, String docId) {
+    /**
+     * Adds a cancellation notification card.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param eventName display name of the event
+     */
+    private void addCancelledNotification(LayoutInflater inflater, String eventName) {
+        View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
+
+        TextView tvEventName = card.findViewById(R.id.tvEventName);
+        TextView tvMessage = card.findViewById(R.id.tvMessage);
+        LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
+        MaterialButton btnClear = card.findViewById(R.id.btnClear);
+
+        tvEventName.setText(eventName);
+        tvMessage.setText("Your invitation or registration for this event was cancelled.");
+        winButtonsRow.setVisibility(View.GONE);
+        btnClear.setVisibility(View.VISIBLE);
+
+        btnClear.setOnClickListener(v -> {
+            notificationsContainer.removeView(card);
+            checkEmpty();
+        });
+
+        notificationsContainer.addView(card);
+        tvEmpty.setVisibility(View.GONE);
+    }
+
+    /**
+     * Adds a generic unread notification from the notifications collection.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param message message text to display
+     * @param docId Firestore document id for marking the notification as read
+     */
+    private void addGenericNotification(LayoutInflater inflater, String message, String docId) {
         View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
 
         TextView tvEventName = card.findViewById(R.id.tvEventName);
@@ -235,7 +328,6 @@ public class EntrantInvitationFragment extends Fragment {
         btnClear.setVisibility(View.VISIBLE);
 
         btnClear.setOnClickListener(v -> {
-            // Mark as read in Firestore so it doesn't reappear
             FirebaseFirestore.getInstance()
                     .collection("notifications")
                     .document(docId)
@@ -248,8 +340,10 @@ public class EntrantInvitationFragment extends Fragment {
         tvEmpty.setVisibility(View.GONE);
     }
 
+    /**
+     * Shows the empty state whenever there are no visible notification cards.
+     */
     private void checkEmpty() {
-        // -1 because tvEmpty is always in the container
         int visibleCards = notificationsContainer.getChildCount() - 1;
         tvEmpty.setVisibility(visibleCards == 0 ? View.VISIBLE : View.GONE);
     }

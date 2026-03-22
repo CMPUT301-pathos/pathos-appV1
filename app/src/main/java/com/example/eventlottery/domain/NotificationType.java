@@ -14,5 +14,6 @@ package com.example.eventlottery.domain;
  * @see NotificationRecord
  */
 public enum NotificationType {
-    WIN
+    WIN,
+    LOSE
 }

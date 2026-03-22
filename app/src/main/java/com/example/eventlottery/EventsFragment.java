@@ -50,8 +50,12 @@ import com.google.android.material.button.MaterialButton;
  * - US 01.06.02: Sign up for an event from the event details
  * - US 01.07.01: User is identified by device
  *
+ * Revision note:
+ * - Updated navigation to EventDetailFragment so the creator device ID
+ *   is passed into the fragment, enabling the organizer self-signup restriction.
+ *
  * @author Fawaz Mansoor, Edwin David, Kenneth Joseph
- * @version 1.2
+ * @version 1.3
  */
 public class EventsFragment extends Fragment {
 
@@ -135,7 +139,11 @@ public class EventsFragment extends Fragment {
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, EventDetailFragment.newInstance(
-                            event.getId(), event.getName(), event.getDescription()))
+                            event.getId(),
+                            event.getName(),
+                            event.getDescription(),
+                            event.getOrganizerDeviceId()
+                    ))
                     .addToBackStack(null)
                     .commit();
         });
@@ -161,7 +169,8 @@ public class EventsFragment extends Fragment {
                                             EventDetailFragment fragment = EventDetailFragment.newInstance(
                                                     event.getId(),
                                                     event.getName(),
-                                                    event.getDescription()
+                                                    event.getDescription(),
+                                                    event.getOrganizerDeviceId()
                                             );
                                             getParentFragmentManager().beginTransaction()
                                                     .replace(R.id.fragment_container, fragment)
