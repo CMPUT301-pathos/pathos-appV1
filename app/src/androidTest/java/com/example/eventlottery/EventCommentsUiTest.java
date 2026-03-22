@@ -16,8 +16,6 @@ import org.junit.runner.RunWith;
 /**
  * UI test for event comments.
  *
- * Requires a device/emulator with at least one event in the list.
- *
  * User stories covered:
  * - US 01.08.01: Post a comment on an event
  * - US 01.08.02: View comments on an event
