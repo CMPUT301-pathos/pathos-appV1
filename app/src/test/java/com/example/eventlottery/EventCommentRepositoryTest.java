@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for comment repository behavior using a fake in-memory store.
+ * Unit tests for comment repository using a fake repository.
  *
  * User stories covered:
  * - US 01.08.01: Post comments on an event

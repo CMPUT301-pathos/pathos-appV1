@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for {@link EventComment}.
+ * Unit tests for EventComment.
  *
  * User stories covered:
  * - US 01.08.01: Post comments on an event
