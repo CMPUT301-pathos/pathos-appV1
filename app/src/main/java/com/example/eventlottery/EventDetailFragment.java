@@ -4,23 +4,34 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eventlottery.controller.WaitingListController;
+import com.example.eventlottery.data.CommentRepository;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.data.WaitListRepository;
+import com.example.eventlottery.domain.EventComment;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
+import com.example.eventlottery.firebase.FirestoreCommentRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.ui.EventCommentAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * EventDetailFragment
@@ -51,6 +62,8 @@ import com.example.eventlottery.service.DeviceIdentityService;
  * - US 01.02.01: Entrant provides personal information
  * - US 01.02.02: Entrant updates profile information
  * - US 01.07.01: User is identified by device
+ * - US 01.08.01: Post a comment on an event
+ * - US 01.08.02: View comments on an event
  *
  * Revision note:
  * - Original event detail and waitlist functionality by Edwin David and Kenneth Joseph
@@ -133,6 +146,7 @@ public class EventDetailFragment extends Fragment {
 
         refreshWaitCount(textWaitCount);
         configureParticipationButton(buttonJoin, textWaitCount);
+        setupComments(view);
 
         return view;
     }
@@ -269,6 +283,76 @@ public class EventDetailFragment extends Fragment {
             public void onFailure(Exception e) {
                 textWaitCount.setText("Waitlist count unavailable");
             }
+        });
+    }
+
+    /**
+     * Sets up the comments RecyclerView, loads existing comments, and wires up
+     * the post-comment button.
+     *
+     * @param view the fragment root view
+     */
+    private void setupComments(View view) {
+        RecyclerView recyclerComments = view.findViewById(R.id.recycler_comments);
+        EditText editComment = view.findViewById(R.id.edit_comment);
+        Button buttonPost = view.findViewById(R.id.button_post_comment);
+
+        List<EventComment> commentList = new ArrayList<>();
+        EventCommentAdapter adapter = new EventCommentAdapter(commentList);
+        recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerComments.setAdapter(adapter);
+
+        CommentRepository commentRepo = new FirestoreCommentRepository();
+
+        commentRepo.getCommentsByEvent(eventId, new CommentRepository.CommentsCallback() {
+            @Override
+            public void onSuccess(List<EventComment> comments) {
+                commentList.clear();
+                commentList.addAll(comments);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // Comments unavailable — list stays empty, no disruption to event view
+            }
+        });
+
+        buttonPost.setOnClickListener(v -> {
+            String text = editComment.getText().toString().trim();
+            if (text.isEmpty()) return;
+
+            new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+                @Override
+                public void onSuccess(UserProfile profile) {
+                    String name = (profile != null && profile.getName() != null)
+                            ? profile.getName() : "Anonymous";
+                    EventComment comment = new EventComment(eventId, deviceId, name, text);
+
+                    commentRepo.addComment(comment, new CommentRepository.OperationCallback() {
+                        @Override
+                        public void onSuccess() {
+                            editComment.setText("");
+                            InputMethodManager imm = (InputMethodManager)
+                                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editComment.getWindowToken(), 0);
+                            commentList.add(comment);
+                            adapter.notifyItemInserted(commentList.size() - 1);
+                            recyclerComments.scrollToPosition(commentList.size() - 1);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(), "Failed to post comment.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(getContext(), "Could not load profile.", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
