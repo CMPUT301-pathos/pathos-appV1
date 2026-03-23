@@ -128,6 +128,36 @@
                 android:background="@drawable/bg_input_field"
                 android:layout_marginBottom="16dp" />
 
+
+
+            <!-- ═══ NEW: Event Date (FIX 3) ═══ -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Date"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/et_event_date"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Select event date"
+                android:focusable="false"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:inputType="none"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="16dp" />
+
             <!-- Category -->
             <TextView
                 android:id="@+id/tv_selected_category"
