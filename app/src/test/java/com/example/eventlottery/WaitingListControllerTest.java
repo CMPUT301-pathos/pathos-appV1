@@ -34,7 +34,7 @@ public class WaitingListControllerTest {
         private final List<WaitListRecord> records = new ArrayList<>();
 
         void addRecord(String eventId, String deviceId, WaitStatus status) {
-            WaitListRecord record = new WaitListRecord(eventId, deviceId);
+            WaitListRecord record = new WaitListRecord(eventId, deviceId, 0, 0);
             record.setStatus(status);
             records.add(record);
         }

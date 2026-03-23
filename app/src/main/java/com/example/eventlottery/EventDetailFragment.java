@@ -53,6 +53,7 @@ public class EventDetailFragment extends Fragment {
     private static final String ARG_EVENT_ID = "eventId";
     private static final String ARG_EVENT_NAME = "eventName";
     private static final String ARG_DESCRIPTION = "description";
+    private static final int LOCATION_PERMISSION_REQUEST = 1001;
 
     private String eventId;
     private String eventName;
@@ -158,24 +159,88 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     * Puts the action button into "join waiting list" mode.
-     *
+     * joinWithoutLocation helper function
+     * Author Heorhii Litvinov
+     * @param button the action button
+     */
+    private void failJoin(Button button) {
+        Toast.makeText(getContext(),
+                "Failed to join. Try again.",
+                Toast.LENGTH_SHORT).show();
+        button.setEnabled(true);
+    }
+
+    /**
+     * SetJoinMode helper function
+     * Author Heorhii Litvinov
      * @param button the action button
      * @param waitCount the waiting list count label
      */
-    private void setJoinMode(Button button, TextView waitCount) {
-        button.setText("Join Waiting List");
-        button.setEnabled(true);
+    private void joinWithoutLocation(Button button, TextView waitCount) {
+        waitingListController.joinWaitingList(eventId, deviceId,
+                new WaitListRepository.OperationCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(getContext(),
+                                "You've joined the waiting list!",
+                                Toast.LENGTH_SHORT).show();
+                        setLeaveMode(button, waitCount);
+                        refreshWaitCount(waitCount);
+                    }
 
-        button.setOnClickListener(v -> {
-            button.setEnabled(false);
+                    @Override
+                    public void onFailure(Exception e) {
+                        failJoin(button);
+                    }
+                });
+    }
 
-            waitingListController.joinWaitingList(eventId, deviceId,
+    /**
+     * SetJoinMode helper function
+     * Author Heorhii Litvinov
+     * @param button the action button
+     * @param waitCount the waiting list count label
+     */
+    private void requestLocationAndJoin(Button button, TextView waitCount) {
+
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+
+            // Request permission
+            requestPermissions(
+                    new String[]{
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.ACCESS_COARSE_LOCATION
+                    },
+                    LOCATION_PERMISSION_REQUEST
+            );
+            button.setEnabled(true);
+            return;
+        }
+
+        android.location.LocationManager locationManager =
+                (android.location.LocationManager) requireContext()
+                        .getSystemService(android.content.Context.LOCATION_SERVICE);
+
+        android.location.Location location =
+                locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+
+        if (location != null) {
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+
+            waitingListController.joinWaitingList(
+                    eventId,
+                    deviceId,
+                    latitude,
+                    longitude,
                     new WaitListRepository.OperationCallback() {
                         @Override
                         public void onSuccess() {
                             Toast.makeText(getContext(),
-                                    "You've joined the waiting list!",
+                                    "Joined with location!",
                                     Toast.LENGTH_SHORT).show();
                             setLeaveMode(button, waitCount);
                             refreshWaitCount(waitCount);
@@ -183,12 +248,54 @@ public class EventDetailFragment extends Fragment {
 
                         @Override
                         public void onFailure(Exception e) {
-                            Toast.makeText(getContext(),
-                                    "Failed to join. Try again.",
-                                    Toast.LENGTH_SHORT).show();
-                            button.setEnabled(true);
+                            failJoin(button);
                         }
                     });
+
+        } else {
+            Toast.makeText(getContext(),
+                    "Unable to get location. Turn on GPS.",
+                    Toast.LENGTH_SHORT).show();
+            button.setEnabled(true);
+        }
+    }
+
+    /**
+     * Puts the action button into "join waiting list" mode.
+     *
+     * @param button the action button
+     * @param waitCount the waiting list count label
+     */
+
+    private void setJoinMode(Button button, TextView waitCount) {
+        button.setText("Join Waiting List");
+        button.setEnabled(true);
+
+        button.setOnClickListener(v -> {
+            button.setEnabled(false);
+
+            // Step 1: fetch event geo requirement
+            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    .collection("events")
+                    .document(eventId)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (!doc.exists()) {
+                            failJoin(button);
+                            return;
+                        }
+
+                        Boolean geoRequired = doc.getBoolean("geoRequired");
+
+                        if (geoRequired != null && geoRequired) {
+                            //  Geo required, get location first
+                            requestLocationAndJoin(button, waitCount);
+                        } else {
+                            // No geo required, normal join
+                            joinWithoutLocation(button, waitCount);
+                        }
+                    })
+                    .addOnFailureListener(e -> failJoin(button));
         });
     }
 
@@ -266,6 +373,28 @@ public class EventDetailFragment extends Fragment {
                 callback.onResult(false);
             }
         });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0 &&
+                    grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+
+                Toast.makeText(getContext(),
+                        "Permission granted. Try again.",
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getContext(),
+                        "Location permission required.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     /**

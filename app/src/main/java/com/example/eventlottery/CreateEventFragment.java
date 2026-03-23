@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -82,6 +83,8 @@ public class CreateEventFragment extends Fragment {
     private boolean isPublishing = false;
     private String selectedCategory = "All";
 
+    private CheckBox cbGeoRequired;
+
     private static final String[] CATEGORIES = {
             "All", "Sports", "Music", "Arts", "Education", "Community"
     };
@@ -153,7 +156,7 @@ public class CreateEventFragment extends Fragment {
         );
 
         configureUiAccess();
-
+        cbGeoRequired = root.findViewById(R.id.cb_geo_required);
         return root;
     }
 
@@ -343,7 +346,8 @@ public class CreateEventFragment extends Fragment {
         eventDoc.put("organizerDeviceId", organizerDeviceId);
         eventDoc.put("createdAt", System.currentTimeMillis());
         eventDoc.put("posterUrl", posterUrl);
-
+        boolean geoRequired = cbGeoRequired != null && cbGeoRequired.isChecked();
+        eventDoc.put("geoRequired", geoRequired);
         FirebaseFirestore.getInstance()
                 .collection("events")
                 .add(eventDoc)

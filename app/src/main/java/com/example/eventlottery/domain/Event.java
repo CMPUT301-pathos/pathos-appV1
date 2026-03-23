@@ -29,6 +29,8 @@ public class Event {
 
     private int capacity;
     private int drawSize;
+    private boolean geoRequired;
+
 
     public Event() {}
 
@@ -118,6 +120,18 @@ public class Event {
         return now >= getRegistrationStart() && now <= getRegistrationEnd();
     }
 
+    public boolean isGeoRequired() {
+        return geoRequired;
+    }
+
+    public void setGeoRequired(Object geoRequired) {
+        if (geoRequired instanceof Boolean) {
+            this.geoRequired = (Boolean) geoRequired;
+        } else {
+            this.geoRequired = false;
+        }
+    }
+
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("name", name);
@@ -132,6 +146,7 @@ public class Event {
         m.put("registrationEnd", registrationEnd);
         m.put("capacity", capacity);
         m.put("drawSize", drawSize);
+        m.put("geoRequired", geoRequired);
         return m;
     }
 }

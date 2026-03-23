@@ -40,6 +40,8 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
     private OnOrganizerActionListener organizerActionListener;
     private boolean showOrganizerActions = false;
 
+    private boolean geoRequired;
+
     public interface OnCriteriaClickListener {
         void onCriteriaClick(EventSummary event);
     }
@@ -82,6 +84,14 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         items.clear();
         if (list != null) items.addAll(list);
         notifyDataSetChanged();
+    }
+
+    public boolean isGeoRequired() {
+        return geoRequired;
+    }
+
+    public void setGeoRequired(boolean geoRequired) {
+        this.geoRequired = geoRequired;
     }
 
     public void filterByCategory(String category) {
