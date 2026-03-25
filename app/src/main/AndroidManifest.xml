@@ -15,7 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-
+        <activity android:name=".ui.EntrantsMapActivity" />
         <activity
             android:name=".RouterActivity"
             android:exported="true">
@@ -60,6 +60,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDX-wlKJkKOxVRAHE87jV33K-xl6BjYlng"/>
 
     </application>
 

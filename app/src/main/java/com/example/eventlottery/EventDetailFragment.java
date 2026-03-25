@@ -227,6 +227,11 @@ public class EventDetailFragment extends Fragment {
         android.location.Location location =
                 locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
 
+        if (location == null) {
+            location = locationManager.getLastKnownLocation(
+                    android.location.LocationManager.NETWORK_PROVIDER);
+        }
+
         if (location != null) {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();

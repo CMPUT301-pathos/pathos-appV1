@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.eventlottery.controller.EventController;
 import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
@@ -145,8 +146,13 @@ public class OrganizerDashboardFragment extends Fragment {
             }
 
             @Override
-            public void onGeoDetailsClick(com.example.eventlottery.domain.EventSummary event) {
-                Snackbar.make(root, "Geo-details coming soon", Snackbar.LENGTH_SHORT).show();
+            public void onGeoDetailsClick(EventSummary event) {
+                android.content.Intent intent =
+                        new android.content.Intent(requireContext(),
+                                com.example.eventlottery.ui.EntrantsMapActivity.class);
+
+                intent.putExtra("eventId", event.getId());
+                startActivity(intent);
             }
         });
 

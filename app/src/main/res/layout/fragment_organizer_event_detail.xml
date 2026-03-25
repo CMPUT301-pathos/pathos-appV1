@@ -54,6 +54,21 @@
                 android:layout_marginBottom="12dp"/>
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_map"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="View Entrants on Map"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="12dp"
+                app:backgroundTint="#1A1A2E"
+                app:cornerRadius="12dp"
+                xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_run_lottery"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"

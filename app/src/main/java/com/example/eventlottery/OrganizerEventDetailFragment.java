@@ -1,5 +1,6 @@
 package com.example.eventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,8 +25,10 @@ import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.PathosRaffleService;
+import com.example.eventlottery.ui.EntrantsMapActivity;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -60,6 +63,8 @@ public class OrganizerEventDetailFragment extends Fragment {
     private CheckBox cbRequireLocation;
 
     private boolean isInitializingGeo = true;
+
+    private List<WaitListRecord> records = new ArrayList<>();
 
     public static OrganizerEventDetailFragment newInstance(EventSummary event) {
         OrganizerEventDetailFragment fragment = new OrganizerEventDetailFragment();
@@ -122,7 +127,13 @@ public class OrganizerEventDetailFragment extends Fragment {
                         }
                     });
         });
+        MaterialButton btnMap = view.findViewById(R.id.btn_view_map);
 
+        btnMap.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), EntrantsMapActivity.class);
+            intent.putExtra("records", new ArrayList<>(records));
+            startActivity(intent);
+        });
         return view;
     }
 
@@ -144,7 +155,8 @@ public class OrganizerEventDetailFragment extends Fragment {
     private void loadEntrants() {
         waitListRepository.getRecordsByEventAsync(eventId, new WaitListRepository.WaitListCallBack() {
             @Override
-            public void onSuccess(List<WaitListRecord> records) {
+            public void onSuccess(List<WaitListRecord> recordsFromDb) {
+                records = recordsFromDb;
                 if (getActivity() == null) return;
 
                 waitlistContainer.removeAllViews();
@@ -166,6 +178,8 @@ public class OrganizerEventDetailFragment extends Fragment {
 
                 tvWaitlistEmpty.setVisibility(waitingCount == 0 ? View.VISIBLE : View.GONE);
                 tvEnrolledEmpty.setVisibility(enrolledCount == 0 ? View.VISIBLE : View.GONE);
+
+
             }
 
             @Override
@@ -174,6 +188,7 @@ public class OrganizerEventDetailFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to load entrants", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private void addEntrantRow(LinearLayout container, String deviceId, WaitStatus status) {
@@ -298,6 +313,8 @@ public class OrganizerEventDetailFragment extends Fragment {
             }
         });
     }
+
+
 
 
 }
