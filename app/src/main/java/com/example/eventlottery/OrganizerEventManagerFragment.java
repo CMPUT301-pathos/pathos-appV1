@@ -57,7 +57,7 @@ public class OrganizerEventManagerFragment extends Fragment {
     private FirestoreWaitListRepository waitListRepo;
     private TextView tvEventName, tvDrawStatus;
     private EditText etDrawCount;
-    private Button btnRunDraw, btnDrawReplacement, btnViewInvited, btnViewWaiting;
+    private Button btnRunDraw, btnDrawReplacement, btnViewInvited, btnViewWaiting, btnViewCancelled;
 
     public static OrganizerEventManagerFragment newInstance(String eventId, String eventName) {
         OrganizerEventManagerFragment fragment = new OrganizerEventManagerFragment();
@@ -99,6 +99,8 @@ public class OrganizerEventManagerFragment extends Fragment {
         btnDrawReplacement = root.findViewById(R.id.btn_draw_replacement);
         btnViewInvited = root.findViewById(R.id.btn_view_invited);
         btnViewWaiting = root.findViewById(R.id.btn_view_waiting);
+        btnViewCancelled = root.findViewById(R.id.btn_view_cancelled);
+
 
         tvEventName.setText(eventName);
 
@@ -110,6 +112,9 @@ public class OrganizerEventManagerFragment extends Fragment {
 
         // US 02.02.01: when clicked displays all entrants who joined the waiting list
         btnViewWaiting.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.WAITING, "Waiting List"));
+
+        // US 02.06.02: view all cancelled entrants
+        btnViewCancelled.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.CANCELLED, "Cancelled Entrants"));
 
         return root;
     }

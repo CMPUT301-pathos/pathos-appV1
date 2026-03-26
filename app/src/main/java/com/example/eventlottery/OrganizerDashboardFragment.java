@@ -150,6 +150,7 @@ public class OrganizerDashboardFragment extends Fragment {
             }
         });
 
+
         adapter.setItemClickListener(event ->
                 requireCompletedProfile(() -> {
                     requireActivity().getSupportFragmentManager()

@@ -108,6 +108,36 @@
                 android:padding="12dp"
                 android:visibility="gone" />
 
+            <!-- Cancelled (US 02.06.02) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CANCELLED ENTRANTS"
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/container_cancelled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tv_cancelled_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No cancelled entrants."
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:padding="12dp"
+                android:visibility="gone" />
+
         </LinearLayout>
 
     </ScrollView>
