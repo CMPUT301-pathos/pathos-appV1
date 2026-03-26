@@ -92,6 +92,9 @@ public class OrganizerEventDetailFragment extends Fragment {
         tvEnrolledEmpty = view.findViewById(R.id.tv_enrolled_empty);
         tvCancelledEmpty = view.findViewById(R.id.tv_cancelled_empty);
 
+        MaterialButton btnCancelAllInvited = view.findViewById(R.id.btn_cancel_all_invited);
+        btnCancelAllInvited.setOnClickListener(v -> cancelAllInvited());
+
         tvTitle.setText(eventName);
 
         loadEntrants();
@@ -99,6 +102,53 @@ public class OrganizerEventDetailFragment extends Fragment {
         return view;
     }
 
+    private void cancelAllInvited() {
+        waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.INVITED,
+                new WaitListRepository.WaitListCallBack() {
+                    @Override
+                    public void onSuccess(List<WaitListRecord> records) {
+                        if (getActivity() == null) return;
+                        if (records.isEmpty()) {
+                            Toast.makeText(getContext(), "No invited entrants to cancel.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        new android.app.AlertDialog.Builder(requireContext())
+                                .setTitle("Cancel All Invited")
+                                .setMessage("Cancel " + records.size() + " invited entrant(s) who haven't signed up? They will be notified.")
+                                .setPositiveButton("Cancel All", (dialog, which) -> {
+                                    for (WaitListRecord record : records) {
+                                        waitListRepository.updateStatus(eventId, record.getDeviceId(), WaitStatus.CANCELLED);
+
+                                        java.util.Map<String, Object> notifData = new java.util.HashMap<>();
+                                        notifData.put("deviceId", record.getDeviceId());
+                                        notifData.put("eventId", eventId);
+                                        notifData.put("type", "CANCELLED");
+                                        notifData.put("message", "Your invitation to " + eventName + " has been cancelled.");
+                                        notifData.put("timestamp", System.currentTimeMillis());
+                                        notifData.put("read", false);
+
+                                        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                                .collection("notifications")
+                                                .add(notifData);
+                                    }
+
+                                    Toast.makeText(getContext(),
+                                            records.size() + " entrant(s) cancelled and notified.",
+                                            Toast.LENGTH_SHORT).show();
+                                    loadEntrants();
+                                })
+                                .setNegativeButton("Back", null)
+                                .show();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        if (getActivity() == null) return;
+                        Toast.makeText(getContext(), "Failed to load invited entrants.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
     private void loadEntrants() {
         waitListRepository.getRecordsByEventAsync(eventId, new WaitListRepository.WaitListCallBack() {
             @Override
