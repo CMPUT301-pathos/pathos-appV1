@@ -45,6 +45,29 @@
                 android:letterSpacing="0.08"
                 android:layout_marginBottom="8dp" />
 
+            <CheckBox
+                android:id="@+id/cb_require_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Require geolocation to join"
+                android:layout_marginStart="20dp"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_view_map"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="View Entrants on Map"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="12dp"
+                app:backgroundTint="#1A1A2E"
+                app:cornerRadius="12dp"
+                xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_run_lottery"
                 android:layout_width="match_parent"

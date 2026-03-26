@@ -47,7 +47,11 @@ public class WaitingListController {
     }
 
     public void joinWaitingList(String eventId, String deviceId) {
-        WaitListRecord record = new WaitListRecord(eventId, deviceId);
+        // default: no location
+        joinWaitingList(eventId, deviceId, 0, 0);
+    }
+    public void joinWaitingList(String eventId, String deviceId, double latitude, double longitude) {
+        WaitListRecord record = new WaitListRecord(eventId, deviceId, latitude, longitude);
         waitListRepository.addToWaitList(record);
     }
 
@@ -83,7 +87,15 @@ public class WaitingListController {
 
     public void joinWaitingList(String eventId, String deviceId,
                                 WaitListRepository.OperationCallback callback) {
-        WaitListRecord record = new WaitListRecord(eventId, deviceId);
+
+        WaitListRecord record = new WaitListRecord(eventId, deviceId, 0, 0);
+        waitListRepository.addToWaitList(record, callback);
+    }
+    public void joinWaitingList(String eventId, String deviceId,
+                                double latitude, double longitude,
+                                WaitListRepository.OperationCallback callback) {
+
+        WaitListRecord record = new WaitListRecord(eventId, deviceId, latitude, longitude);
         waitListRepository.addToWaitList(record, callback);
     }
 

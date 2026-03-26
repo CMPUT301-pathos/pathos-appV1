@@ -85,4 +85,12 @@ public class FirestoreEventRepository implements EventRepository {
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void updateGeoRequirement(String eventId, boolean required, OperationCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId)
+                .update("geoRequired", required)
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(callback::onFailure);
+    }
 }

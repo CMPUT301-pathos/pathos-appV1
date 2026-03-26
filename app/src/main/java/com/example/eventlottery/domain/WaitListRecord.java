@@ -20,11 +20,20 @@ public class WaitListRecord {
     private WaitStatus status;
     private long joinTimeMs;
 
+    private double latitude;
+    private double longitude;
+
     public WaitListRecord(String eventId, String deviceId) {
+        this(eventId, deviceId, 0, 0);
+    }
+
+    public WaitListRecord(String eventId, String deviceId, double latitude, double longitude) {
         this.eventId = eventId;
         this.deviceId = deviceId;
         this.status = WaitStatus.WAITING;
         this.joinTimeMs = System.currentTimeMillis();
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public void acceptInvitation() {
@@ -49,4 +58,7 @@ public class WaitListRecord {
 
     // Setter for status (used by repository when loading from Firestore)
     public void setStatus(WaitStatus status) { this.status = status; }
+
+    public double getLatitude() { return latitude; }
+    public double getLongitude() { return longitude; }
 }

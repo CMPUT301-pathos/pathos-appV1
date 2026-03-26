@@ -31,6 +31,15 @@ public class EventSummary {
     private final int drawSize;
     private final String posterUrl;
 
+    private boolean geoRequired;
+
+    public boolean isGeoRequired() {
+        return geoRequired;
+    }
+
+    public void setLocationRequired(boolean required) {
+        this.geoRequired = required;
+    }
     public EventSummary(String id, String name, String description, String location,
                         long createdAt, String organizerDeviceId, String category,
                         long eventDate, long registrationStart, long registrationEnd,
@@ -90,7 +99,7 @@ public class EventSummary {
         Long cap = safeGetLong(doc, "capacity");
         Long draw = safeGetLong(doc, "drawSize");
 
-        return new EventSummary(
+        EventSummary e = new EventSummary(
                 id, name, desc, loc,
                 created == null ? 0L : created,
                 organizer, category,
@@ -99,7 +108,17 @@ public class EventSummary {
                 regEnd == null ? 0L : regEnd,
                 cap == null ? 0 : cap.intValue(),
                 draw == null ? 0 : draw.intValue(),
-                posterUrl);
+                posterUrl
+        );
+        // set geoRequired after object is created
+        Object geo = doc.get("geoRequired");
+        if (geo instanceof Boolean) {
+            e.geoRequired = (Boolean) geo;
+        } else {
+            e.geoRequired = false;
+        }
+
+        return e;
     }
 
     private static String safe(String s) {

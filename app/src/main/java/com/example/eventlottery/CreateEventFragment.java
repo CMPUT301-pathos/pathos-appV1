@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,43 +45,53 @@ import java.util.Map;
  * Allows an organizer to create a new event and generate a promotional QR code.
  *
  * Responsibilities:
- * - collect event fields including category and event date
+ * - collect event fields including category
  * - choose registration dates with a Material date range picker
  * - optionally upload an event poster to Firebase Storage
  * - save the event to the Firestore "events" collection
- * - persist QR payload back to the event document
  * - navigate to QrCodeFragment on successful publish
  *
+ * Profile-completion protection:
+ * - event creation is blocked unless the current user's required profile
+ *   information has been completed
+ * - publishing controls are disabled for incomplete profiles
+ *
+ * Reliability notes:
+ * - prevents double publish
+ * - guards against fragment/activity lifecycle issues
+ * - uses commitAllowingStateLoss only when FragmentManager state is saved
+ *
  * User stories supported:
+ * - US 01.02.01: Entrant provides personal information
+ * - US 01.02.02: Entrant updates personal information
+ * - US 01.07.01: User is identified by device
  * - US 02.01.01: Organizer can create a new event and generate a QR code
- * - US 02.01.04: Organizer sets a registration period
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.6
+ * @version 1.4
  */
 public class CreateEventFragment extends Fragment {
 
-    // ── UI fields ────────────────────────────────────────────────
     private EditText etName, etDesc, etLocation, etStart, etEnd, etCapacity;
-    private EditText etEventDate;
     private ImageView ivPosterPreview;
     private MaterialButton btnSelectPoster, btnPublish;
     private TextView tvSelectedCategory;
 
-    // ── State ────────────────────────────────────────────────────
     private Uri selectedPosterUri;
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
+
     private boolean isPublishing = false;
     private String selectedCategory = "All";
 
-    private long registrationStartMillis = 0;
-    private long registrationEndMillis = 0;
-    private long eventDateMillis = 0;
+    private CheckBox cbGeoRequired;
 
     private static final String[] CATEGORIES = {
             "All", "Sports", "Music", "Arts", "Education", "Community"
     };
 
+    /**
+     * Espresso idling resource used by UI tests to wait for async publish work.
+     */
     private static final CountingIdlingResource PUBLISH_IDLING =
             new CountingIdlingResource("CreateEventPublish");
 
@@ -100,8 +111,6 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
-    // ── Lifecycle ────────────────────────────────────────────────
-
     @Nullable
     @Override
     public View onCreateView(
@@ -111,16 +120,15 @@ public class CreateEventFragment extends Fragment {
     ) {
         View root = inflater.inflate(R.layout.fragment_create_event, container, false);
 
-        etName        = root.findViewById(R.id.et_event_name);
-        etDesc        = root.findViewById(R.id.et_event_description);
-        etLocation    = root.findViewById(R.id.et_event_location);
-        etStart       = root.findViewById(R.id.et_event_start);
-        etEnd         = root.findViewById(R.id.et_event_end);
-        etCapacity    = root.findViewById(R.id.et_event_capacity);
-        etEventDate   = root.findViewById(R.id.et_event_date);
-        ivPosterPreview  = root.findViewById(R.id.iv_event_poster_preview);
-        btnSelectPoster  = root.findViewById(R.id.btn_select_event_poster);
-        btnPublish       = root.findViewById(R.id.btn_publish_event);
+        etName = root.findViewById(R.id.et_event_name);
+        etDesc = root.findViewById(R.id.et_event_description);
+        etLocation = root.findViewById(R.id.et_event_location);
+        etStart = root.findViewById(R.id.et_event_start);
+        etEnd = root.findViewById(R.id.et_event_end);
+        etCapacity = root.findViewById(R.id.et_event_capacity);
+        ivPosterPreview = root.findViewById(R.id.iv_event_poster_preview);
+        btnSelectPoster = root.findViewById(R.id.btn_select_event_poster);
+        btnPublish = root.findViewById(R.id.btn_publish_event);
         tvSelectedCategory = root.findViewById(R.id.tv_selected_category);
         MaterialButton btnPickCategory = root.findViewById(R.id.btn_pick_category);
 
@@ -138,7 +146,6 @@ public class CreateEventFragment extends Fragment {
 
         setupImagePicker();
         setupDateRangePicker();
-        setupEventDatePicker();
 
         btnSelectPoster.setOnClickListener(v ->
                 requireCompletedProfile(this::openPosterPicker)
@@ -149,12 +156,13 @@ public class CreateEventFragment extends Fragment {
         );
 
         configureUiAccess();
-
+        cbGeoRequired = root.findViewById(R.id.cb_geo_required);
         return root;
     }
 
-    // ── Image picker ─────────────────────────────────────────────
-
+    /**
+     * Registers the visual media picker used to select an event poster.
+     */
     private void setupImagePicker() {
         pickPosterLauncher = registerForActivityResult(
                 new ActivityResultContracts.PickVisualMedia(),
@@ -167,6 +175,9 @@ public class CreateEventFragment extends Fragment {
         );
     }
 
+    /**
+     * Opens the device image picker for selecting an event poster.
+     */
     private void openPosterPicker() {
         pickPosterLauncher.launch(
                 new PickVisualMediaRequest.Builder()
@@ -175,14 +186,18 @@ public class CreateEventFragment extends Fragment {
         );
     }
 
-    // ── Date pickers ─────────────────────────────────────────────
-
+    /**
+     * Configures both date fields to open the registration date range picker.
+     */
     private void setupDateRangePicker() {
         View.OnClickListener openPicker = v -> showDateRangePicker();
         etStart.setOnClickListener(openPicker);
         etEnd.setOnClickListener(openPicker);
     }
 
+    /**
+     * Shows the Material date range picker and fills the selected start/end fields.
+     */
     private void showDateRangePicker() {
         MaterialDatePicker<Pair<Long, Long>> picker =
                 MaterialDatePicker.Builder.dateRangePicker()
@@ -193,9 +208,6 @@ public class CreateEventFragment extends Fragment {
             if (selection == null || selection.first == null || selection.second == null) {
                 return;
             }
-            registrationStartMillis = selection.first;
-            registrationEndMillis   = selection.second;
-
             etStart.setText(formatDate(selection.first));
             etEnd.setText(formatDate(selection.second));
         });
@@ -203,33 +215,21 @@ public class CreateEventFragment extends Fragment {
         picker.show(getChildFragmentManager(), "registration_date_range_picker");
     }
 
-    private void setupEventDatePicker() {
-        etEventDate.setOnClickListener(v -> {
-            MaterialDatePicker<Long> picker =
-                    MaterialDatePicker.Builder.datePicker()
-                            .setTitleText("Select event date")
-                            .build();
-
-            picker.addOnPositiveButtonClickListener(selection -> {
-                if (selection == null) return;
-                eventDateMillis = selection;
-                etEventDate.setText(formatDate(selection));
-            });
-
-            picker.show(getChildFragmentManager(), "event_date_picker");
-        });
-    }
-
-    // ── Publish flow ─────────────────────────────────────────────
-
+    /**
+     * Validates fields and starts the publish flow.
+     */
     private void publishEvent() {
-        if (isPublishing) return;
+        if (isPublishing) {
+            return;
+        }
         isPublishing = true;
 
-        String name     = safe(etName);
-        String desc     = safe(etDesc);
+        String name = safe(etName);
+        String desc = safe(etDesc);
         String location = safe(etLocation);
-        String capStr   = safe(etCapacity);
+        String start = safe(etStart);
+        String end = safe(etEnd);
+        String capStr = safe(etCapacity);
 
         if (TextUtils.isEmpty(name)) {
             etName.setError("Required");
@@ -237,13 +237,13 @@ public class CreateEventFragment extends Fragment {
             return;
         }
 
-        if (registrationStartMillis == 0) {
+        if (TextUtils.isEmpty(start)) {
             etStart.setError("Required");
             isPublishing = false;
             return;
         }
 
-        if (registrationEndMillis == 0) {
+        if (TextUtils.isEmpty(end)) {
             etEnd.setError("Required");
             isPublishing = false;
             return;
@@ -266,39 +266,52 @@ public class CreateEventFragment extends Fragment {
         }
 
         beginPublishAsync();
-        setPublishingState(true,
-                selectedPosterUri == null ? "PUBLISHING..." : "UPLOADING POSTER...");
+        setPublishingState(true, selectedPosterUri == null ? "PUBLISHING..." : "UPLOADING POSTER...");
 
         if (selectedPosterUri != null) {
-            uploadPosterAndCreateEvent(name, desc, location, capacity);
+            uploadPosterAndCreateEvent(name, desc, location, start, end, capacity);
         } else {
-            createEventDocument(name, desc, location, capacity, null);
+            createEventDocument(name, desc, location, start, end, capacity, null);
         }
     }
 
-    // ── Poster upload ────────────────────────────────────────────
-
+    /**
+     * Uploads the selected poster to Firebase Storage before creating the event document.
+     */
     private void uploadPosterAndCreateEvent(
-            String name, String desc, String location,
+            String name,
+            String desc,
+            String location,
+            String start,
+            String end,
             Integer capacity
     ) {
-        String deviceId = DeviceIdentityService.getDeviceId(requireContext());
-        String fileName = "event_posters/" + deviceId + "_" + System.currentTimeMillis() + ".jpg";
+        String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
+        String fileName = "event_posters/" + organizerDeviceId + "_" + System.currentTimeMillis() + ".jpg";
         StorageReference posterRef = FirebaseStorage.getInstance().getReference().child(fileName);
 
         posterRef.putFile(selectedPosterUri)
                 .continueWithTask(task -> {
-                    if (!task.isSuccessful() && task.getException() != null) {
-                        throw task.getException();
+                    if (!task.isSuccessful()) {
+                        Exception exception = task.getException();
+                        if (exception != null) {
+                            throw exception;
+                        }
                     }
                     return posterRef.getDownloadUrl();
                 })
                 .addOnSuccessListener(uri -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
-                    createEventDocument(name, desc, location, capacity, uri.toString());
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
+                    createEventDocument(name, desc, location, start, end, capacity, uri.toString());
                 })
                 .addOnFailureListener(e -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(),
@@ -308,48 +321,57 @@ public class CreateEventFragment extends Fragment {
                 });
     }
 
-    // ── Firestore write ──────────────────────────────────────────
-
+    /**
+     * Creates the Firestore document for the event.
+     */
     private void createEventDocument(
-            String name, String desc, String location,
+            String name,
+            String desc,
+            String location,
+            String start,
+            String end,
             Integer capacity,
             @Nullable String posterUrl
     ) {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
 
         Map<String, Object> eventDoc = new HashMap<>();
-        eventDoc.put("name",               name);
-        eventDoc.put("description",        desc);
-        eventDoc.put("location",           location);
-        eventDoc.put("registrationStart",  registrationStartMillis);
-        eventDoc.put("registrationEnd",    registrationEndMillis);
-        eventDoc.put("eventDate",          eventDateMillis);
-        eventDoc.put("capacity",           capacity);
-        eventDoc.put("category",           selectedCategory);
-        eventDoc.put("organizerDeviceId",  organizerDeviceId);
-        eventDoc.put("createdAt",          System.currentTimeMillis());
-        eventDoc.put("posterUrl",          posterUrl);
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("events")
+        eventDoc.put("name", name);
+        eventDoc.put("description", desc);
+        eventDoc.put("location", location);
+        eventDoc.put("registrationStart", start);
+        eventDoc.put("registrationEnd", end);
+        eventDoc.put("capacity", capacity);
+        eventDoc.put("category", selectedCategory);
+        eventDoc.put("organizerDeviceId", organizerDeviceId);
+        eventDoc.put("createdAt", System.currentTimeMillis());
+        eventDoc.put("posterUrl", posterUrl);
+        boolean geoRequired = cbGeoRequired != null && cbGeoRequired.isChecked();
+        eventDoc.put("geoRequired", geoRequired);
+        FirebaseFirestore.getInstance()
+                .collection("events")
                 .add(eventDoc)
                 .addOnSuccessListener(ref -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
 
                     String eventId = ref.getId();
-                    String qrPayload = "eventId:" + eventId;
-
-                    ref.update("qrPayload", qrPayload);
+                    String payload = "eventId:" + eventId;
 
                     Toast.makeText(requireContext(), "Event created", Toast.LENGTH_SHORT).show();
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
-                    goToQr(qrPayload);
+                    goToQr(payload);
                     endPublishAsync();
                 })
                 .addOnFailureListener(e -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
+
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
                     Toast.makeText(requireContext(),
@@ -359,8 +381,11 @@ public class CreateEventFragment extends Fragment {
                 });
     }
 
-    // ── Navigation ───────────────────────────────────────────────
-
+    /**
+     * Navigates to the QR code screen for the newly created event.
+     *
+     * @param payload QR payload string
+     */
     private void goToQr(@NonNull String payload) {
         QrCodeFragment qr = QrCodeFragment.newInstance(payload);
         FragmentManager fm = requireActivity().getSupportFragmentManager();
@@ -380,8 +405,12 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
-    // ── UI helpers ───────────────────────────────────────────────
-
+    /**
+     * Enables or disables publish-related controls during async work.
+     *
+     * @param publishing whether publishing is currently in progress
+     * @param buttonText text to show on the publish button
+     */
     private void setPublishingState(boolean publishing, String buttonText) {
         btnPublish.setEnabled(!publishing);
         btnSelectPoster.setEnabled(!publishing);
@@ -390,24 +419,35 @@ public class CreateEventFragment extends Fragment {
         btnPublish.setText(buttonText);
     }
 
+    /**
+     * Enables or disables the event-creation UI based on profile completion.
+     */
     private void configureUiAccess() {
-        requireCompletedProfile(
-                () -> {
-                    btnSelectPoster.setEnabled(true);
-                    btnPublish.setEnabled(true);
-                },
-                () -> {
-                    btnSelectPoster.setEnabled(false);
-                    btnPublish.setEnabled(false);
-                    etStart.setEnabled(false);
-                    etEnd.setEnabled(false);
-                    Toast.makeText(requireContext(),
-                            "Complete your profile first to create events.",
-                            Toast.LENGTH_SHORT).show();
-                }
-        );
+        requireCompletedProfile(new Runnable() {
+            @Override
+            public void run() {
+                btnSelectPoster.setEnabled(true);
+                btnPublish.setEnabled(true);
+            }
+        }, new Runnable() {
+            @Override
+            public void run() {
+                btnSelectPoster.setEnabled(false);
+                btnPublish.setEnabled(false);
+                etStart.setEnabled(false);
+                etEnd.setEnabled(false);
+                Toast.makeText(requireContext(),
+                        "Complete your profile first to create events.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
+    /**
+     * Runs protected logic only if the current user's profile is completed.
+     *
+     * @param onAllowed logic to run when the profile is complete
+     */
     private void requireCompletedProfile(Runnable onAllowed) {
         requireCompletedProfile(onAllowed, () -> Toast.makeText(
                 requireContext(),
@@ -416,8 +456,16 @@ public class CreateEventFragment extends Fragment {
         ).show());
     }
 
+    /**
+     * Runs one callback if the current user's profile is completed and another
+     * if it is not.
+     *
+     * @param onAllowed logic to run when the profile is complete
+     * @param onBlocked logic to run when the profile is incomplete or unavailable
+     */
     private void requireCompletedProfile(Runnable onAllowed, Runnable onBlocked) {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
+
         new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
             public void onSuccess(UserProfile profile) {
@@ -435,11 +483,23 @@ public class CreateEventFragment extends Fragment {
         });
     }
 
+    /**
+     * Formats a UTC timestamp into yyyy-MM-dd for display.
+     *
+     * @param utcMillis date in milliseconds
+     * @return formatted date string
+     */
     private String formatDate(long utcMillis) {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 .format(new Date(utcMillis));
     }
 
+    /**
+     * Safely trims text from an EditText.
+     *
+     * @param et source EditText
+     * @return trimmed string or empty string if null
+     */
     private String safe(EditText et) {
         return et.getText() == null ? "" : et.getText().toString().trim();
     }

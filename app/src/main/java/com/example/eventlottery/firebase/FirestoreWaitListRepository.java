@@ -49,6 +49,8 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         data.put("status", record.getStatus().name());
         data.put("joinTimeMs", record.getJoinTimeMs());
         data.put("notified", false);
+        data.put("latitude", record.getLatitude());
+        data.put("longitude", record.getLongitude());
 
         db.collection(COLLECTION)
                 .document(record.getEventId() + "_" + record.getDeviceId())
@@ -96,9 +98,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnSuccessListener(querySnapshot -> {
                     List<WaitListRecord> records = new ArrayList<>();
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
                         WaitListRecord record = new WaitListRecord(
                                 doc.getString("eventId"),
-                                doc.getString("deviceId")
+                                doc.getString("deviceId"),
+                                lat != null ? lat : 0,
+                                lng != null ? lng : 0
                         );
                         record.setStatus(WaitStatus.valueOf(doc.getString("status")));
                         records.add(record);
@@ -115,9 +121,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .get()
                 .addOnSuccessListener(doc ->{
                     if(doc.exists()){
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
                         WaitListRecord record = new WaitListRecord(
                                 doc.getString("eventId"),
-                                doc.getString("deviceId")
+                                doc.getString("deviceId"),
+                                lat != null ? lat : 0,
+                                lng != null ? lng : 0
                         );
                         record.setStatus(WaitStatus.valueOf(doc.getString("status")));
                         callback.onSuccess(record);
@@ -137,6 +147,8 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         data.put("status", record.getStatus().name());
         data.put("joinTimeMs", record.getJoinTimeMs());
         data.put("notified", false);
+        data.put("latitude", record.getLatitude());
+        data.put("longitude", record.getLongitude());
 
         db.collection(COLLECTION)
                 .document(record.getEventId() + "_" + record.getDeviceId())
@@ -161,9 +173,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnSuccessListener(snap -> {
                     List<WaitListRecord> records = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : snap) {
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
                         WaitListRecord record = new WaitListRecord(
                                 doc.getString("eventId"),
-                                doc.getString("deviceId")
+                                doc.getString("deviceId"),
+                                lat != null ? lat : 0,
+                                lng != null ? lng : 0
                         );
                         String statusStr = doc.getString("status");
                         if (statusStr != null) {

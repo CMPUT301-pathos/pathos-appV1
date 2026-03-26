@@ -104,6 +104,13 @@
                 android:background="@drawable/bg_input_field"
                 android:layout_marginBottom="16dp" />
 
+            <CheckBox
+                android:id="@+id/cb_geo_required"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Require geolocation to join waitlist"
+                android:textColor="#FFFFFF"
+                android:layout_marginBottom="16dp"/>
             <!-- Capacity -->
             <TextView
                 android:layout_width="wrap_content"

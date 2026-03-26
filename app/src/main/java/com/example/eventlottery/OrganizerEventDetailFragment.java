@@ -1,9 +1,11 @@
 package com.example.eventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,17 +14,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
+import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.PathosRaffleService;
+import com.example.eventlottery.ui.EntrantsMapActivity;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,6 +59,12 @@ public class OrganizerEventDetailFragment extends Fragment {
     private FirestoreWaitListRepository waitListRepository;
     private FirestoreProfileRepository profileRepository;
     private PathosRaffleService raffleService;
+
+    private CheckBox cbRequireLocation;
+
+    private boolean isInitializingGeo = true;
+
+    private List<WaitListRecord> records = new ArrayList<>();
 
     public static OrganizerEventDetailFragment newInstance(EventSummary event) {
         OrganizerEventDetailFragment fragment = new OrganizerEventDetailFragment();
@@ -89,18 +101,62 @@ public class OrganizerEventDetailFragment extends Fragment {
         enrolledContainer = view.findViewById(R.id.container_enrolled);
         tvWaitlistEmpty = view.findViewById(R.id.tv_waitlist_empty);
         tvEnrolledEmpty = view.findViewById(R.id.tv_enrolled_empty);
-
+        cbRequireLocation = view.findViewById(R.id.cb_require_location);
         tvTitle.setText(eventName);
 
         loadEntrants();
+        loadGeoRequirement();
 
+        cbRequireLocation.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isInitializingGeo) return;
+
+            new FirestoreEventRepository().updateGeoRequirement(eventId, isChecked,
+                    new EventRepository.OperationCallback() {
+                        @Override
+                        public void onSuccess() {
+                            Toast.makeText(getContext(),
+                                    "Geolocation requirement updated",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(getContext(),
+                                    "Failed to update setting",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        });
+        MaterialButton btnMap = view.findViewById(R.id.btn_view_map);
+
+        btnMap.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), EntrantsMapActivity.class);
+            intent.putExtra("records", new ArrayList<>(records));
+            startActivity(intent);
+        });
         return view;
+    }
+
+    private void loadGeoRequirement() {
+        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Boolean geo = doc.getBoolean("geoRequired");
+                        isInitializingGeo = true;
+                        cbRequireLocation.setChecked(geo != null && geo);
+                        isInitializingGeo = false;
+                    }
+                });
     }
 
     private void loadEntrants() {
         waitListRepository.getRecordsByEventAsync(eventId, new WaitListRepository.WaitListCallBack() {
             @Override
-            public void onSuccess(List<WaitListRecord> records) {
+            public void onSuccess(List<WaitListRecord> recordsFromDb) {
+                records = recordsFromDb;
                 if (getActivity() == null) return;
 
                 waitlistContainer.removeAllViews();
@@ -122,6 +178,8 @@ public class OrganizerEventDetailFragment extends Fragment {
 
                 tvWaitlistEmpty.setVisibility(waitingCount == 0 ? View.VISIBLE : View.GONE);
                 tvEnrolledEmpty.setVisibility(enrolledCount == 0 ? View.VISIBLE : View.GONE);
+
+
             }
 
             @Override
@@ -130,6 +188,7 @@ public class OrganizerEventDetailFragment extends Fragment {
                 Toast.makeText(getContext(), "Failed to load entrants", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private void addEntrantRow(LinearLayout container, String deviceId, WaitStatus status) {
@@ -254,4 +313,8 @@ public class OrganizerEventDetailFragment extends Fragment {
             }
         });
     }
+
+
+
+
 }
