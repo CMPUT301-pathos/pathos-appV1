@@ -47,6 +47,8 @@ public class OrganizerEventDetailFragment extends Fragment {
 
     private LinearLayout waitlistContainer;
     private LinearLayout enrolledContainer;
+    private LinearLayout cancelledContainer;
+    private TextView tvCancelledEmpty;
     private TextView tvWaitlistEmpty;
     private TextView tvEnrolledEmpty;
 
@@ -89,6 +91,8 @@ public class OrganizerEventDetailFragment extends Fragment {
         enrolledContainer = view.findViewById(R.id.container_enrolled);
         tvWaitlistEmpty = view.findViewById(R.id.tv_waitlist_empty);
         tvEnrolledEmpty = view.findViewById(R.id.tv_enrolled_empty);
+        cancelledContainer = view.findViewById(R.id.container_cancelled);
+        tvCancelledEmpty = view.findViewById(R.id.tv_cancelled_empty);
 
         tvTitle.setText(eventName);
 
@@ -105,9 +109,12 @@ public class OrganizerEventDetailFragment extends Fragment {
 
                 waitlistContainer.removeAllViews();
                 enrolledContainer.removeAllViews();
+                cancelledContainer.removeAllViews();
+
 
                 int waitingCount = 0;
                 int enrolledCount = 0;
+                int cancelledCount = 0;
 
                 for (WaitListRecord record : records) {
                     if (record.getStatus() == WaitStatus.WAITING ||
@@ -117,11 +124,17 @@ public class OrganizerEventDetailFragment extends Fragment {
                     } else if (record.getStatus() == WaitStatus.ACCEPTED) {
                         enrolledCount++;
                         addEntrantRow(enrolledContainer, record.getDeviceId(), record.getStatus());
+                    }  else if (record.getStatus() == WaitStatus.CANCELLED ||
+                            record.getStatus() == WaitStatus.DECLINED) {
+                        cancelledCount++;
+                        addEntrantRow(cancelledContainer, record.getDeviceId(), record.getStatus());
                     }
                 }
 
                 tvWaitlistEmpty.setVisibility(waitingCount == 0 ? View.VISIBLE : View.GONE);
                 tvEnrolledEmpty.setVisibility(enrolledCount == 0 ? View.VISIBLE : View.GONE);
+                tvCancelledEmpty.setVisibility(cancelledCount == 0 ? View.VISIBLE : View.GONE);
+
             }
 
             @Override
@@ -194,14 +207,14 @@ public class OrganizerEventDetailFragment extends Fragment {
                     Toast.makeText(getContext(),
                             "Entrant removed and notified.",
                             Toast.LENGTH_SHORT).show();
-                    container.removeView(row);
+                    loadEntrants();    // ← reload all sections
                 })
                 .addOnFailureListener(e -> {
                     if (getActivity() == null) return;
                     Toast.makeText(getContext(),
                             "Removed but failed to send notification.",
                             Toast.LENGTH_SHORT).show();
-                    container.removeView(row);
+                    loadEntrants();    // ← reload all sections
                 });
     }
 

@@ -154,6 +154,7 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
                 organizerActionListener.onGeoDetailsClick(e);
             }
         });
+
     }
 
     @Override
