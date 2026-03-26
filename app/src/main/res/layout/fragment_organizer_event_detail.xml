@@ -34,11 +34,11 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Waitlisted -->
+            <!-- Waiting (WAITING status) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="WAIT-LISTED ENTRANTS"
+                android:text="WAITING ENTRANTS"
                 android:textColor="#000000"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -61,28 +61,58 @@
                 xmlns:app="http://schemas.android.com/apk/res-auto"/>
 
             <LinearLayout
-                android:id="@+id/container_waitlist"
+                android:id="@+id/container_waiting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginBottom="4dp" />
 
             <TextView
-                android:id="@+id/tv_waitlist_empty"
+                android:id="@+id/tv_waiting_empty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="No entrants on the waitlist yet."
+                android:text="No entrants waiting."
                 android:textColor="#000000"
                 android:textSize="13sp"
                 android:gravity="center"
                 android:padding="12dp"
                 android:visibility="gone" />
 
-            <!-- Enrolled -->
+            <!-- Invited (US 02.06.01) -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="CHOSEN ENTRANTS"
+                android:text="INVITED ENTRANTS"
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/container_invited"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tv_invited_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No invited entrants."
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:padding="12dp"
+                android:visibility="gone" />
+
+            <!-- Enrolled (US 02.06.03) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ENROLLED ENTRANTS"
                 android:textColor="#000000"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -101,8 +131,8 @@
                 android:id="@+id/tv_enrolled_empty"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="No entrants enrolled yet."
-                android:textColor="#CCFFFFFF"
+                android:text="No enrolled entrants."
+                android:textColor="#000000"
                 android:textSize="13sp"
                 android:gravity="center"
                 android:padding="12dp"

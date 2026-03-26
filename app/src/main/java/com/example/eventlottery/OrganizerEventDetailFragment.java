@@ -45,12 +45,8 @@ public class OrganizerEventDetailFragment extends Fragment {
     private String eventId;
     private String eventName;
 
-    private LinearLayout waitlistContainer;
-    private LinearLayout enrolledContainer;
-    private LinearLayout cancelledContainer;
-    private TextView tvCancelledEmpty;
-    private TextView tvWaitlistEmpty;
-    private TextView tvEnrolledEmpty;
+    private LinearLayout waitingContainer, invitedContainer, enrolledContainer, cancelledContainer;
+    private TextView tvWaitingEmpty, tvInvitedEmpty, tvEnrolledEmpty, tvCancelledEmpty;
 
     private FirestoreWaitListRepository waitListRepository;
     private FirestoreProfileRepository profileRepository;
@@ -87,11 +83,13 @@ public class OrganizerEventDetailFragment extends Fragment {
         TextView tvTitle = view.findViewById(R.id.tv_organizer_event_title);
         MaterialButton btnRunLottery = view.findViewById(R.id.btn_run_lottery);
         btnRunLottery.setOnClickListener(v -> showLotteryDrawDialog());
-        waitlistContainer = view.findViewById(R.id.container_waitlist);
+        waitingContainer = view.findViewById(R.id.container_waiting);
+        invitedContainer = view.findViewById(R.id.container_invited);
         enrolledContainer = view.findViewById(R.id.container_enrolled);
-        tvWaitlistEmpty = view.findViewById(R.id.tv_waitlist_empty);
-        tvEnrolledEmpty = view.findViewById(R.id.tv_enrolled_empty);
         cancelledContainer = view.findViewById(R.id.container_cancelled);
+        tvWaitingEmpty = view.findViewById(R.id.tv_waiting_empty);
+        tvInvitedEmpty = view.findViewById(R.id.tv_invited_empty);
+        tvEnrolledEmpty = view.findViewById(R.id.tv_enrolled_empty);
         tvCancelledEmpty = view.findViewById(R.id.tv_cancelled_empty);
 
         tvTitle.setText(eventName);
@@ -107,31 +105,41 @@ public class OrganizerEventDetailFragment extends Fragment {
             public void onSuccess(List<WaitListRecord> records) {
                 if (getActivity() == null) return;
 
-                waitlistContainer.removeAllViews();
+                waitingContainer.removeAllViews();
+                invitedContainer.removeAllViews();
                 enrolledContainer.removeAllViews();
                 cancelledContainer.removeAllViews();
 
 
                 int waitingCount = 0;
+                int invitedCount = 0;
                 int enrolledCount = 0;
                 int cancelledCount = 0;
 
                 for (WaitListRecord record : records) {
-                    if (record.getStatus() == WaitStatus.WAITING ||
-                            record.getStatus() == WaitStatus.INVITED) {
-                        waitingCount++;
-                        addEntrantRow(waitlistContainer, record.getDeviceId(), record.getStatus());
-                    } else if (record.getStatus() == WaitStatus.ACCEPTED) {
-                        enrolledCount++;
-                        addEntrantRow(enrolledContainer, record.getDeviceId(), record.getStatus());
-                    }  else if (record.getStatus() == WaitStatus.CANCELLED ||
-                            record.getStatus() == WaitStatus.DECLINED) {
-                        cancelledCount++;
-                        addEntrantRow(cancelledContainer, record.getDeviceId(), record.getStatus());
+                    switch (record.getStatus()) {
+                        case WAITING:
+                            waitingCount++;
+                            addEntrantRow(waitingContainer, record.getDeviceId(), record.getStatus());
+                            break;
+                        case INVITED:
+                            invitedCount++;
+                            addEntrantRow(invitedContainer, record.getDeviceId(), record.getStatus());
+                            break;
+                        case ACCEPTED:
+                            enrolledCount++;
+                            addEntrantRow(enrolledContainer, record.getDeviceId(), record.getStatus());
+                            break;
+                        case CANCELLED:
+                        case DECLINED:
+                            cancelledCount++;
+                            addEntrantRow(cancelledContainer, record.getDeviceId(), record.getStatus());
+                            break;
                     }
                 }
 
-                tvWaitlistEmpty.setVisibility(waitingCount == 0 ? View.VISIBLE : View.GONE);
+                tvWaitingEmpty.setVisibility(waitingCount == 0 ? View.VISIBLE : View.GONE);
+                tvInvitedEmpty.setVisibility(invitedCount == 0 ? View.VISIBLE : View.GONE);
                 tvEnrolledEmpty.setVisibility(enrolledCount == 0 ? View.VISIBLE : View.GONE);
                 tvCancelledEmpty.setVisibility(cancelledCount == 0 ? View.VISIBLE : View.GONE);
 
