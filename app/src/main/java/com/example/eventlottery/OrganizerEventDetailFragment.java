@@ -7,10 +7,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.core.content.FileProvider;
 
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.data.WaitListRepository;
@@ -23,7 +25,11 @@ import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.PathosRaffleService;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 /**
  * OrganizerEventDetailFragment
@@ -95,6 +101,9 @@ public class OrganizerEventDetailFragment extends Fragment {
         MaterialButton btnCancelAllInvited = view.findViewById(R.id.btn_cancel_all_invited);
         btnCancelAllInvited.setOnClickListener(v -> cancelAllInvited());
 
+        MaterialButton btnExportCsv = view.findViewById(R.id.btn_export_csv);
+        btnExportCsv.setOnClickListener(v -> exportEnrolledCsv());
+
         tvTitle.setText(eventName);
 
         loadEntrants();
@@ -148,6 +157,113 @@ public class OrganizerEventDetailFragment extends Fragment {
                         Toast.makeText(getContext(), "Failed to load invited entrants.", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private void exportEnrolledCsv() {
+        waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.ACCEPTED,
+                new WaitListRepository.WaitListCallBack() {
+                    @Override
+                    public void onSuccess(List<WaitListRecord> records) {
+                        if (getActivity() == null) return;
+                        if (records.isEmpty()) {
+                            Toast.makeText(getContext(), "No enrolled entrants to export.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Look up profiles for all enrolled entrants
+                        List<String[]> rows = new ArrayList<>();
+                        final int[] remaining = {records.size()};
+
+                        for (WaitListRecord record : records) {
+                            profileRepository.getProfile(record.getDeviceId(), new ProfileRepository.ProfileCallback() {
+                                @Override
+                                public void onSuccess(UserProfile profile) {
+                                    if (getActivity() == null) return;
+                                    String name = "";
+                                    String email = "";
+                                    String phone = "";
+
+                                    if (profile != null) {
+                                        name = profile.getName() != null ? profile.getName() : "";
+                                        email = profile.getEmail() != null ? profile.getEmail() : "";
+                                        phone = profile.getPhoneNumber() != null ? profile.getPhoneNumber() : "";
+                                    }
+
+                                    rows.add(new String[]{name, email, phone, record.getDeviceId()});
+                                    remaining[0]--;
+
+                                    if (remaining[0] == 0) {
+                                        writeCsvAndShare(rows);
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    if (getActivity() == null) return;
+                                    rows.add(new String[]{"", "", "", record.getDeviceId()});
+                                    remaining[0]--;
+
+                                    if (remaining[0] == 0) {
+                                        writeCsvAndShare(rows);
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        if (getActivity() == null) return;
+                        Toast.makeText(getContext(), "Failed to load enrolled entrants.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void writeCsvAndShare(List<String[]> rows) {
+        try {
+            File cachePath = new File(requireContext().getCacheDir(), "csv_exports");
+            if (!cachePath.exists()) cachePath.mkdirs();
+
+            String fileName = eventName.replaceAll("[^a-zA-Z0-9]", "_") + "_enrolled.csv";
+            File csvFile = new File(cachePath, fileName);
+
+            FileWriter writer = new FileWriter(csvFile);
+            writer.append("Name,Email,Phone,Device ID\n");
+
+            for (String[] row : rows) {
+                writer.append(escapeCsv(row[0])).append(",");
+                writer.append(escapeCsv(row[1])).append(",");
+                writer.append(escapeCsv(row[2])).append(",");
+                writer.append(escapeCsv(row[3])).append("\n");
+            }
+
+            writer.flush();
+            writer.close();
+
+            android.net.Uri uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    requireContext().getPackageName() + ".fileprovider",
+                    csvFile);
+
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/csv");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, eventName + " — Enrolled Entrants");
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            startActivity(Intent.createChooser(shareIntent, "Export Enrolled List"));
+
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "Failed to create CSV file.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
     private void loadEntrants() {
         waitListRepository.getRecordsByEventAsync(eventId, new WaitListRepository.WaitListCallBack() {
