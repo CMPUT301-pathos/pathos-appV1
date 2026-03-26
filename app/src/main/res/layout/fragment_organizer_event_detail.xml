@@ -79,16 +79,37 @@
                 android:visibility="gone" />
 
             <!-- Invited (US 02.06.01) -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="INVITED ENTRANTS"
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.08"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="INVITED ENTRANTS"
+                    android:textColor="#000000"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel_all_invited"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="CANCEL ALL"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    app:backgroundTint="#B71C1C"
+                    app:cornerRadius="12dp"
+                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+
+            </LinearLayout>
+
 
             <LinearLayout
                 android:id="@+id/container_invited"
