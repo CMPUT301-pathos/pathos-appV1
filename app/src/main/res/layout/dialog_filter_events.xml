@@ -60,6 +60,29 @@
         android:background="@drawable/bg_filter_input"
         android:layout_marginBottom="16dp" />
 
+    <!-- Max Capacity -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Max Waitlist Capacity (0 = any)"
+        android:textColor="#1A1A2E"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp" />
+
+    <EditText
+        android:id="@+id/et_filter_max_capacity"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="e.g. 100"
+        android:textColor="#1A1A2E"
+        android:textColorHint="#881A1A2E"
+        android:textSize="13sp"
+        android:inputType="number"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:background="@drawable/bg_filter_input"
+        android:layout_marginBottom="16dp" />
+
     <!-- Date -->
     <TextView
         android:id="@+id/tv_filter_date_label"
