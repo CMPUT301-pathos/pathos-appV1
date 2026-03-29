@@ -3,6 +3,8 @@ package com.example.eventlottery.firebase;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
 import com.google.firebase.firestore.FirebaseFirestore;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Firestore implementation of ProfileRepository.
@@ -93,5 +95,34 @@ public class FirestoreProfileRepository implements ProfileRepository {
                 .delete()
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
+    }
+
+    public interface SearchCallback {
+        void onSuccess(List<UserProfile> profiles);
+        void onFailure(Exception e);
+    }
+
+    public void searchProfiles(String query, SearchCallback callback) {
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(snap -> {
+                    List<UserProfile> results = new ArrayList<>();
+                    String lower = query.toLowerCase().trim();
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snap) {
+                        UserProfile profile = doc.toObject(UserProfile.class);
+                        if (profile == null) continue;
+                        boolean nameMatch = profile.getName() != null
+                                && profile.getName().toLowerCase().contains(lower);
+                        boolean emailMatch = profile.getEmail() != null
+                                && profile.getEmail().toLowerCase().contains(lower);
+                        boolean phoneMatch = profile.getPhoneNumber() != null
+                                && profile.getPhoneNumber().contains(query.trim());
+                        if (nameMatch || emailMatch || phoneMatch) {
+                            results.add(profile);
+                        }
+                    }
+                    callback.onSuccess(results);
+                })
+                .addOnFailureListener(e -> callback.onFailure(e));
     }
 }

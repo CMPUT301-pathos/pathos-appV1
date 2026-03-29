@@ -57,6 +57,7 @@ public class OrganizerDashboardFragment extends Fragment {
     private EventSummaryAdapter adapter;
     private TextView empty;
     private EventController eventController;
+    private View root;
 
     public OrganizerDashboardFragment() { }
 
@@ -67,7 +68,7 @@ public class OrganizerDashboardFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState
     ) {
-        View root = inflater.inflate(R.layout.fragment_organizer_dashboard, container, false);
+        root = inflater.inflate(R.layout.fragment_organizer_dashboard, container, false);
 
         Button btnCreate = root.findViewById(R.id.btn_create_event);
         btnCreate.setOnClickListener(v ->
@@ -124,7 +125,6 @@ public class OrganizerDashboardFragment extends Fragment {
             public void onSeeQrClick(com.example.eventlottery.domain.EventSummary event) {
                 requireCompletedProfile(() -> {
                     String payload = "eventId:" + event.getId();
-
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragment_container, QrCodeFragment.newInstance(payload))
@@ -146,7 +146,22 @@ public class OrganizerDashboardFragment extends Fragment {
 
             @Override
             public void onGeoDetailsClick(com.example.eventlottery.domain.EventSummary event) {
-                Snackbar.make(root, "Geo-details coming soon", Snackbar.LENGTH_SHORT).show();
+                com.google.android.material.snackbar.Snackbar.make(
+                        root, "Geo-details coming soon",
+                        com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onInviteClick(com.example.eventlottery.domain.EventSummary event) {
+                requireCompletedProfile(() -> {
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragment_container,
+                                    PrivateEventInviteFragment.newInstance(
+                                            event.getId(), event.getName()))
+                            .addToBackStack(null)
+                            .commit();
+                });
             }
         });
 

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,36 +40,41 @@ import java.util.Map;
 /**
  * CreateEventFragment
  *
- * Allows an organizer to create a new event and generate a promotional QR code.
+ * Allows an organizer to create a new event, optionally marked as private.
+ * Private events are not visible in the event listing and do not generate
+ * a promotional QR code. Entrants must be invited manually.
  *
  * Responsibilities:
  * - collect event fields including category and event date
  * - choose registration dates with a Material date range picker
- * - optionally upload an event poster to Firebase Storage
+ * - optionally upload an event poster (Base64 encoded)
+ * - toggle private event mode
  * - save the event to the Firestore "events" collection
- * - persist QR payload back to the event document
- * - navigate to QrCodeFragment on successful publish
+ * - navigate to QrCodeFragment on successful publish (public events only)
+ * - navigate to PrivateEventInviteFragment for private events
  *
  * User stories supported:
  * - US 02.01.01: Organizer can create a new event and generate a QR code
  * - US 02.01.04: Organizer sets a registration period
+ * - US 02.07.01: Organizer creates a private event
+ * - US 02.07.02: Organizer invites specific entrants to a private event
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.6
+ * @version 1.7
  */
 public class CreateEventFragment extends Fragment {
 
-    // ── UI fields ────────────────────────────────────────────────
     private EditText etName, etDesc, etLocation, etStart, etEnd, etCapacity;
     private EditText etEventDate;
     private ImageView ivPosterPreview;
     private MaterialButton btnSelectPoster, btnPublish;
     private TextView tvSelectedCategory;
+    private Switch switchPrivate;
 
-    // ── State ────────────────────────────────────────────────────
     private Uri selectedPosterUri;
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
     private boolean isPublishing = false;
+    private boolean isPrivateEvent = false;
     private String selectedCategory = "All";
 
     private long registrationStartMillis = 0;
@@ -88,25 +94,17 @@ public class CreateEventFragment extends Fragment {
         return PUBLISH_IDLING;
     }
 
-    private static void beginPublishAsync() {
-        PUBLISH_IDLING.increment();
-    }
+    private static void beginPublishAsync() { PUBLISH_IDLING.increment(); }
 
     private static void endPublishAsync() {
-        if (!PUBLISH_IDLING.isIdleNow()) {
-            PUBLISH_IDLING.decrement();
-        }
+        if (!PUBLISH_IDLING.isIdleNow()) PUBLISH_IDLING.decrement();
     }
-
-    // ── Lifecycle ────────────────────────────────────────────────
 
     @Nullable
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_create_event, container, false);
 
         etName        = root.findViewById(R.id.et_event_name);
@@ -120,18 +118,25 @@ public class CreateEventFragment extends Fragment {
         btnSelectPoster  = root.findViewById(R.id.btn_select_event_poster);
         btnPublish       = root.findViewById(R.id.btn_publish_event);
         tvSelectedCategory = root.findViewById(R.id.tv_selected_category);
+        switchPrivate    = root.findViewById(R.id.switch_private_event);
         MaterialButton btnPickCategory = root.findViewById(R.id.btn_pick_category);
 
+        // Update publish button text when private toggle changes
+        switchPrivate.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isPrivateEvent = isChecked;
+            btnPublish.setText(isChecked ? "PUBLISH PRIVATE EVENT" : "GENERATE QR CODE & POST");
+        });
+
         btnPickCategory.setOnClickListener(v ->
-                requireCompletedProfile(() -> {
-                    new android.app.AlertDialog.Builder(requireContext())
-                            .setTitle("Select Category")
-                            .setItems(CATEGORIES, (d, which) -> {
-                                selectedCategory = CATEGORIES[which];
-                                tvSelectedCategory.setText("Category: " + selectedCategory);
-                            })
-                            .show();
-                })
+                requireCompletedProfile(() ->
+                        new android.app.AlertDialog.Builder(requireContext())
+                                .setTitle("Select Category")
+                                .setItems(CATEGORIES, (d, which) -> {
+                                    selectedCategory = CATEGORIES[which];
+                                    tvSelectedCategory.setText("Category: " + selectedCategory);
+                                })
+                                .show()
+                )
         );
 
         setupImagePicker();
@@ -139,19 +144,15 @@ public class CreateEventFragment extends Fragment {
         setupEventDatePicker();
 
         btnSelectPoster.setOnClickListener(v ->
-                requireCompletedProfile(this::openPosterPicker)
-        );
+                requireCompletedProfile(this::openPosterPicker));
 
         btnPublish.setOnClickListener(v ->
-                requireCompletedProfile(this::publishEvent)
-        );
+                requireCompletedProfile(this::publishEvent));
 
         configureUiAccess();
 
         return root;
     }
-
-    // ── Image picker ─────────────────────────────────────────────
 
     private void setupImagePicker() {
         pickPosterLauncher = registerForActivityResult(
@@ -173,8 +174,6 @@ public class CreateEventFragment extends Fragment {
         );
     }
 
-    // ── Date pickers ─────────────────────────────────────────────
-
     private void setupDateRangePicker() {
         View.OnClickListener openPicker = v -> showDateRangePicker();
         etStart.setOnClickListener(openPicker);
@@ -186,18 +185,13 @@ public class CreateEventFragment extends Fragment {
                 MaterialDatePicker.Builder.dateRangePicker()
                         .setTitleText("Select registration dates")
                         .build();
-
         picker.addOnPositiveButtonClickListener(selection -> {
-            if (selection == null || selection.first == null || selection.second == null) {
-                return;
-            }
+            if (selection == null || selection.first == null || selection.second == null) return;
             registrationStartMillis = selection.first;
             registrationEndMillis   = selection.second;
-
             etStart.setText(formatDate(selection.first));
             etEnd.setText(formatDate(selection.second));
         });
-
         picker.show(getChildFragmentManager(), "registration_date_range_picker");
     }
 
@@ -207,18 +201,14 @@ public class CreateEventFragment extends Fragment {
                     MaterialDatePicker.Builder.datePicker()
                             .setTitleText("Select event date")
                             .build();
-
             picker.addOnPositiveButtonClickListener(selection -> {
                 if (selection == null) return;
                 eventDateMillis = selection;
                 etEventDate.setText(formatDate(selection));
             });
-
             picker.show(getChildFragmentManager(), "event_date_picker");
         });
     }
-
-    // ── Publish flow ─────────────────────────────────────────────
 
     private void publishEvent() {
         if (isPublishing) return;
@@ -274,22 +264,18 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
-    // ── Poster upload ────────────────────────────────────────────
-
-    private void uploadPosterAndCreateEvent(
-            String name, String desc, String location,
-            Integer capacity
-    ) {
+    private void uploadPosterAndCreateEvent(String name, String desc,
+                                            String location, Integer capacity) {
         try {
             android.graphics.Bitmap bitmap = android.provider.MediaStore.Images.Media
                     .getBitmap(requireContext().getContentResolver(), selectedPosterUri);
 
-            // Scale down to max 600px wide to stay under Firestore 1MB limit
             int maxWidth = 600;
             if (bitmap.getWidth() > maxWidth) {
                 float scale = (float) maxWidth / bitmap.getWidth();
                 int newHeight = Math.round(bitmap.getHeight() * scale);
-                bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
+                bitmap = android.graphics.Bitmap.createScaledBitmap(
+                        bitmap, maxWidth, newHeight, true);
             }
 
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -311,13 +297,8 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
-    // ── Firestore write ──────────────────────────────────────────
-
-    private void createEventDocument(
-            String name, String desc, String location,
-            Integer capacity,
-            @Nullable String posterUrl
-    ) {
+    private void createEventDocument(String name, String desc, String location,
+                                     Integer capacity, @Nullable String posterUrl) {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
 
         Map<String, Object> eventDoc = new HashMap<>();
@@ -332,9 +313,9 @@ public class CreateEventFragment extends Fragment {
         eventDoc.put("organizerDeviceId",  organizerDeviceId);
         eventDoc.put("createdAt",          System.currentTimeMillis());
         eventDoc.put("posterUrl",          posterUrl);
+        eventDoc.put("isPrivate",          isPrivateEvent);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-
         db.collection("events")
                 .add(eventDoc)
                 .addOnSuccessListener(ref -> {
@@ -343,12 +324,20 @@ public class CreateEventFragment extends Fragment {
                     String eventId = ref.getId();
                     String qrPayload = "eventId:" + eventId;
 
-                    ref.update("qrPayload", qrPayload);
+                    if (!isPrivateEvent) {
+                        ref.update("qrPayload", qrPayload);
+                    }
 
-                    Toast.makeText(requireContext(), "Event created", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Event created!", Toast.LENGTH_SHORT).show();
                     isPublishing = false;
                     setPublishingState(false, "PUBLISH");
-                    goToQr(qrPayload);
+
+                    if (isPrivateEvent) {
+                        // Navigate to invite screen instead of QR
+                        goToInvite(eventId, name);
+                    } else {
+                        goToQr(qrPayload);
+                    }
                     endPublishAsync();
                 })
                 .addOnFailureListener(e -> {
@@ -362,28 +351,26 @@ public class CreateEventFragment extends Fragment {
                 });
     }
 
-    // ── Navigation ───────────────────────────────────────────────
-
     private void goToQr(@NonNull String payload) {
         QrCodeFragment qr = QrCodeFragment.newInstance(payload);
         FragmentManager fm = requireActivity().getSupportFragmentManager();
-
-        if (fm.isStateSaved()) {
-            fm.beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(R.id.fragment_container, qr)
-                    .addToBackStack(null)
-                    .commitAllowingStateLoss();
-        } else {
-            fm.beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(R.id.fragment_container, qr)
-                    .addToBackStack(null)
-                    .commit();
-        }
+        fm.beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.fragment_container, qr)
+                .addToBackStack(null)
+                .commitAllowingStateLoss();
     }
 
-    // ── UI helpers ───────────────────────────────────────────────
+    private void goToInvite(String eventId, String eventName) {
+        PrivateEventInviteFragment fragment =
+                PrivateEventInviteFragment.newInstance(eventId, eventName);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commitAllowingStateLoss();
+    }
 
     private void setPublishingState(boolean publishing, String buttonText) {
         btnPublish.setEnabled(!publishing);
@@ -421,21 +408,21 @@ public class CreateEventFragment extends Fragment {
 
     private void requireCompletedProfile(Runnable onAllowed, Runnable onBlocked) {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
-        new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
-            @Override
-            public void onSuccess(UserProfile profile) {
-                if (profile != null && profile.isProfileCompleted()) {
-                    onAllowed.run();
-                } else {
-                    onBlocked.run();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                onBlocked.run();
-            }
-        });
+        new FirestoreProfileRepository().getProfile(deviceId,
+                new ProfileRepository.ProfileCallback() {
+                    @Override
+                    public void onSuccess(UserProfile profile) {
+                        if (profile != null && profile.isProfileCompleted()) {
+                            onAllowed.run();
+                        } else {
+                            onBlocked.run();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Exception e) {
+                        onBlocked.run();
+                    }
+                });
     }
 
     private String formatDate(long utcMillis) {

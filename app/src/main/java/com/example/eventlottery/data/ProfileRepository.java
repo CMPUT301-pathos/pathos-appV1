@@ -1,5 +1,6 @@
 package com.example.eventlottery.data;
 import com.example.eventlottery.domain.UserProfile;
+import java.util.List;
 
 /**
  * Interface for managing user profile data operations.
@@ -50,6 +51,22 @@ public interface ProfileRepository {
         void onSuccess(UserProfile profile);
         /**
          * Called when the operation fails.
+         *
+         * @param e the exception that caused the failure
+         */
+        void onFailure(Exception e);
+    }
+
+    interface SearchCallback {
+        /**
+         * Called when the search operation completes successfully.
+         *
+         * @param profiles the list of user profiles matching the search criteria
+         */
+        void onSuccess(List<UserProfile> profiles);
+
+        /**
+         * Called when the search operation fails.
          *
          * @param e the exception that caused the failure
          */
