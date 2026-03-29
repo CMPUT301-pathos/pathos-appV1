@@ -1,36 +1,38 @@
 package com.example.eventlottery.service;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.MediaStore;
+import android.util.Base64;
 
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+
+import java.io.ByteArrayOutputStream;
 
 /**
- * Service for managing event poster images.
+ * Service for managing event poster images using Base64 encoding stored in Firestore.
  *
  * Responsibilities:
- * - Upload poster image to Firebase Storage
- * - Replace/update poster image for an event
- * - Delete poster image
- * - Update poster URL reference in Firestore
+ * - Encode poster image to Base64 string
+ * - Store/update poster data in Firestore event document
+ * - Delete poster from event document
  *
  * User stories supported:
  * - US 02.04.02: Organizer can update an event poster
  *
  * @author Fawaz Mansoor
- * @version 1.0
+ * @version 2.0
  */
 public class PosterService {
 
     private final FirebaseFirestore db;
-    private final FirebaseStorage storage;
     private static final String EVENTS_COLLECTION = "events";
-    private static final String POSTER_FOLDER = "event_posters/";
+    private static final int MAX_WIDTH = 600;
+    private static final int JPEG_QUALITY = 70;
 
     public PosterService() {
         this.db = FirebaseFirestore.getInstance();
-        this.storage = FirebaseStorage.getInstance();
     }
 
     public interface PosterCallback {
@@ -39,31 +41,35 @@ public class PosterService {
     }
 
     /**
-     * Uploads a new poster image and updates the event document in Firestore.
+     * Encodes the image as Base64 and updates the event document in Firestore.
      */
     public void updatePoster(String eventId, String organizerDeviceId, Uri imageUri,
-                             PosterCallback callback) {
-        String fileName = POSTER_FOLDER + organizerDeviceId + "_" + eventId + "_"
-                + System.currentTimeMillis() + ".jpg";
-        StorageReference posterRef = storage.getReference().child(fileName);
+                             Context context, PosterCallback callback) {
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(
+                    context.getContentResolver(), imageUri);
 
-        posterRef.putFile(imageUri)
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful()) {
-                        Exception e = task.getException();
-                        if (e != null) throw e;
-                    }
-                    return posterRef.getDownloadUrl();
-                })
-                .addOnSuccessListener(uri -> {
-                    String posterUrl = uri.toString();
-                    db.collection(EVENTS_COLLECTION)
-                            .document(eventId)
-                            .update("posterUrl", posterUrl)
-                            .addOnSuccessListener(unused -> callback.onSuccess(posterUrl))
-                            .addOnFailureListener(callback::onFailure);
-                })
-                .addOnFailureListener(callback::onFailure);
+            // Scale down to stay under Firestore 1MB document limit
+            if (bitmap.getWidth() > MAX_WIDTH) {
+                float scale = (float) MAX_WIDTH / bitmap.getWidth();
+                int newHeight = Math.round(bitmap.getHeight() * scale);
+                bitmap = Bitmap.createScaledBitmap(bitmap, MAX_WIDTH, newHeight, true);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, baos);
+            String base64Image = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+            String posterData = "data:image/jpeg;base64," + base64Image;
+
+            db.collection(EVENTS_COLLECTION)
+                    .document(eventId)
+                    .update("posterUrl", posterData)
+                    .addOnSuccessListener(unused -> callback.onSuccess(posterData))
+                    .addOnFailureListener(callback::onFailure);
+
+        } catch (Exception e) {
+            callback.onFailure(e);
+        }
     }
 
     /**

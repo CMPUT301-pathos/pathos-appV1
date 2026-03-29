@@ -178,6 +178,30 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getRecordsForDevice(String deviceId, WaitListCallBack callback) {
+        db.collection(COLLECTION)
+                .whereEqualTo("deviceId", deviceId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    List<WaitListRecord> records = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : snap) {
+                        WaitListRecord record = new WaitListRecord(
+                                doc.getString("eventId"),
+                                doc.getString("deviceId")
+                        );
+                        String statusStr = doc.getString("status");
+                        if (statusStr != null) {
+                            try {
+                                record.setStatus(WaitStatus.valueOf(statusStr));
+                            } catch (IllegalArgumentException ignored) {}
+                        }
+                        records.add(record);
+                    }
+                    callback.onSuccess(records);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
 
 }

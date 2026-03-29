@@ -85,4 +85,22 @@ public class FirestoreEventRepository implements EventRepository {
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public interface EventByIdCallback {
+        void onResult(EventSummary event);
+    }
+
+    public void getEventById(String eventId, EventByIdCallback callback) {
+        db.collection(COLLECTION)
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        callback.onResult(EventSummary.fromDoc(doc));
+                    } else {
+                        callback.onResult(null);
+                    }
+                })
+                .addOnFailureListener(e -> callback.onResult(null));
+    }
 }
