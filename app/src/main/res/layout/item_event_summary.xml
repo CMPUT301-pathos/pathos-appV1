@@ -24,6 +24,22 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/tv_private_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔒 PRIVATE"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:background="#801A1A2E"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:layout_marginTop="4dp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/tv_event_desc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -94,6 +110,18 @@
                 android:layout_marginStart="8dp"
                 android:text="Geo"
                 android:textSize="11sp"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_invite_entrants"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Invite"
+                android:textSize="11sp"
+                android:visibility="gone"
                 app:backgroundTint="#40FFFFFF"
                 app:cornerRadius="12dp" />
 

@@ -30,6 +30,7 @@ public class EventSummary {
     private final int capacity;
     private final int drawSize;
     private final String posterUrl;
+    private boolean isPrivate;
 
     public EventSummary(String id, String name, String description, String location,
                         long createdAt, String organizerDeviceId, String category,
@@ -65,6 +66,8 @@ public class EventSummary {
     public String getPosterUrl() {
         return posterUrl;
     }
+    public boolean isPrivate() { return isPrivate; }
+    public void setPrivate(boolean isPrivate) { this.isPrivate = isPrivate; }
 
     public boolean isRegistrationOpen() {
         if (registrationStart <= 0 || registrationEnd <= 0) {
@@ -82,6 +85,7 @@ public class EventSummary {
         String organizer = safe(doc.getString("organizerDeviceId"));
         String category = safe(doc.getString("category"));
         String posterUrl = doc.getString("posterUrl");
+        Boolean isPrivate = doc.getBoolean("isPrivate");
 
         Long created = safeGetLong(doc, "createdAt");
         Long evDate = safeGetLong(doc, "eventDate");
@@ -90,7 +94,7 @@ public class EventSummary {
         Long cap = safeGetLong(doc, "capacity");
         Long draw = safeGetLong(doc, "drawSize");
 
-        return new EventSummary(
+        EventSummary summary = new EventSummary(
                 id, name, desc, loc,
                 created == null ? 0L : created,
                 organizer, category,
@@ -100,6 +104,8 @@ public class EventSummary {
                 cap == null ? 0 : cap.intValue(),
                 draw == null ? 0 : draw.intValue(),
                 posterUrl);
+        summary.setPrivate(isPrivate != null && isPrivate);
+        return summary;
     }
 
     private static String safe(String s) {

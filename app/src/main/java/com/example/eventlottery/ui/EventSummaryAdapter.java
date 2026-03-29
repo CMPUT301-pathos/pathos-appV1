@@ -21,15 +21,18 @@ import java.util.Locale;
 /**
  * Adapter for displaying EventSummary cards in a RecyclerView.
  *
- * Extended to support filtering by category and viewing lottery criteria.
+ * Supports private event badge, hiding QR for private events,
+ * and invite button for private event organizer actions.
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
  * - US 01.05.05: Be informed about lottery selection criteria
+ * - US 02.07.01: Organizer creates a private event
+ * - US 02.07.02: Organizer invites entrants to a private event
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.3
+ * @version 1.4
  */
 public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapter.VH> {
 
@@ -43,7 +46,8 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
     public interface OnCriteriaClickListener {
         void onCriteriaClick(EventSummary event);
     }
-    public interface OnItemClickListener{
+
+    public interface OnItemClickListener {
         void onItemClick(EventSummary event);
     }
 
@@ -51,15 +55,16 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         void onSeeQrClick(EventSummary event);
         void onEditClick(EventSummary event);
         void onGeoDetailsClick(EventSummary event);
+        void onInviteClick(EventSummary event);
     }
 
     public void setCriteriaClickListener(OnCriteriaClickListener listener) {
         this.criteriaClickListener = listener;
     }
+
     public void setItemClickListener(OnItemClickListener listener) {
         this.itemClickListener = listener;
     }
-
 
     public void setOrganizerActionListener(OnOrganizerActionListener listener) {
         this.organizerActionListener = listener;
@@ -111,6 +116,9 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         h.tvName.setText(e.getName());
         h.tvDesc.setText(e.getDescription());
 
+        // Private badge
+        h.tvPrivateBadge.setVisibility(e.isPrivate() ? View.VISIBLE : View.GONE);
+
         String meta = "";
         if (!e.getLocation().isEmpty()) meta = "📍 " + e.getLocation();
         if (!e.getCategory().isEmpty()) meta += "  🏷️ " + e.getCategory();
@@ -125,46 +133,45 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
         int organizerVisibility = showOrganizerActions ? View.VISIBLE : View.GONE;
         h.organizerActionsRow.setVisibility(organizerVisibility);
 
+        if (showOrganizerActions) {
+            // Hide QR button for private events
+            h.btnSeeQr.setVisibility(e.isPrivate() ? View.GONE : View.VISIBLE);
+            // Show invite button only for private events
+            h.btnInviteEntrants.setVisibility(e.isPrivate() ? View.VISIBLE : View.GONE);
+        }
+
         h.btnLotteryCriteria.setOnClickListener(v -> {
-            if (criteriaClickListener != null) {
-                criteriaClickListener.onCriteriaClick(e);
-            }
+            if (criteriaClickListener != null) criteriaClickListener.onCriteriaClick(e);
         });
 
         h.itemView.setOnClickListener(v -> {
-            if (itemClickListener != null) {
-                itemClickListener.onItemClick(e);
-            }
+            if (itemClickListener != null) itemClickListener.onItemClick(e);
         });
 
         h.btnSeeQr.setOnClickListener(v -> {
-            if (organizerActionListener != null) {
-                organizerActionListener.onSeeQrClick(e);
-            }
+            if (organizerActionListener != null) organizerActionListener.onSeeQrClick(e);
         });
 
         h.btnEditEvent.setOnClickListener(v -> {
-            if (organizerActionListener != null) {
-                organizerActionListener.onEditClick(e);
-            }
+            if (organizerActionListener != null) organizerActionListener.onEditClick(e);
         });
 
         h.btnGeoDetails.setOnClickListener(v -> {
-            if (organizerActionListener != null) {
-                organizerActionListener.onGeoDetailsClick(e);
-            }
+            if (organizerActionListener != null) organizerActionListener.onGeoDetailsClick(e);
         });
 
+        h.btnInviteEntrants.setOnClickListener(v -> {
+            if (organizerActionListener != null) organizerActionListener.onInviteClick(e);
+        });
     }
 
     @Override
-    public int getItemCount() {
-        return items.size();
-    }
+    public int getItemCount() { return items.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        final TextView tvName, tvDesc, tvMeta;
+        final TextView tvName, tvDesc, tvMeta, tvPrivateBadge;
         final Button btnLotteryCriteria, btnSeeQr, btnEditEvent, btnGeoDetails;
+        final android.widget.Button btnInviteEntrants;
         final View organizerActionsRow;
 
         VH(@NonNull View itemView) {
@@ -172,10 +179,12 @@ public class EventSummaryAdapter extends RecyclerView.Adapter<EventSummaryAdapte
             tvName = itemView.findViewById(R.id.tv_event_name);
             tvDesc = itemView.findViewById(R.id.tv_event_desc);
             tvMeta = itemView.findViewById(R.id.tv_event_meta);
+            tvPrivateBadge = itemView.findViewById(R.id.tv_private_badge);
             btnLotteryCriteria = itemView.findViewById(R.id.btn_lottery_criteria);
             btnSeeQr = itemView.findViewById(R.id.btn_see_qr);
             btnEditEvent = itemView.findViewById(R.id.btn_edit_event);
             btnGeoDetails = itemView.findViewById(R.id.btn_geo_details);
+            btnInviteEntrants = itemView.findViewById(R.id.btn_invite_entrants);
             organizerActionsRow = itemView.findViewById(R.id.layout_organizer_actions);
         }
     }
