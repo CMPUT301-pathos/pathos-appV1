@@ -194,7 +194,7 @@ public class EditEventFragment extends Fragment {
 
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
 
-        posterService.updatePoster(eventId, deviceId, selectedPosterUri,
+        posterService.updatePoster(eventId, deviceId, selectedPosterUri, requireContext(),
                 new PosterService.PosterCallback() {
                     @Override
                     public void onSuccess(String posterUrl) {

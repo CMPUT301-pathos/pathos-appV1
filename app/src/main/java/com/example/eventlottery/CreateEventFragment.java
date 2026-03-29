@@ -29,8 +29,6 @@ import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -282,30 +280,35 @@ public class CreateEventFragment extends Fragment {
             String name, String desc, String location,
             Integer capacity
     ) {
-        String deviceId = DeviceIdentityService.getDeviceId(requireContext());
-        String fileName = "event_posters/" + deviceId + "_" + System.currentTimeMillis() + ".jpg";
-        StorageReference posterRef = FirebaseStorage.getInstance().getReference().child(fileName);
+        try {
+            android.graphics.Bitmap bitmap = android.provider.MediaStore.Images.Media
+                    .getBitmap(requireContext().getContentResolver(), selectedPosterUri);
 
-        posterRef.putFile(selectedPosterUri)
-                .continueWithTask(task -> {
-                    if (!task.isSuccessful() && task.getException() != null) {
-                        throw task.getException();
-                    }
-                    return posterRef.getDownloadUrl();
-                })
-                .addOnSuccessListener(uri -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
-                    createEventDocument(name, desc, location, capacity, uri.toString());
-                })
-                .addOnFailureListener(e -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
-                    isPublishing = false;
-                    setPublishingState(false, "PUBLISH");
-                    Toast.makeText(requireContext(),
-                            "Poster upload failed: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                    endPublishAsync();
-                });
+            // Scale down to max 600px wide to stay under Firestore 1MB limit
+            int maxWidth = 600;
+            if (bitmap.getWidth() > maxWidth) {
+                float scale = (float) maxWidth / bitmap.getWidth();
+                int newHeight = Math.round(bitmap.getHeight() * scale);
+                bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
+            }
+
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, baos);
+            String base64Image = android.util.Base64.encodeToString(
+                    baos.toByteArray(), android.util.Base64.DEFAULT);
+            String posterData = "data:image/jpeg;base64," + base64Image;
+
+            createEventDocument(name, desc, location, capacity, posterData);
+
+        } catch (Exception e) {
+            if (getActivity() == null) { endPublishAsync(); return; }
+            isPublishing = false;
+            setPublishingState(false, "PUBLISH");
+            Toast.makeText(requireContext(),
+                    "Poster processing failed: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+            endPublishAsync();
+        }
     }
 
     // ── Firestore write ──────────────────────────────────────────

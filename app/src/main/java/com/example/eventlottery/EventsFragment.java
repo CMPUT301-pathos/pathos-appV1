@@ -142,7 +142,8 @@ public class EventsFragment extends Fragment {
                             event.getId(),
                             event.getName(),
                             event.getDescription(),
-                            event.getOrganizerDeviceId()
+                            event.getOrganizerDeviceId(),
+                            event.getPosterUrl()
                     ))
                     .addToBackStack(null)
                     .commit();
@@ -170,7 +171,8 @@ public class EventsFragment extends Fragment {
                                                     event.getId(),
                                                     event.getName(),
                                                     event.getDescription(),
-                                                    event.getOrganizerDeviceId()
+                                                    event.getOrganizerDeviceId(),
+                                                    event.getPosterUrl()
                                             );
                                             getParentFragmentManager().beginTransaction()
                                                     .replace(R.id.fragment_container, fragment)
