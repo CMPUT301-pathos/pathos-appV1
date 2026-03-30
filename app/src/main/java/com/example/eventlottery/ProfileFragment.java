@@ -104,20 +104,37 @@ public class ProfileFragment extends Fragment {
                 uri -> {
                     if (uri != null) {
                         profileImage.setImageURI(uri);
-                        profileController.updateProfilePhoto(deviceId, uri.toString(),
-                                new ProfileRepository.ProfileCallback() {
-                                    @Override
-                                    public void onSuccess(UserProfile profile) {
-                                        Toast.makeText(getContext(), "Photo updated!", Toast.LENGTH_SHORT).show();
-                                    }
-                                    @Override
-                                    public void onFailure(Exception e) {
-                                        Toast.makeText(getContext(), "Failed to save photo", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                        try {
+                            android.graphics.Bitmap bitmap = android.provider.MediaStore.Images.Media
+                                    .getBitmap(requireContext().getContentResolver(), uri);
+                            int maxWidth = 300;
+                            if (bitmap.getWidth() > maxWidth) {
+                                float scale = (float) maxWidth / bitmap.getWidth();
+                                int newHeight = Math.round(bitmap.getHeight() * scale);
+                                bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, maxWidth, newHeight, true);
+                            }
+                            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, baos);
+                            String base64 = android.util.Base64.encodeToString(baos.toByteArray(), android.util.Base64.DEFAULT);
+                            String photoData = "data:image/jpeg;base64," + base64;
+                            profileImage.setImageBitmap(android.graphics.BitmapFactory.decodeByteArray(
+                                    baos.toByteArray(), 0, baos.toByteArray().length));
+                            profileController.updateProfilePhoto(deviceId, photoData,
+                                    new ProfileRepository.ProfileCallback() {
+                                        @Override
+                                        public void onSuccess(UserProfile profile) {
+                                            Toast.makeText(getContext(), "Photo updated!", Toast.LENGTH_SHORT).show();
+                                        }
+                                        @Override
+                                        public void onFailure(Exception e) {
+                                            Toast.makeText(getContext(), "Failed to save photo", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        } catch (Exception e) {
+                            Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-        );
+                });
 
         View.OnClickListener photoClickListener = v -> pickImageLauncher.launch("image/*");
         profileImage.setOnClickListener(photoClickListener);
@@ -140,7 +157,23 @@ public class ProfileFragment extends Fragment {
 
                     // Load saved profile photo
                     if (profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
-                        profileImage.setImageURI(android.net.Uri.parse(profile.getProfilePhotoUri()));
+                        try {
+                            String photoUri = profile.getProfilePhotoUri();
+                            if (photoUri.startsWith("data:image")) {
+                                // Base64 encoded image
+                                String base64 = photoUri.substring(photoUri.indexOf(",") + 1);
+                                byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
+                                android.graphics.Bitmap bitmap = android.graphics.BitmapFactory.decodeByteArray(
+                                        decoded, 0, decoded.length);
+                                profileImage.setImageBitmap(bitmap);
+                            } else {
+                                // Regular URI - wrap in try/catch in case permission expired
+                                profileImage.setImageURI(android.net.Uri.parse(photoUri));
+                            }
+                        } catch (Exception e) {
+                            // URI permission expired, just show placeholder
+                            profileImage.setImageResource(R.drawable.ic_profile_placeholder_forstyledlayout);
+                        }
                     }
 
                     optOutSwitch.setOnCheckedChangeListener(null);
