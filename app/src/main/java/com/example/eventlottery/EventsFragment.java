@@ -42,7 +42,7 @@ import com.google.android.material.button.MaterialButton;
  * - US 01.06.02: Sign up for an event from the event details
  *
  * @author Fawaz Mansoor, Edwin David, Kenneth Joseph
- * @version 1.4
+ * @version 1.5
  */
 public class EventsFragment extends Fragment {
 
@@ -52,7 +52,6 @@ public class EventsFragment extends Fragment {
     private Button btnFilter;
     private EditText etSearch;
 
-    // Filter state
     private String currentKeyword = "";
     private String selectedCategory = "All";
     private String selectedLocation = "";
@@ -92,7 +91,6 @@ public class EventsFragment extends Fragment {
 
         btnFilter.setOnClickListener(v -> showFilterDialog());
 
-        // Live keyword search
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -148,7 +146,8 @@ public class EventsFragment extends Fragment {
                             event.getName(),
                             event.getDescription(),
                             event.getOrganizerDeviceId(),
-                            event.getPosterUrl()
+                            event.getPosterUrl(),
+                            event.isRequiresGeolocation()
                     ))
                     .addToBackStack(null)
                     .commit();
@@ -176,7 +175,8 @@ public class EventsFragment extends Fragment {
                                                     event.getName(),
                                                     event.getDescription(),
                                                     event.getOrganizerDeviceId(),
-                                                    event.getPosterUrl()
+                                                    event.getPosterUrl(),
+                                                    event.isRequiresGeolocation()
                                             );
                                             getParentFragmentManager().beginTransaction()
                                                     .replace(R.id.fragment_container, fragment)
@@ -364,6 +364,7 @@ public class EventsFragment extends Fragment {
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
+
                     @Override
                     public void onFailure(Exception e) {
                         Toast.makeText(requireContext(),

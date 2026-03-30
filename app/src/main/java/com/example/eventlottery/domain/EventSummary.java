@@ -6,15 +6,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
  * Lightweight model for showing events in lists.
  *
  * Extended to support filtering by category, location, date,
- * registration availability, and lottery criteria.
+ * registration availability, lottery criteria, and geolocation requirement.
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
  * - US 01.05.05: Be informed about lottery selection criteria
+ * - US 02.02.03: Organizer enables or disables geolocation requirement
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.2
+ * @version 1.3
  */
 public class EventSummary {
     private final String id;
@@ -31,6 +32,7 @@ public class EventSummary {
     private final int drawSize;
     private final String posterUrl;
     private boolean isPrivate;
+    private boolean requiresGeolocation;
 
     public EventSummary(String id, String name, String description, String location,
                         long createdAt, String organizerDeviceId, String category,
@@ -49,25 +51,88 @@ public class EventSummary {
         this.capacity = capacity;
         this.drawSize = drawSize;
         this.posterUrl = posterUrl;
+        this.requiresGeolocation = false;
     }
 
-    public String getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getLocation() { return location; }
-    public long getCreatedAt() { return createdAt; }
-    public String getOrganizerDeviceId() { return organizerDeviceId; }
-    public String getCategory() { return category; }
-    public long getEventDate() { return eventDate; }
-    public long getRegistrationStart() { return registrationStart; }
-    public long getRegistrationEnd() { return registrationEnd; }
-    public int getCapacity() { return capacity; }
-    public int getDrawSize() { return drawSize; }
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public String getOrganizerDeviceId() {
+        return organizerDeviceId;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public long getEventDate() {
+        return eventDate;
+    }
+
+    public long getRegistrationStart() {
+        return registrationStart;
+    }
+
+    public long getRegistrationEnd() {
+        return registrationEnd;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public int getDrawSize() {
+        return drawSize;
+    }
+
     public String getPosterUrl() {
         return posterUrl;
     }
-    public boolean isPrivate() { return isPrivate; }
-    public void setPrivate(boolean isPrivate) { this.isPrivate = isPrivate; }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
+
+    public boolean isRequiresGeolocation() {
+        return requiresGeolocation;
+    }
+
+    public boolean isGeolocationRequired() {
+        return requiresGeolocation;
+    }
+
+    public boolean getRequiresGeolocation() {
+        return requiresGeolocation;
+    }
+
+    public void setRequiresGeolocation(boolean requiresGeolocation) {
+        this.requiresGeolocation = requiresGeolocation;
+    }
+
+    public void setGeolocationRequired(boolean requiresGeolocation) {
+        this.requiresGeolocation = requiresGeolocation;
+    }
 
     public boolean isRegistrationOpen() {
         if (registrationStart <= 0 || registrationEnd <= 0) {
@@ -86,6 +151,7 @@ public class EventSummary {
         String category = safe(doc.getString("category"));
         String posterUrl = doc.getString("posterUrl");
         Boolean isPrivate = doc.getBoolean("isPrivate");
+        Boolean requiresGeolocation = doc.getBoolean("requiresGeolocation");
 
         Long created = safeGetLong(doc, "createdAt");
         Long evDate = safeGetLong(doc, "eventDate");
@@ -95,16 +161,23 @@ public class EventSummary {
         Long draw = safeGetLong(doc, "drawSize");
 
         EventSummary summary = new EventSummary(
-                id, name, desc, loc,
+                id,
+                name,
+                desc,
+                loc,
                 created == null ? 0L : created,
-                organizer, category,
+                organizer,
+                category,
                 evDate == null ? 0L : evDate,
                 regStart == null ? 0L : regStart,
                 regEnd == null ? 0L : regEnd,
                 cap == null ? 0 : cap.intValue(),
                 draw == null ? 0 : draw.intValue(),
-                posterUrl);
+                posterUrl
+        );
+
         summary.setPrivate(isPrivate != null && isPrivate);
+        summary.setRequiresGeolocation(requiresGeolocation != null && requiresGeolocation);
         return summary;
     }
 

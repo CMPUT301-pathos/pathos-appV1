@@ -1,5 +1,6 @@
 package com.example.eventlottery;
 
+import android.Manifest;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -14,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -33,10 +36,12 @@ import com.example.eventlottery.firebase.FirestoreCommentRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.service.GeoService;
 import com.example.eventlottery.ui.EventCommentAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * EventDetailFragment
@@ -51,9 +56,10 @@ import java.util.List;
  * - US 01.07.01: User is identified by device
  * - US 01.08.01: Post a comment on an event
  * - US 01.08.02: View comments on an event
+ * - US 02.02.03: Respect event geolocation requirement during join
  *
  * @author Edwin David, Kenneth Joseph, Fawaz Mansoor
- * @version 1.3
+ * @version 1.4
  */
 public class EventDetailFragment extends Fragment {
 
@@ -62,15 +68,22 @@ public class EventDetailFragment extends Fragment {
     private static final String ARG_DESCRIPTION = "description";
     private static final String ARG_ORGANIZER_DEVICE_ID = "organizerDeviceId";
     private static final String ARG_POSTER_URL = "posterUrl";
+    private static final String ARG_REQUIRES_GEOLOCATION = "requiresGeolocation";
 
     private String eventId;
     private String eventName;
     private String description;
     private String organizerDeviceId;
     private String posterUrl;
+    private boolean requiresGeolocation;
 
     private WaitingListController waitingListController;
     private String deviceId;
+    private GeoService geoService;
+    private ActivityResultLauncher<String[]> locationPermissionLauncher;
+
+    private Button pendingJoinButton;
+    private TextView pendingJoinWaitCount;
 
     public EventDetailFragment() {}
 
@@ -79,6 +92,22 @@ public class EventDetailFragment extends Fragment {
                                                   String description,
                                                   String organizerDeviceId,
                                                   String posterUrl) {
+        return newInstance(
+                eventId,
+                eventName,
+                description,
+                organizerDeviceId,
+                posterUrl,
+                false
+        );
+    }
+
+    public static EventDetailFragment newInstance(String eventId,
+                                                  String eventName,
+                                                  String description,
+                                                  String organizerDeviceId,
+                                                  String posterUrl,
+                                                  boolean requiresGeolocation) {
         EventDetailFragment fragment = new EventDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_EVENT_ID, eventId);
@@ -86,6 +115,7 @@ public class EventDetailFragment extends Fragment {
         args.putString(ARG_DESCRIPTION, description);
         args.putString(ARG_ORGANIZER_DEVICE_ID, organizerDeviceId);
         args.putString(ARG_POSTER_URL, posterUrl);
+        args.putBoolean(ARG_REQUIRES_GEOLOCATION, requiresGeolocation);
         fragment.setArguments(args);
         return fragment;
     }
@@ -93,15 +123,24 @@ public class EventDetailFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
             eventName = getArguments().getString(ARG_EVENT_NAME);
             description = getArguments().getString(ARG_DESCRIPTION);
             organizerDeviceId = getArguments().getString(ARG_ORGANIZER_DEVICE_ID);
             posterUrl = getArguments().getString(ARG_POSTER_URL);
+            requiresGeolocation = getArguments().getBoolean(ARG_REQUIRES_GEOLOCATION, false);
         }
+
         waitingListController = new WaitingListController(new FirestoreWaitListRepository());
+        geoService = new GeoService();
         deviceId = DeviceIdentityService.getDeviceId(requireContext());
+
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                this::handleLocationPermissionResult
+        );
     }
 
     @Nullable
@@ -118,9 +157,13 @@ public class EventDetailFragment extends Fragment {
         ImageView ivPoster = view.findViewById(R.id.iv_event_poster);
 
         textName.setText(eventName);
-        textDescription.setText(description);
 
-        // Load poster
+        if (requiresGeolocation) {
+            textDescription.setText(description + "\n\nGeolocation is required to join this event.");
+        } else {
+            textDescription.setText(description);
+        }
+
         if (posterUrl != null && !posterUrl.isEmpty()) {
             if (posterUrl.startsWith("data:image")) {
                 try {
@@ -136,6 +179,8 @@ public class EventDetailFragment extends Fragment {
                 Glide.with(this).load(posterUrl).into(ivPoster);
                 ivPoster.setVisibility(View.VISIBLE);
             }
+        } else {
+            ivPoster.setVisibility(View.GONE);
         }
 
         refreshWaitCount(textWaitCount);
@@ -186,22 +231,11 @@ public class EventDetailFragment extends Fragment {
         button.setEnabled(true);
         button.setOnClickListener(v -> {
             button.setEnabled(false);
-            waitingListController.joinWaitingList(eventId, deviceId,
-                    new WaitListRepository.OperationCallback() {
-                        @Override
-                        public void onSuccess() {
-                            Toast.makeText(getContext(),
-                                    "You've joined the waiting list!", Toast.LENGTH_SHORT).show();
-                            setLeaveMode(button, waitCount);
-                            refreshWaitCount(waitCount);
-                        }
-                        @Override
-                        public void onFailure(Exception e) {
-                            Toast.makeText(getContext(),
-                                    "Failed to join. Try again.", Toast.LENGTH_SHORT).show();
-                            button.setEnabled(true);
-                        }
-                    });
+            if (requiresGeolocation) {
+                beginJoinWithGeolocation(button, waitCount);
+            } else {
+                joinWithoutGeolocation(button, waitCount);
+            }
         });
     }
 
@@ -219,6 +253,7 @@ public class EventDetailFragment extends Fragment {
                             setJoinMode(button, waitCount);
                             refreshWaitCount(waitCount);
                         }
+
                         @Override
                         public void onFailure(Exception e) {
                             Toast.makeText(getContext(),
@@ -229,12 +264,131 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    private void beginJoinWithGeolocation(Button button, TextView waitCount) {
+        pendingJoinButton = button;
+        pendingJoinWaitCount = waitCount;
+
+        if (!geoService.hasLocationPermission(requireContext())) {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+            return;
+        }
+
+        performJoinWithGeolocation();
+    }
+
+    private void handleLocationPermissionResult(Map<String, Boolean> result) {
+        boolean granted = false;
+        if (result != null) {
+            Boolean fine = result.get(Manifest.permission.ACCESS_FINE_LOCATION);
+            Boolean coarse = result.get(Manifest.permission.ACCESS_COARSE_LOCATION);
+            granted = Boolean.TRUE.equals(fine) || Boolean.TRUE.equals(coarse);
+        }
+
+        if (!granted) {
+            Toast.makeText(requireContext(),
+                    "Location permission is required to join this event.",
+                    Toast.LENGTH_SHORT).show();
+            restorePendingJoinButton();
+            return;
+        }
+
+        performJoinWithGeolocation();
+    }
+
+    private void performJoinWithGeolocation() {
+        if (!geoService.isLocationEnabled(requireContext())) {
+            Toast.makeText(requireContext(),
+                    "Please enable location services to join this event.",
+                    Toast.LENGTH_SHORT).show();
+            restorePendingJoinButton();
+            return;
+        }
+
+        geoService.getCurrentLocation(requireContext(), new GeoService.GeoCallback() {
+            @Override
+            public void onSuccess(@NonNull GeoService.LocationData locationData) {
+                WaitListRecord record = new WaitListRecord(eventId, deviceId);
+                record.setJoinLocation(
+                        locationData.getLatitude(),
+                        locationData.getLongitude(),
+                        locationData.getAccuracyMeters(),
+                        locationData.getCapturedAtMillis()
+                );
+
+                waitingListController.joinWaitingList(record,
+                        new WaitListRepository.OperationCallback() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(getContext(),
+                                        "You've joined the waiting list!",
+                                        Toast.LENGTH_SHORT).show();
+                                if (pendingJoinButton != null && pendingJoinWaitCount != null) {
+                                    setLeaveMode(pendingJoinButton, pendingJoinWaitCount);
+                                    refreshWaitCount(pendingJoinWaitCount);
+                                }
+                                clearPendingJoinReferences();
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(getContext(),
+                                        "Failed to join. Try again.",
+                                        Toast.LENGTH_SHORT).show();
+                                restorePendingJoinButton();
+                            }
+                        });
+            }
+
+            @Override
+            public void onFailure(@NonNull String errorMessage) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show();
+                restorePendingJoinButton();
+            }
+        });
+    }
+
+    private void joinWithoutGeolocation(Button button, TextView waitCount) {
+        waitingListController.joinWaitingList(eventId, deviceId,
+                new WaitListRepository.OperationCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(getContext(),
+                                "You've joined the waiting list!", Toast.LENGTH_SHORT).show();
+                        setLeaveMode(button, waitCount);
+                        refreshWaitCount(waitCount);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(getContext(),
+                                "Failed to join. Try again.", Toast.LENGTH_SHORT).show();
+                        button.setEnabled(true);
+                    }
+                });
+    }
+
+    private void restorePendingJoinButton() {
+        if (pendingJoinButton != null) {
+            pendingJoinButton.setEnabled(true);
+        }
+        clearPendingJoinReferences();
+    }
+
+    private void clearPendingJoinReferences() {
+        pendingJoinButton = null;
+        pendingJoinWaitCount = null;
+    }
+
     private void refreshWaitCount(TextView textWaitCount) {
         waitingListController.getWaitingCount(eventId, new WaitingListController.CountCallback() {
             @Override
             public void onCount(int count) {
                 textWaitCount.setText(count + " entrants on waiting list");
             }
+
             @Override
             public void onFailure(Exception e) {
                 textWaitCount.setText("Waitlist count unavailable");
@@ -260,13 +414,17 @@ public class EventDetailFragment extends Fragment {
                 commentList.addAll(comments);
                 adapter.notifyDataSetChanged();
             }
+
             @Override
-            public void onFailure(Exception e) {}
+            public void onFailure(Exception e) {
+            }
         });
 
         buttonPost.setOnClickListener(v -> {
             String text = editComment.getText().toString().trim();
-            if (text.isEmpty()) return;
+            if (text.isEmpty()) {
+                return;
+            }
 
             new FirestoreProfileRepository().getProfile(deviceId,
                     new ProfileRepository.ProfileCallback() {
@@ -283,12 +441,15 @@ public class EventDetailFragment extends Fragment {
                                             InputMethodManager imm = (InputMethodManager)
                                                     requireContext().getSystemService(
                                                             android.content.Context.INPUT_METHOD_SERVICE);
-                                            imm.hideSoftInputFromWindow(
-                                                    editComment.getWindowToken(), 0);
+                                            if (imm != null) {
+                                                imm.hideSoftInputFromWindow(
+                                                        editComment.getWindowToken(), 0);
+                                            }
                                             commentList.add(comment);
                                             adapter.notifyItemInserted(commentList.size() - 1);
                                             recyclerComments.scrollToPosition(commentList.size() - 1);
                                         }
+
                                         @Override
                                         public void onFailure(Exception e) {
                                             Toast.makeText(getContext(),
@@ -297,6 +458,7 @@ public class EventDetailFragment extends Fragment {
                                         }
                                     });
                         }
+
                         @Override
                         public void onFailure(Exception e) {
                             Toast.makeText(getContext(),
@@ -313,6 +475,7 @@ public class EventDetailFragment extends Fragment {
                     public void onSuccess(UserProfile profile) {
                         callback.onResult(profile != null && profile.isProfileCompleted());
                     }
+
                     @Override
                     public void onFailure(Exception e) {
                         callback.onResult(false);
