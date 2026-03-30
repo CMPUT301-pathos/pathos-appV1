@@ -226,17 +226,50 @@ public class FirestoreWaitListRepository implements WaitListRepository {
     }
 
     private Long getLongValue(DocumentSnapshot doc, String field) {
-        Number number = doc.get(field, Number.class);
-        return number == null ? null : number.longValue();
+        Object value = doc.get(field);
+
+        if (value instanceof Long) {
+            return (Long) value;
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+        if (value instanceof Double) {
+            return ((Double) value).longValue();
+        }
+        return null;
     }
 
     private Double getDoubleValue(DocumentSnapshot doc, String field) {
-        Number number = doc.get(field, Number.class);
-        return number == null ? null : number.doubleValue();
+        Object value = doc.get(field);
+
+        if (value instanceof Double) {
+            return (Double) value;
+        }
+        if (value instanceof Long) {
+            return ((Long) value).doubleValue();
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).doubleValue();
+        }
+        return null;
     }
 
     private Float getFloatValue(DocumentSnapshot doc, String field) {
-        Number number = doc.get(field, Number.class);
-        return number == null ? null : number.floatValue();
+        Object value = doc.get(field);
+
+        if (value instanceof Float) {
+            return (Float) value;
+        }
+        if (value instanceof Double) {
+            return ((Double) value).floatValue();
+        }
+        if (value instanceof Long) {
+            return ((Long) value).floatValue();
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).floatValue();
+        }
+        return null;
     }
 }
