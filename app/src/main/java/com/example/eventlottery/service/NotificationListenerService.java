@@ -79,7 +79,17 @@ public class NotificationListenerService {
 
                             if ("INVITED".equals(status) && !Boolean.TRUE.equals(notified)) {
                                 doc.getReference().update("notified", true);
-                                fetchEventNameAndNotify(eventId, true);
+                                // Check if event is private to show appropriate message
+                                FirebaseFirestore.getInstance()
+                                        .collection("events")
+                                        .document(eventId)
+                                        .get()
+                                        .addOnSuccessListener(eventDoc -> {
+                                            Boolean isPrivate = eventDoc.getBoolean("isPrivate");
+                                            boolean privateEvent = isPrivate != null && isPrivate;
+                                            fetchEventNameAndNotifyWithType(eventId, privateEvent);
+                                        })
+                                        .addOnFailureListener(e -> fetchEventNameAndNotifyWithType(eventId, false));
                             }
                         }
                     }
@@ -121,24 +131,23 @@ public class NotificationListenerService {
         }
     }
 
-    private void fetchEventNameAndNotify(String eventId, boolean isWin) {
+    private void fetchEventNameAndNotifyWithType(String eventId, boolean isPrivateInvite) {
         new com.example.eventlottery.firebase.FirestoreProfileRepository()
                 .getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
                     @Override
                     public void onSuccess(com.example.eventlottery.domain.UserProfile profile) {
                         if (profile != null && !profile.isNotificationsEnabled()) return;
-
                         FirebaseFirestore.getInstance()
                                 .collection("events")
                                 .document(eventId)
                                 .get()
                                 .addOnSuccessListener(doc -> {
                                     String eventName = doc.exists() && doc.getString("name") != null
-                                            ? doc.getString("name")
-                                            : "an event";
-                                    showNotification(eventName, isWin);
+                                            ? doc.getString("name") : "an event";
+                                    showInviteNotification(eventName, isPrivateInvite);
                                 })
-                                .addOnFailureListener(e -> showNotification("an event", isWin));
+                                .addOnFailureListener(e ->
+                                        showInviteNotification("an event", isPrivateInvite));
                     }
 
                     @Override
@@ -149,20 +158,22 @@ public class NotificationListenerService {
                                 .get()
                                 .addOnSuccessListener(doc -> {
                                     String eventName = doc.exists() && doc.getString("name") != null
-                                            ? doc.getString("name")
-                                            : "an event";
-                                    showNotification(eventName, isWin);
+                                            ? doc.getString("name") : "an event";
+                                    showInviteNotification(eventName, isPrivateInvite);
                                 })
-                                .addOnFailureListener(e2 -> showNotification("an event", isWin));
+                                .addOnFailureListener(e2 ->
+                                        showInviteNotification("an event", isPrivateInvite));
                     }
                 });
     }
 
-    private void showNotification(String eventName, boolean isWin) {
-        String title = isWin ? "🎉 You've been selected!" : "Lottery Result";
-        String message = isWin
-                ? "You have been invited to join: " + eventName
-                : "You were not selected for: " + eventName;
+    private void showInviteNotification(String eventName, boolean isPrivateInvite) {
+        String title = isPrivateInvite
+                ? "🔒 Private Event Invitation"
+                : "🎉 You've been selected!";
+        String message = isPrivateInvite
+                ? "You've been invited to join the private event: " + eventName
+                : "You have been invited to join: " + eventName;
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -184,7 +195,7 @@ public class NotificationListenerService {
             manager.notify(NOTIFICATION_ID_BASE + eventName.hashCode(), builder.build());
         }
 
-        if (inviteListener != null && isWin) {
+        if (inviteListener != null) {
             inviteListener.onInviteReceived(eventName);
         }
     }
