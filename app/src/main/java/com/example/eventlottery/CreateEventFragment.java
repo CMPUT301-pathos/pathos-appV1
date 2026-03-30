@@ -28,20 +28,26 @@ import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * CreateEventFragment
  *
  * Allows an organizer to create a new event, optionally marked as private,
- * and optionally requiring geolocation when entrants join the waiting list.
+ * optionally requiring geolocation when entrants join the waiting list,
+ * and optionally assigning co-organizers to the event.
  *
  * Private events are not visible in the public event listing and do not
  * generate a promotional QR code. Entrants must be invited manually.
@@ -52,6 +58,7 @@ import java.util.Map;
  * - optionally upload an event poster (Base64 encoded)
  * - toggle private event mode
  * - toggle geolocation requirement for waiting-list joins
+ * - add co-organizer device IDs to the event
  * - save the event to the Firestore "events" collection
  * - navigate to QrCodeFragment on successful publish (public events only)
  * - navigate to PrivateEventInviteFragment for private events
@@ -69,18 +76,23 @@ import java.util.Map;
  *   requirement for my event.
  * - US 02.04.01: As an organizer I want to upload an event poster to the
  *   event details page to provide visual information to entrants.
+ * - US 02.09.01: As an organizer I want to add co-organizers to my event.
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.8
+ * @version 2.0
  */
 public class CreateEventFragment extends Fragment {
 
     private EditText etName, etDesc, etLocation, etStart, etEnd, etCapacity;
     private EditText etEventDate;
+    private EditText etCoOrganizerInput;
     private ImageView ivPosterPreview;
-    private MaterialButton btnSelectPoster, btnPublish;
+    private MaterialButton btnSelectPoster, btnPublish, btnAddCoOrganizer;
     private TextView tvSelectedCategory;
     private Switch switchPrivate, switchGeoRequired;
+    private ChipGroup chipGroupCoOrganizers;
+
+    private final List<String> selectedCoOrganizerIds = new ArrayList<>();
 
     private Uri selectedPosterUri;
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
@@ -123,19 +135,24 @@ public class CreateEventFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_create_event, container, false);
 
-        etName             = root.findViewById(R.id.et_event_name);
-        etDesc             = root.findViewById(R.id.et_event_description);
-        etLocation         = root.findViewById(R.id.et_event_location);
-        etStart            = root.findViewById(R.id.et_event_start);
-        etEnd              = root.findViewById(R.id.et_event_end);
-        etCapacity         = root.findViewById(R.id.et_event_capacity);
-        etEventDate        = root.findViewById(R.id.et_event_date);
-        ivPosterPreview    = root.findViewById(R.id.iv_event_poster_preview);
-        btnSelectPoster    = root.findViewById(R.id.btn_select_event_poster);
-        btnPublish         = root.findViewById(R.id.btn_publish_event);
+        etName = root.findViewById(R.id.et_event_name);
+        etDesc = root.findViewById(R.id.et_event_description);
+        etLocation = root.findViewById(R.id.et_event_location);
+        etStart = root.findViewById(R.id.et_event_start);
+        etEnd = root.findViewById(R.id.et_event_end);
+        etCapacity = root.findViewById(R.id.et_event_capacity);
+        etEventDate = root.findViewById(R.id.et_event_date);
+        ivPosterPreview = root.findViewById(R.id.iv_event_poster_preview);
+        btnSelectPoster = root.findViewById(R.id.btn_select_event_poster);
+        btnPublish = root.findViewById(R.id.btn_publish_event);
         tvSelectedCategory = root.findViewById(R.id.tv_selected_category);
-        switchPrivate      = root.findViewById(R.id.switch_private_event);
-        switchGeoRequired  = root.findViewById(R.id.switch_geo_required);
+        switchPrivate = root.findViewById(R.id.switch_private_event);
+        switchGeoRequired = root.findViewById(R.id.switch_geo_required);
+
+        etCoOrganizerInput = root.findViewById(R.id.et_coorganizer_device_id);
+        btnAddCoOrganizer = root.findViewById(R.id.btn_add_coorganizer);
+        chipGroupCoOrganizers = root.findViewById(R.id.chip_group_coorganizers);
+
         MaterialButton btnPickCategory = root.findViewById(R.id.btn_pick_category);
 
         switchPrivate.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -159,6 +176,9 @@ public class CreateEventFragment extends Fragment {
                 )
         );
 
+        btnAddCoOrganizer.setOnClickListener(v ->
+                requireCompletedProfile(this::addCoOrganizerFromInput));
+
         setupImagePicker();
         setupDateRangePicker();
         setupEventDatePicker();
@@ -170,9 +190,56 @@ public class CreateEventFragment extends Fragment {
                 requireCompletedProfile(this::publishEvent));
 
         btnPublish.setText(getPublishButtonText());
+        refreshCoOrganizerDisplay();
         configureUiAccess();
 
         return root;
+    }
+
+    private void addCoOrganizerFromInput() {
+        String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
+        String input = safe(etCoOrganizerInput);
+
+        if (TextUtils.isEmpty(input)) {
+            etCoOrganizerInput.setError("Enter a device ID");
+            return;
+        }
+
+        if (input.equals(organizerDeviceId)) {
+            etCoOrganizerInput.setError("Primary organizer is already assigned");
+            return;
+        }
+
+        if (selectedCoOrganizerIds.contains(input)) {
+            etCoOrganizerInput.setError("Already added");
+            return;
+        }
+
+        selectedCoOrganizerIds.add(input);
+        etCoOrganizerInput.setText("");
+        refreshCoOrganizerDisplay();
+    }
+
+    private void refreshCoOrganizerDisplay() {
+        if (chipGroupCoOrganizers == null) {
+            return;
+        }
+
+        chipGroupCoOrganizers.removeAllViews();
+
+        for (String coOrganizerId : selectedCoOrganizerIds) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(coOrganizerId);
+            chip.setCloseIconVisible(true);
+            chip.setClickable(false);
+
+            chip.setOnCloseIconClickListener(v -> {
+                selectedCoOrganizerIds.remove(coOrganizerId);
+                refreshCoOrganizerDisplay();
+            });
+
+            chipGroupCoOrganizers.addView(chip);
+        }
     }
 
     private void setupImagePicker() {
@@ -347,6 +414,7 @@ public class CreateEventFragment extends Fragment {
         eventDoc.put("capacity", capacity);
         eventDoc.put("category", selectedCategory);
         eventDoc.put("organizerDeviceId", organizerDeviceId);
+        eventDoc.put("coOrganizerIds", sanitizeCoOrganizerIds(organizerDeviceId));
         eventDoc.put("createdAt", System.currentTimeMillis());
         eventDoc.put("posterUrl", posterUrl);
         eventDoc.put("isPrivate", isPrivateEvent);
@@ -394,6 +462,19 @@ public class CreateEventFragment extends Fragment {
                 });
     }
 
+    private List<String> sanitizeCoOrganizerIds(@NonNull String organizerDeviceId) {
+        LinkedHashSet<String> cleaned = new LinkedHashSet<>();
+        for (String id : selectedCoOrganizerIds) {
+            if (id != null) {
+                String trimmed = id.trim();
+                if (!trimmed.isEmpty() && !trimmed.equals(organizerDeviceId)) {
+                    cleaned.add(trimmed);
+                }
+            }
+        }
+        return new ArrayList<>(cleaned);
+    }
+
     private void goToQr(@NonNull String payload) {
         QrCodeFragment qr = QrCodeFragment.newInstance(payload);
         FragmentManager fm = requireActivity().getSupportFragmentManager();
@@ -422,6 +503,9 @@ public class CreateEventFragment extends Fragment {
         etEnd.setEnabled(!publishing);
         switchPrivate.setEnabled(!publishing);
         switchGeoRequired.setEnabled(!publishing);
+        btnAddCoOrganizer.setEnabled(!publishing);
+        etCoOrganizerInput.setEnabled(!publishing);
+
         btnPublish.setText(buttonText);
     }
 
@@ -432,6 +516,8 @@ public class CreateEventFragment extends Fragment {
                     btnPublish.setEnabled(true);
                     switchPrivate.setEnabled(true);
                     switchGeoRequired.setEnabled(true);
+                    btnAddCoOrganizer.setEnabled(true);
+                    etCoOrganizerInput.setEnabled(true);
                 },
                 () -> {
                     btnSelectPoster.setEnabled(false);
@@ -440,6 +526,9 @@ public class CreateEventFragment extends Fragment {
                     etEnd.setEnabled(false);
                     switchPrivate.setEnabled(false);
                     switchGeoRequired.setEnabled(false);
+                    btnAddCoOrganizer.setEnabled(false);
+                    etCoOrganizerInput.setEnabled(false);
+
                     Toast.makeText(requireContext(),
                             "Complete your profile first to create events.",
                             Toast.LENGTH_SHORT).show();

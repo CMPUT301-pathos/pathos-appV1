@@ -317,6 +317,57 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
+                <!-- Co-organizer section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Co-organizers"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp" />
+
+                    <EditText
+                        android:id="@+id/et_coorganizer_device_id"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="Enter co-organizer device ID"
+                        android:textColor="#1A1A2E"
+                        android:textColorHint="#881A1A2E"
+                        android:textSize="14sp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:background="@drawable/bg_input_field"
+                        android:layout_marginBottom="8dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_add_coorganizer"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="ADD CO-ORGANIZER"
+                        android:textColor="#FFFFFF"
+                        android:textSize="13sp"
+                        app:backgroundTint="#40FFFFFF"
+                        app:cornerRadius="12dp"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chip_group_coorganizers"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:chipSpacingHorizontal="8dp"
+                        app:chipSpacingVertical="8dp"
+                        app:singleLine="false" />
+
+                </LinearLayout>
+
+
                 <Switch
                     android:id="@+id/switch_geo_required"
                     android:layout_width="wrap_content"

@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="@drawable/bg_gradient_header">
 
-    <!-- Header -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +19,6 @@
         android:paddingTop="48dp"
         android:paddingBottom="24dp" />
 
-    <!-- Scrollable content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -35,7 +33,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Poster preview card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="220dp"
@@ -51,21 +48,19 @@
                     android:scaleType="centerCrop"
                     android:src="@android:drawable/ic_menu_gallery"
                     android:contentDescription="Current event poster" />
-
             </androidx.cardview.widget.CardView>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_select_poster"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="12dp"
                 android:text="SELECT NEW POSTER"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 app:backgroundTint="#40FFFFFF"
-                app:cornerRadius="12dp"
-                android:layout_marginBottom="12dp" />
+                app:cornerRadius="12dp" />
 
-            <!-- Geolocation Requirement Toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,6 +99,49 @@
                     android:checked="false" />
             </LinearLayout>
 
+            <!-- Co-organizer section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Co-organizers"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/et_edit_coorganizer_device_id"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Enter co-organizer device ID"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_edit_add_coorganizer"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="12dp"
+                android:text="ADD CO-ORGANIZER"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_edit_coorganizers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="8dp"
+                app:singleLine="false" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_edit_save_poster"
                 android:layout_width="match_parent"
@@ -127,7 +165,6 @@
                 android:visibility="gone" />
 
         </LinearLayout>
-
     </ScrollView>
 
 </LinearLayout>
