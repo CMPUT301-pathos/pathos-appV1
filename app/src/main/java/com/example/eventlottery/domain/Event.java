@@ -6,8 +6,19 @@ import java.util.Map;
 /**
  * Event domain model for organizer-created events.
  *
+ * Responsibilities:
+ * - store event details such as name, description, organizer, dates, and capacity
+ * - store event configuration options such as geolocation requirement
+ * - convert event data into a Firestore-friendly map
+ *
+ * User stories supported:
+ * - US 02.01.01: Create a new public event with a promotional QR code
+ * - US 02.01.02: Create a private event
+ * - US 02.01.04: Set a registration period
+ * - US 02.02.03: Enable or disable the geolocation requirement for an event
+ *
  * @author Kenneth Joseph, Fawaz Mansoor, Hasratsinghchauhan
- * @version 1.4
+ * @version 1.5
  */
 public class Event {
 
@@ -18,17 +29,18 @@ public class Event {
     private String posterUrl;
     private String category;
     private String location;
-
-    // ADD THIS MISSING FIELD
-    private Object createdAt;  // Firestore has this field!
-
-    // Use Object for ALL date fields
+    private Object createdAt;
     private Object eventDate;
     private Object registrationStart;
     private Object registrationEnd;
 
     private int capacity;
     private int drawSize;
+
+    /**
+     * Whether entrants must provide device location when joining this event's waiting list.
+     */
+    private boolean requiresGeolocation;
 
     public Event() {}
 
@@ -37,35 +49,73 @@ public class Event {
         this.description = description;
         this.organizerDeviceId = organizerDeviceId;
         this.posterUrl = null;
+        this.requiresGeolocation = false;
     }
 
-    // Getters and setters for all fields
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getName() {
+        return name;
+    }
 
-    public String getOrganizerDeviceId() { return organizerDeviceId; }
-    public void setOrganizerDeviceId(String organizerDeviceId) { this.organizerDeviceId = organizerDeviceId; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getPosterUrl() { return posterUrl; }
-    public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public String getOrganizerDeviceId() {
+        return organizerDeviceId;
+    }
 
-    // ADD GETTER/SETTER FOR createdAt
-    public Object getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Object createdAt) { this.createdAt = createdAt; }
+    public void setOrganizerDeviceId(String organizerDeviceId) {
+        this.organizerDeviceId = organizerDeviceId;
+    }
 
-    // Event Date methods
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Object getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Object createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public void setEventDate(Object eventDate) {
         this.eventDate = eventDate;
     }
@@ -74,7 +124,6 @@ public class Event {
         return convertToLong(eventDate);
     }
 
-    // Registration Start methods
     public void setRegistrationStart(Object registrationStart) {
         this.registrationStart = registrationStart;
     }
@@ -83,7 +132,6 @@ public class Event {
         return convertToLong(registrationStart);
     }
 
-    // Registration End methods
     public void setRegistrationEnd(Object registrationEnd) {
         this.registrationEnd = registrationEnd;
     }
@@ -92,7 +140,35 @@ public class Event {
         return convertToLong(registrationEnd);
     }
 
-    // Helper method to convert Object to long safely
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public int getDrawSize() {
+        return drawSize;
+    }
+
+    public void setDrawSize(int drawSize) {
+        this.drawSize = drawSize;
+    }
+
+    public boolean isGeolocationRequired() {
+        return requiresGeolocation;
+    }
+
+    public void setRequiresGeolocation(boolean requiresGeolocation) {
+        this.requiresGeolocation = requiresGeolocation;
+    }
+
+    public boolean isRegistrationOpen() {
+        long now = System.currentTimeMillis();
+        return now >= getRegistrationStart() && now <= getRegistrationEnd();
+    }
+
     private long convertToLong(Object value) {
         if (value == null) return 0;
         if (value instanceof Long) return (Long) value;
@@ -107,17 +183,6 @@ public class Event {
         return 0;
     }
 
-    public int getCapacity() { return capacity; }
-    public void setCapacity(int capacity) { this.capacity = capacity; }
-
-    public int getDrawSize() { return drawSize; }
-    public void setDrawSize(int drawSize) { this.drawSize = drawSize; }
-
-    public boolean isRegistrationOpen() {
-        long now = System.currentTimeMillis();
-        return now >= getRegistrationStart() && now <= getRegistrationEnd();
-    }
-
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("name", name);
@@ -126,12 +191,13 @@ public class Event {
         m.put("posterUrl", posterUrl);
         m.put("category", category);
         m.put("location", location);
-        m.put("createdAt", createdAt);  // ADD THIS
+        m.put("createdAt", createdAt);
         m.put("eventDate", eventDate);
         m.put("registrationStart", registrationStart);
         m.put("registrationEnd", registrationEnd);
         m.put("capacity", capacity);
         m.put("drawSize", drawSize);
+        m.put("requiresGeolocation", requiresGeolocation);
         return m;
     }
 }

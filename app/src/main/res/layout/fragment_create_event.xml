@@ -128,9 +128,7 @@
                 android:background="@drawable/bg_input_field"
                 android:layout_marginBottom="16dp" />
 
-
-
-            <!-- ═══ NEW: Event Date (FIX 3) ═══ -->
+            <!-- Event Date -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -278,7 +276,6 @@
                         android:text="Not visible in event listing. Invite entrants manually."
                         android:textColor="#881A1A2E"
                         android:textSize="12sp" />
-
                 </LinearLayout>
 
                 <Switch
@@ -286,7 +283,45 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="false" />
+            </LinearLayout>
 
+            <!-- Geolocation Requirement Toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_input_field"
+                android:padding="14dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Geolocation Requirement"
+                        android:textColor="#1A1A2E"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Entrants must share device location when joining the waiting list."
+                        android:textColor="#881A1A2E"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <Switch
+                    android:id="@+id/switch_geo_required"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false" />
             </LinearLayout>
 
             <!-- Publish -->
@@ -303,7 +338,6 @@
                 android:layout_marginBottom="8dp" />
 
         </LinearLayout>
-
     </ScrollView>
 
 </LinearLayout>
