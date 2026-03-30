@@ -10,19 +10,22 @@ import java.util.List;
  * Controller for managing entrant participation in events.
  *
  * Responsibilities:
- * - Join and leave waiting lists
- * - Accept and decline invitations
+ * - join and leave waiting lists
+ * - accept and decline invitations
+ * - allow waiting-list records with optional geolocation metadata
+ * - provide waiting-list counts for an event
  *
  * User stories supported:
  * - US 01.01.01: Join the waiting list for a specific event
  * - US 01.01.02: Leave the waiting list for a specific event
  * - US 01.05.02: Accept the invitation to register for an event
- * - US 01.05.04: Count of total entrants on the waiting list
  * - US 01.05.03: Decline an invitation when chosen
+ * - US 01.05.04: Count of total entrants on the waiting list
+ * - US 02.02.02: Support storing join-location data for organizer map viewing
  *
- * @author Fawaz Mansoor
+ * @author Fawaz Mansoor, Kenneth Joseph
  * @author Edwin David on US 01.05.04
- * @version 1.0
+ * @version 1.1
  */
 public class WaitingListController {
 
@@ -34,7 +37,7 @@ public class WaitingListController {
 
     public void acceptInvitation(String eventId, String deviceId) {
         WaitListRecord record = new WaitListRecord(eventId, deviceId);
-        record.setStatus(WaitStatus.INVITED); // current status before accepting
+        record.setStatus(WaitStatus.INVITED);
         record.acceptInvitation();
         waitListRepository.updateStatus(eventId, deviceId, WaitStatus.ACCEPTED);
     }
@@ -51,6 +54,10 @@ public class WaitingListController {
         waitListRepository.addToWaitList(record);
     }
 
+    public void joinWaitingList(WaitListRecord record) {
+        waitListRepository.addToWaitList(record);
+    }
+
     public void leaveWaitingList(String eventId, String deviceId) {
         waitListRepository.removeFromWaitList(eventId, deviceId);
     }
@@ -61,7 +68,9 @@ public class WaitingListController {
     }
 
     public void getWaitingCount(String eventId, CountCallback callback) {
-        waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.WAITING,
+        waitListRepository.getRecordsByStatusAsync(
+                eventId,
+                WaitStatus.WAITING,
                 new WaitListRepository.WaitListCallBack() {
                     @Override
                     public void onSuccess(List<WaitListRecord> records) {
@@ -72,22 +81,30 @@ public class WaitingListController {
                     public void onFailure(Exception e) {
                         callback.onFailure(e);
                     }
-                });
+                }
+        );
     }
 
-    //New ones below using callback
-    public void checkIfJoined(String eventId, String deviceId,
+    public void checkIfJoined(String eventId,
+                              String deviceId,
                               WaitListRepository.SingleRecordCallback callback) {
         waitListRepository.getRecordAsync(eventId, deviceId, callback);
     }
 
-    public void joinWaitingList(String eventId, String deviceId,
+    public void joinWaitingList(String eventId,
+                                String deviceId,
                                 WaitListRepository.OperationCallback callback) {
         WaitListRecord record = new WaitListRecord(eventId, deviceId);
         waitListRepository.addToWaitList(record, callback);
     }
 
-    public void leaveWaitingList(String eventId, String deviceId,
+    public void joinWaitingList(WaitListRecord record,
+                                WaitListRepository.OperationCallback callback) {
+        waitListRepository.addToWaitList(record, callback);
+    }
+
+    public void leaveWaitingList(String eventId,
+                                 String deviceId,
                                  WaitListRepository.OperationCallback callback) {
         waitListRepository.removeFromWaitList(eventId, deviceId, callback);
     }

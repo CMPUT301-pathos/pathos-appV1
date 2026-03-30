@@ -40,27 +40,38 @@ import java.util.Map;
 /**
  * CreateEventFragment
  *
- * Allows an organizer to create a new event, optionally marked as private.
- * Private events are not visible in the event listing and do not generate
- * a promotional QR code. Entrants must be invited manually.
+ * Allows an organizer to create a new event, optionally marked as private,
+ * and optionally requiring geolocation when entrants join the waiting list.
+ *
+ * Private events are not visible in the public event listing and do not
+ * generate a promotional QR code. Entrants must be invited manually.
  *
  * Responsibilities:
- * - collect event fields including category and event date
+ * - collect event fields including category, capacity, and event date
  * - choose registration dates with a Material date range picker
  * - optionally upload an event poster (Base64 encoded)
  * - toggle private event mode
+ * - toggle geolocation requirement for waiting-list joins
  * - save the event to the Firestore "events" collection
  * - navigate to QrCodeFragment on successful publish (public events only)
  * - navigate to PrivateEventInviteFragment for private events
  *
  * User stories supported:
- * - US 02.01.01: Organizer can create a new event and generate a QR code
- * - US 02.01.04: Organizer sets a registration period
- * - US 02.07.01: Organizer creates a private event
- * - US 02.07.02: Organizer invites specific entrants to a private event
+ * - US 02.01.01: As an organizer I want to create a new public event and
+ *   generate a unique promotional QR code that links to the event description
+ *   and event poster in the app.
+ * - US 02.01.02: As an organizer, I want to create a private event that is
+ *   not visible on the event listing and does not generate a promotional QR code.
+ * - US 02.01.03: As an organizer, I want to invite specific entrants to a
+ *   private event’s waiting list by searching via name, phone number and/or email.
+ * - US 02.01.04: As an organizer, I want to set a registration period.
+ * - US 02.02.03: As an organizer I want to enable or disable the geolocation
+ *   requirement for my event.
+ * - US 02.04.01: As an organizer I want to upload an event poster to the
+ *   event details page to provide visual information to entrants.
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.7
+ * @version 1.8
  */
 public class CreateEventFragment extends Fragment {
 
@@ -69,12 +80,13 @@ public class CreateEventFragment extends Fragment {
     private ImageView ivPosterPreview;
     private MaterialButton btnSelectPoster, btnPublish;
     private TextView tvSelectedCategory;
-    private Switch switchPrivate;
+    private Switch switchPrivate, switchGeoRequired;
 
     private Uri selectedPosterUri;
     private ActivityResultLauncher<PickVisualMediaRequest> pickPosterLauncher;
     private boolean isPublishing = false;
     private boolean isPrivateEvent = false;
+    private boolean requiresGeolocation = false;
     private String selectedCategory = "All";
 
     private long registrationStartMillis = 0;
@@ -94,10 +106,14 @@ public class CreateEventFragment extends Fragment {
         return PUBLISH_IDLING;
     }
 
-    private static void beginPublishAsync() { PUBLISH_IDLING.increment(); }
+    private static void beginPublishAsync() {
+        PUBLISH_IDLING.increment();
+    }
 
     private static void endPublishAsync() {
-        if (!PUBLISH_IDLING.isIdleNow()) PUBLISH_IDLING.decrement();
+        if (!PUBLISH_IDLING.isIdleNow()) {
+            PUBLISH_IDLING.decrement();
+        }
     }
 
     @Nullable
@@ -107,25 +123,29 @@ public class CreateEventFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_create_event, container, false);
 
-        etName        = root.findViewById(R.id.et_event_name);
-        etDesc        = root.findViewById(R.id.et_event_description);
-        etLocation    = root.findViewById(R.id.et_event_location);
-        etStart       = root.findViewById(R.id.et_event_start);
-        etEnd         = root.findViewById(R.id.et_event_end);
-        etCapacity    = root.findViewById(R.id.et_event_capacity);
-        etEventDate   = root.findViewById(R.id.et_event_date);
-        ivPosterPreview  = root.findViewById(R.id.iv_event_poster_preview);
-        btnSelectPoster  = root.findViewById(R.id.btn_select_event_poster);
-        btnPublish       = root.findViewById(R.id.btn_publish_event);
+        etName             = root.findViewById(R.id.et_event_name);
+        etDesc             = root.findViewById(R.id.et_event_description);
+        etLocation         = root.findViewById(R.id.et_event_location);
+        etStart            = root.findViewById(R.id.et_event_start);
+        etEnd              = root.findViewById(R.id.et_event_end);
+        etCapacity         = root.findViewById(R.id.et_event_capacity);
+        etEventDate        = root.findViewById(R.id.et_event_date);
+        ivPosterPreview    = root.findViewById(R.id.iv_event_poster_preview);
+        btnSelectPoster    = root.findViewById(R.id.btn_select_event_poster);
+        btnPublish         = root.findViewById(R.id.btn_publish_event);
         tvSelectedCategory = root.findViewById(R.id.tv_selected_category);
-        switchPrivate    = root.findViewById(R.id.switch_private_event);
+        switchPrivate      = root.findViewById(R.id.switch_private_event);
+        switchGeoRequired  = root.findViewById(R.id.switch_geo_required);
         MaterialButton btnPickCategory = root.findViewById(R.id.btn_pick_category);
 
-        // Update publish button text when private toggle changes
         switchPrivate.setOnCheckedChangeListener((buttonView, isChecked) -> {
             isPrivateEvent = isChecked;
-            btnPublish.setText(isChecked ? "PUBLISH PRIVATE EVENT" : "GENERATE QR CODE & POST");
+            btnPublish.setText(getPublishButtonText());
         });
+
+        switchGeoRequired.setOnCheckedChangeListener((buttonView, isChecked) ->
+                requiresGeolocation = isChecked
+        );
 
         btnPickCategory.setOnClickListener(v ->
                 requireCompletedProfile(() ->
@@ -149,6 +169,7 @@ public class CreateEventFragment extends Fragment {
         btnPublish.setOnClickListener(v ->
                 requireCompletedProfile(this::publishEvent));
 
+        btnPublish.setText(getPublishButtonText());
         configureUiAccess();
 
         return root;
@@ -185,13 +206,18 @@ public class CreateEventFragment extends Fragment {
                 MaterialDatePicker.Builder.dateRangePicker()
                         .setTitleText("Select registration dates")
                         .build();
+
         picker.addOnPositiveButtonClickListener(selection -> {
-            if (selection == null || selection.first == null || selection.second == null) return;
+            if (selection == null || selection.first == null || selection.second == null) {
+                return;
+            }
+
             registrationStartMillis = selection.first;
-            registrationEndMillis   = selection.second;
+            registrationEndMillis = selection.second;
             etStart.setText(formatDate(selection.first));
             etEnd.setText(formatDate(selection.second));
         });
+
         picker.show(getChildFragmentManager(), "registration_date_range_picker");
     }
 
@@ -201,23 +227,29 @@ public class CreateEventFragment extends Fragment {
                     MaterialDatePicker.Builder.datePicker()
                             .setTitleText("Select event date")
                             .build();
+
             picker.addOnPositiveButtonClickListener(selection -> {
-                if (selection == null) return;
+                if (selection == null) {
+                    return;
+                }
                 eventDateMillis = selection;
                 etEventDate.setText(formatDate(selection));
             });
+
             picker.show(getChildFragmentManager(), "event_date_picker");
         });
     }
 
     private void publishEvent() {
-        if (isPublishing) return;
+        if (isPublishing) {
+            return;
+        }
         isPublishing = true;
 
-        String name     = safe(etName);
-        String desc     = safe(etDesc);
+        String name = safe(etName);
+        String desc = safe(etDesc);
         String location = safe(etLocation);
-        String capStr   = safe(etCapacity);
+        String capStr = safe(etCapacity);
 
         if (TextUtils.isEmpty(name)) {
             etName.setError("Required");
@@ -287,9 +319,13 @@ public class CreateEventFragment extends Fragment {
             createEventDocument(name, desc, location, capacity, posterData);
 
         } catch (Exception e) {
-            if (getActivity() == null) { endPublishAsync(); return; }
+            if (getActivity() == null) {
+                endPublishAsync();
+                return;
+            }
+
             isPublishing = false;
-            setPublishingState(false, "PUBLISH");
+            setPublishingState(false, getPublishButtonText());
             Toast.makeText(requireContext(),
                     "Poster processing failed: " + e.getMessage(),
                     Toast.LENGTH_LONG).show();
@@ -302,24 +338,28 @@ public class CreateEventFragment extends Fragment {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
 
         Map<String, Object> eventDoc = new HashMap<>();
-        eventDoc.put("name",               name);
-        eventDoc.put("description",        desc);
-        eventDoc.put("location",           location);
-        eventDoc.put("registrationStart",  registrationStartMillis);
-        eventDoc.put("registrationEnd",    registrationEndMillis);
-        eventDoc.put("eventDate",          eventDateMillis);
-        eventDoc.put("capacity",           capacity);
-        eventDoc.put("category",           selectedCategory);
-        eventDoc.put("organizerDeviceId",  organizerDeviceId);
-        eventDoc.put("createdAt",          System.currentTimeMillis());
-        eventDoc.put("posterUrl",          posterUrl);
-        eventDoc.put("isPrivate",          isPrivateEvent);
+        eventDoc.put("name", name);
+        eventDoc.put("description", desc);
+        eventDoc.put("location", location);
+        eventDoc.put("registrationStart", registrationStartMillis);
+        eventDoc.put("registrationEnd", registrationEndMillis);
+        eventDoc.put("eventDate", eventDateMillis);
+        eventDoc.put("capacity", capacity);
+        eventDoc.put("category", selectedCategory);
+        eventDoc.put("organizerDeviceId", organizerDeviceId);
+        eventDoc.put("createdAt", System.currentTimeMillis());
+        eventDoc.put("posterUrl", posterUrl);
+        eventDoc.put("isPrivate", isPrivateEvent);
+        eventDoc.put("requiresGeolocation", requiresGeolocation);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("events")
                 .add(eventDoc)
                 .addOnSuccessListener(ref -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
 
                     String eventId = ref.getId();
                     String qrPayload = "eventId:" + eventId;
@@ -330,10 +370,9 @@ public class CreateEventFragment extends Fragment {
 
                     Toast.makeText(requireContext(), "Event created!", Toast.LENGTH_SHORT).show();
                     isPublishing = false;
-                    setPublishingState(false, "PUBLISH");
+                    setPublishingState(false, getPublishButtonText());
 
                     if (isPrivateEvent) {
-                        // Navigate to invite screen instead of QR
                         goToInvite(eventId, name);
                     } else {
                         goToQr(qrPayload);
@@ -341,9 +380,13 @@ public class CreateEventFragment extends Fragment {
                     endPublishAsync();
                 })
                 .addOnFailureListener(e -> {
-                    if (getActivity() == null) { endPublishAsync(); return; }
+                    if (getActivity() == null) {
+                        endPublishAsync();
+                        return;
+                    }
+
                     isPublishing = false;
-                    setPublishingState(false, "PUBLISH");
+                    setPublishingState(false, getPublishButtonText());
                     Toast.makeText(requireContext(),
                             "Create failed: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
@@ -377,6 +420,8 @@ public class CreateEventFragment extends Fragment {
         btnSelectPoster.setEnabled(!publishing);
         etStart.setEnabled(!publishing);
         etEnd.setEnabled(!publishing);
+        switchPrivate.setEnabled(!publishing);
+        switchGeoRequired.setEnabled(!publishing);
         btnPublish.setText(buttonText);
     }
 
@@ -385,12 +430,16 @@ public class CreateEventFragment extends Fragment {
                 () -> {
                     btnSelectPoster.setEnabled(true);
                     btnPublish.setEnabled(true);
+                    switchPrivate.setEnabled(true);
+                    switchGeoRequired.setEnabled(true);
                 },
                 () -> {
                     btnSelectPoster.setEnabled(false);
                     btnPublish.setEnabled(false);
                     etStart.setEnabled(false);
                     etEnd.setEnabled(false);
+                    switchPrivate.setEnabled(false);
+                    switchGeoRequired.setEnabled(false);
                     Toast.makeText(requireContext(),
                             "Complete your profile first to create events.",
                             Toast.LENGTH_SHORT).show();
@@ -418,11 +467,16 @@ public class CreateEventFragment extends Fragment {
                             onBlocked.run();
                         }
                     }
+
                     @Override
                     public void onFailure(Exception e) {
                         onBlocked.run();
                     }
                 });
+    }
+
+    private String getPublishButtonText() {
+        return isPrivateEvent ? "PUBLISH PRIVATE EVENT" : "GENERATE QR CODE & POST";
     }
 
     private String formatDate(long utcMillis) {

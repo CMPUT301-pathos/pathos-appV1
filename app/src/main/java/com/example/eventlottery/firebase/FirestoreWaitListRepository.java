@@ -8,7 +8,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Firestore implementation of {@link WaitListRepository}.
@@ -17,6 +19,7 @@ import java.util.List;
  *
  * Responsibilities:
  * - Persist entrant participation records to Firestore
+ * - Persist optional join geolocation metadata for entrant records
  * - Update participation status in Firestore
  * - Provide async queries for lottery draw operations
  *
@@ -26,16 +29,28 @@ import java.util.List;
  * - US 01.05.01: Another chance to be chosen when someone declines
  * - US 01.05.02: Accept the invitation to register for an event
  * - US 01.05.03: Decline an invitation when chosen
+ * - US 02.02.02: View on a map where entrants joined from
  * - US 02.05.02: Sample a specified number of attendees
  * - US 02.05.03: Draw a replacement applicant
  *
- * @author Fawaz Mansoor, Dmitriy Limanets
- * @version 1.1
+ * @author Fawaz Mansoor, Dmitriy Limanets, Kenneth Joseph
+ * @version 1.2
  */
 public class FirestoreWaitListRepository implements WaitListRepository {
 
-    private final FirebaseFirestore db;
     private static final String COLLECTION = "waitlist";
+
+    private static final String FIELD_EVENT_ID = "eventId";
+    private static final String FIELD_DEVICE_ID = "deviceId";
+    private static final String FIELD_STATUS = "status";
+    private static final String FIELD_JOIN_TIME_MS = "joinTimeMs";
+    private static final String FIELD_NOTIFIED = "notified";
+    private static final String FIELD_JOIN_LATITUDE = "joinLatitude";
+    private static final String FIELD_JOIN_LONGITUDE = "joinLongitude";
+    private static final String FIELD_JOIN_ACCURACY_METERS = "joinAccuracyMeters";
+    private static final String FIELD_JOIN_LOCATION_TIMESTAMP_MS = "joinLocationTimestampMs";
+
+    private final FirebaseFirestore db;
 
     public FirestoreWaitListRepository() {
         this.db = FirebaseFirestore.getInstance();
@@ -43,65 +58,55 @@ public class FirestoreWaitListRepository implements WaitListRepository {
 
     @Override
     public void addToWaitList(WaitListRecord record) {
-        java.util.Map<String, Object> data = new java.util.HashMap<>();
-        data.put("eventId", record.getEventId());
-        data.put("deviceId", record.getDeviceId());
-        data.put("status", record.getStatus().name());
-        data.put("joinTimeMs", record.getJoinTimeMs());
-        data.put("notified", false);
-
         db.collection(COLLECTION)
-                .document(record.getEventId() + "_" + record.getDeviceId())
-                .set(data);
+                .document(buildDocumentId(record.getEventId(), record.getDeviceId()))
+                .set(toMap(record));
     }
 
     @Override
     public void removeFromWaitList(String eventId, String deviceId) {
         db.collection(COLLECTION)
-                .document(eventId + "_" + deviceId)
+                .document(buildDocumentId(eventId, deviceId))
                 .delete();
     }
 
     @Override
     public void updateStatus(String eventId, String deviceId, WaitStatus newStatus) {
         db.collection(COLLECTION)
-                .document(eventId + "_" + deviceId)
-                .update("status", newStatus.name());
+                .document(buildDocumentId(eventId, deviceId))
+                .update(FIELD_STATUS, newStatus.name());
     }
 
     @Override
     public WaitListRecord getRecord(String eventId, String deviceId) {
-        // Firestore reads are async — use getRecordsByEvent for now
+        // Firestore reads are async — use getRecordAsync for live reads
         return null;
     }
 
     @Override
     public List<WaitListRecord> getRecordsByEvent(String eventId) {
-        // Async — return empty list, use snapshot listeners in UI
+        // Firestore reads are async — use getRecordsByEventAsync in the UI/controller layer
         return new ArrayList<>();
     }
 
     @Override
     public List<WaitListRecord> getRecordsByStatus(String eventId, WaitStatus status) {
-        // Async — return empty list, use snapshot listeners in UI
+        // Firestore reads are async — use getRecordsByStatusAsync in the UI/controller layer
         return new ArrayList<>();
     }
 
     @Override
-    public void getRecordsByStatusAsync(String eventId, WaitStatus status, WaitListCallBack callback) {
+    public void getRecordsByStatusAsync(String eventId,
+                                        WaitStatus status,
+                                        WaitListCallBack callback) {
         db.collection(COLLECTION)
-                .whereEqualTo("eventId", eventId)
-                .whereEqualTo("status", status.name())
+                .whereEqualTo(FIELD_EVENT_ID, eventId)
+                .whereEqualTo(FIELD_STATUS, status.name())
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     List<WaitListRecord> records = new ArrayList<>();
                     for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        WaitListRecord record = new WaitListRecord(
-                                doc.getString("eventId"),
-                                doc.getString("deviceId")
-                        );
-                        record.setStatus(WaitStatus.valueOf(doc.getString("status")));
-                        records.add(record);
+                        records.add(fromDocument(doc));
                     }
                     callback.onSuccess(records);
                 })
@@ -109,69 +114,51 @@ public class FirestoreWaitListRepository implements WaitListRepository {
     }
 
     @Override
-    public void getRecordAsync(String eventId, String deviceId, SingleRecordCallback callback) {
+    public void getRecordAsync(String eventId,
+                               String deviceId,
+                               SingleRecordCallback callback) {
         db.collection(COLLECTION)
-                .document(eventId + "_" + deviceId)
+                .document(buildDocumentId(eventId, deviceId))
                 .get()
-                .addOnSuccessListener(doc ->{
-                    if(doc.exists()){
-                        WaitListRecord record = new WaitListRecord(
-                                doc.getString("eventId"),
-                                doc.getString("deviceId")
-                        );
-                        record.setStatus(WaitStatus.valueOf(doc.getString("status")));
-                        callback.onSuccess(record);
-                    }else{
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        callback.onSuccess(fromDocument(doc));
+                    } else {
                         callback.onSuccess(null);
                     }
                 })
                 .addOnFailureListener(callback::onFailure);
-
     }
 
     @Override
     public void addToWaitList(WaitListRecord record, OperationCallback callback) {
-        java.util.Map<String, Object> data = new java.util.HashMap<>();
-        data.put("eventId", record.getEventId());
-        data.put("deviceId", record.getDeviceId());
-        data.put("status", record.getStatus().name());
-        data.put("joinTimeMs", record.getJoinTimeMs());
-        data.put("notified", false);
-
         db.collection(COLLECTION)
-                .document(record.getEventId() + "_" + record.getDeviceId())
-                .set(data)
-                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .document(buildDocumentId(record.getEventId(), record.getDeviceId()))
+                .set(toMap(record))
+                .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }
 
     @Override
-    public void removeFromWaitList(String eventId, String deviceId, OperationCallback callback) {
+    public void removeFromWaitList(String eventId,
+                                   String deviceId,
+                                   OperationCallback callback) {
         db.collection(COLLECTION)
-                .document(eventId + "_" + deviceId)
+                .document(buildDocumentId(eventId, deviceId))
                 .delete()
-                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
     }
+
     @Override
     public void getRecordsByEventAsync(String eventId, WaitListCallBack callback) {
         db.collection(COLLECTION)
-                .whereEqualTo("eventId", eventId)
+                .whereEqualTo(FIELD_EVENT_ID, eventId)
                 .get()
                 .addOnSuccessListener(snap -> {
                     List<WaitListRecord> records = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : snap) {
-                        WaitListRecord record = new WaitListRecord(
-                                doc.getString("eventId"),
-                                doc.getString("deviceId")
-                        );
-                        String statusStr = doc.getString("status");
-                        if (statusStr != null) {
-                            try {
-                                record.setStatus(WaitStatus.valueOf(statusStr));
-                            } catch (IllegalArgumentException ignored) {}
-                        }
-                        records.add(record);
+                        records.add(fromDocument(doc));
                     }
                     callback.onSuccess(records);
                 })
@@ -180,28 +167,76 @@ public class FirestoreWaitListRepository implements WaitListRepository {
 
     public void getRecordsForDevice(String deviceId, WaitListCallBack callback) {
         db.collection(COLLECTION)
-                .whereEqualTo("deviceId", deviceId)
+                .whereEqualTo(FIELD_DEVICE_ID, deviceId)
                 .get()
                 .addOnSuccessListener(snap -> {
                     List<WaitListRecord> records = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : snap) {
-                        WaitListRecord record = new WaitListRecord(
-                                doc.getString("eventId"),
-                                doc.getString("deviceId")
-                        );
-                        String statusStr = doc.getString("status");
-                        if (statusStr != null) {
-                            try {
-                                record.setStatus(WaitStatus.valueOf(statusStr));
-                            } catch (IllegalArgumentException ignored) {}
-                        }
-                        records.add(record);
+                        records.add(fromDocument(doc));
                     }
                     callback.onSuccess(records);
                 })
                 .addOnFailureListener(callback::onFailure);
     }
 
+    private String buildDocumentId(String eventId, String deviceId) {
+        return eventId + "_" + deviceId;
+    }
 
+    private Map<String, Object> toMap(WaitListRecord record) {
+        Map<String, Object> data = new HashMap<>();
+        data.put(FIELD_EVENT_ID, record.getEventId());
+        data.put(FIELD_DEVICE_ID, record.getDeviceId());
+        data.put(FIELD_STATUS, record.getStatus().name());
+        data.put(FIELD_JOIN_TIME_MS, record.getJoinTimeMs());
+        data.put(FIELD_NOTIFIED, false);
+        data.put(FIELD_JOIN_LATITUDE, record.getJoinLatitude());
+        data.put(FIELD_JOIN_LONGITUDE, record.getJoinLongitude());
+        data.put(FIELD_JOIN_ACCURACY_METERS, record.getJoinAccuracyMeters());
+        data.put(FIELD_JOIN_LOCATION_TIMESTAMP_MS, record.getJoinLocationTimestampMs());
+        return data;
+    }
 
+    private WaitListRecord fromDocument(DocumentSnapshot doc) {
+        WaitListRecord record = new WaitListRecord(
+                doc.getString(FIELD_EVENT_ID),
+                doc.getString(FIELD_DEVICE_ID)
+        );
+
+        String statusStr = doc.getString(FIELD_STATUS);
+        if (statusStr != null) {
+            try {
+                record.setStatus(WaitStatus.valueOf(statusStr));
+            } catch (IllegalArgumentException ignored) {
+                record.setStatus(WaitStatus.WAITING);
+            }
+        }
+
+        Long joinTimeMs = getLongValue(doc, FIELD_JOIN_TIME_MS);
+        if (joinTimeMs != null) {
+            record.setJoinTimeMs(joinTimeMs);
+        }
+
+        record.setJoinLatitude(getDoubleValue(doc, FIELD_JOIN_LATITUDE));
+        record.setJoinLongitude(getDoubleValue(doc, FIELD_JOIN_LONGITUDE));
+        record.setJoinAccuracyMeters(getFloatValue(doc, FIELD_JOIN_ACCURACY_METERS));
+        record.setJoinLocationTimestampMs(getLongValue(doc, FIELD_JOIN_LOCATION_TIMESTAMP_MS));
+
+        return record;
+    }
+
+    private Long getLongValue(DocumentSnapshot doc, String field) {
+        Number number = doc.get(field, Number.class);
+        return number == null ? null : number.longValue();
+    }
+
+    private Double getDoubleValue(DocumentSnapshot doc, String field) {
+        Number number = doc.get(field, Number.class);
+        return number == null ? null : number.doubleValue();
+    }
+
+    private Float getFloatValue(DocumentSnapshot doc, String field) {
+        Number number = doc.get(field, Number.class);
+        return number == null ? null : number.floatValue();
+    }
 }
