@@ -55,6 +55,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
     public FirestoreWaitListRepository() {
         this.db = FirebaseFirestore.getInstance();
     }
+    // For unit tests
+    public FirestoreWaitListRepository(FirebaseFirestore db) {
+        this.db = db;
+    }
+
+
 
     @Override
     public void addToWaitList(WaitListRecord record) {
@@ -79,19 +85,16 @@ public class FirestoreWaitListRepository implements WaitListRepository {
 
     @Override
     public WaitListRecord getRecord(String eventId, String deviceId) {
-        // Firestore reads are async — use getRecordAsync for live reads
         return null;
     }
 
     @Override
     public List<WaitListRecord> getRecordsByEvent(String eventId) {
-        // Firestore reads are async — use getRecordsByEventAsync in the UI/controller layer
         return new ArrayList<>();
     }
 
     @Override
     public List<WaitListRecord> getRecordsByStatus(String eventId, WaitStatus status) {
-        // Firestore reads are async — use getRecordsByStatusAsync in the UI/controller layer
         return new ArrayList<>();
     }
 

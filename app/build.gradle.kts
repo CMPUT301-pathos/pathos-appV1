@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.rules)
 
     testImplementation(libs.junit)
+    testImplementation("org.mockito:mockito-core:5.12.0")
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
