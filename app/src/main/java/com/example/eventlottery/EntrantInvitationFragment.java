@@ -219,6 +219,27 @@ public class EntrantInvitationFragment extends Fragment {
     private void addWinNotification(LayoutInflater inflater,
                                     String eventName,
                                     WaitListRecord record) {
+        // Check if this is a private event invite
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(record.getEventId())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (getActivity() == null) return;
+                    Boolean isPrivate = doc.getBoolean("isPrivate");
+                    boolean privateEvent = isPrivate != null && isPrivate;
+                    buildInviteCard(inflater, eventName, record, privateEvent);
+                })
+                .addOnFailureListener(e -> {
+                    if (getActivity() == null) return;
+                    buildInviteCard(inflater, eventName, record, false);
+                });
+    }
+
+    private void buildInviteCard(LayoutInflater inflater,
+                                 String eventName,
+                                 WaitListRecord record,
+                                 boolean isPrivate) {
         View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
 
         TextView tvEventName = card.findViewById(R.id.tvEventName);
@@ -229,26 +250,35 @@ public class EntrantInvitationFragment extends Fragment {
         MaterialButton btnClear = card.findViewById(R.id.btnClear);
 
         tvEventName.setText(eventName);
-        tvMessage.setText("You have won the lottery for this event!");
+        tvMessage.setText(isPrivate
+                ? "🔒 You've been invited to this private event!"
+                : "🎉 You have won the lottery for this event!");
         winButtonsRow.setVisibility(View.VISIBLE);
         btnClear.setVisibility(View.GONE);
 
         btnAccept.setOnClickListener(v -> {
             waitingListController.acceptInvitation(record.getEventId(), deviceId);
-            Toast.makeText(getContext(), "You have accepted the invitation!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(),
+                    isPrivate ? "You have accepted the private event invitation!"
+                            : "You have accepted the invitation!",
+                    Toast.LENGTH_SHORT).show();
             notificationsContainer.removeView(card);
             checkEmpty();
         });
 
         btnDecline.setOnClickListener(v -> {
             waitingListController.declineInvitation(record.getEventId(), deviceId);
-            Toast.makeText(getContext(), "You have declined the invitation.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(),
+                    isPrivate ? "You have declined the private event invitation."
+                            : "You have declined the invitation.",
+                    Toast.LENGTH_SHORT).show();
             notificationsContainer.removeView(card);
             checkEmpty();
         });
 
         notificationsContainer.addView(card);
         tvEmpty.setVisibility(View.GONE);
+        checkEmpty();
     }
 
     /**
