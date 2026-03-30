@@ -146,9 +146,16 @@ public class OrganizerDashboardFragment extends Fragment {
 
             @Override
             public void onGeoDetailsClick(com.example.eventlottery.domain.EventSummary event) {
-                com.google.android.material.snackbar.Snackbar.make(
-                        root, "Geo-details coming soon",
-                        com.google.android.material.snackbar.Snackbar.LENGTH_SHORT).show();
+                requireCompletedProfile(() -> {
+                    requireActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(
+                                    R.id.fragment_container,
+                                    OrganizerGeoMapFragment.newInstance(event.getId(), event.getName())
+                            )
+                            .addToBackStack(null)
+                            .commit();
+                });
             }
 
             @Override

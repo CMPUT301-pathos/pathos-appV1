@@ -55,6 +55,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
     public FirestoreWaitListRepository() {
         this.db = FirebaseFirestore.getInstance();
     }
+    // For unit tests
+    public FirestoreWaitListRepository(FirebaseFirestore db) {
+        this.db = db;
+    }
+
+
 
     @Override
     public void addToWaitList(WaitListRecord record) {
@@ -79,19 +85,16 @@ public class FirestoreWaitListRepository implements WaitListRepository {
 
     @Override
     public WaitListRecord getRecord(String eventId, String deviceId) {
-        // Firestore reads are async — use getRecordAsync for live reads
         return null;
     }
 
     @Override
     public List<WaitListRecord> getRecordsByEvent(String eventId) {
-        // Firestore reads are async — use getRecordsByEventAsync in the UI/controller layer
         return new ArrayList<>();
     }
 
     @Override
     public List<WaitListRecord> getRecordsByStatus(String eventId, WaitStatus status) {
-        // Firestore reads are async — use getRecordsByStatusAsync in the UI/controller layer
         return new ArrayList<>();
     }
 
@@ -226,27 +229,50 @@ public class FirestoreWaitListRepository implements WaitListRepository {
     }
 
     private Long getLongValue(DocumentSnapshot doc, String field) {
-        try {
-            return doc.getLong(field);
-        } catch (Exception e) {
-            return null;
+        Object value = doc.get(field);
+
+        if (value instanceof Long) {
+            return (Long) value;
         }
+        if (value instanceof Integer) {
+            return ((Integer) value).longValue();
+        }
+        if (value instanceof Double) {
+            return ((Double) value).longValue();
+        }
+        return null;
     }
 
     private Double getDoubleValue(DocumentSnapshot doc, String field) {
-        try {
-            return doc.getDouble(field);
-        } catch (Exception e) {
-            return null;
+        Object value = doc.get(field);
+
+        if (value instanceof Double) {
+            return (Double) value;
         }
+        if (value instanceof Long) {
+            return ((Long) value).doubleValue();
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).doubleValue();
+        }
+        return null;
     }
 
     private Float getFloatValue(DocumentSnapshot doc, String field) {
-        try {
-            Double d = doc.getDouble(field);
-            return d == null ? null : d.floatValue();
-        } catch (Exception e) {
-            return null;
+        Object value = doc.get(field);
+
+        if (value instanceof Float) {
+            return (Float) value;
         }
+        if (value instanceof Double) {
+            return ((Double) value).floatValue();
+        }
+        if (value instanceof Long) {
+            return ((Long) value).floatValue();
+        }
+        if (value instanceof Integer) {
+            return ((Integer) value).floatValue();
+        }
+        return null;
     }
 }
