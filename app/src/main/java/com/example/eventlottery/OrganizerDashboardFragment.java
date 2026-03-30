@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.eventlottery.controller.EventController;
 import com.example.eventlottery.data.EventRepository;
 import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
@@ -23,6 +24,9 @@ import com.example.eventlottery.service.DeviceIdentityService;
 import com.example.eventlottery.ui.EventSummaryAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * OrganizerDashboardFragment
@@ -47,9 +51,10 @@ import com.google.android.material.snackbar.Snackbar;
  * - US 01.02.02: Entrant updates personal information
  * - US 01.07.01: User is identified by device
  * - US 02.01.01: Organizer creates an event
+ * - US 02.09.01: Organizer manages events as a co-organizer
  *
  * @author Kenneth Joseph
- * @version 1.5
+ * @version 1.6
  */
 public class OrganizerDashboardFragment extends Fragment {
 
@@ -122,19 +127,21 @@ public class OrganizerDashboardFragment extends Fragment {
 
         adapter.setOrganizerActionListener(new EventSummaryAdapter.OnOrganizerActionListener() {
             @Override
-            public void onSeeQrClick(com.example.eventlottery.domain.EventSummary event) {
+            public void onSeeQrClick(EventSummary event) {
                 requireCompletedProfile(() -> {
-                    String payload = "eventId:" + event.getId();
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
-                            .replace(R.id.fragment_container, QrCodeFragment.newInstance(payload))
+                            .replace(
+                                    R.id.fragment_container,
+                                    QrCodeFragment.newInstance("eventId:" + event.getId())
+                            )
                             .addToBackStack(null)
                             .commit();
                 });
             }
 
             @Override
-            public void onEditClick(com.example.eventlottery.domain.EventSummary event) {
+            public void onEditClick(EventSummary event) {
                 requireCompletedProfile(() -> {
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
@@ -145,7 +152,7 @@ public class OrganizerDashboardFragment extends Fragment {
             }
 
             @Override
-            public void onGeoDetailsClick(com.example.eventlottery.domain.EventSummary event) {
+            public void onGeoDetailsClick(EventSummary event) {
                 requireCompletedProfile(() -> {
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
@@ -159,26 +166,28 @@ public class OrganizerDashboardFragment extends Fragment {
             }
 
             @Override
-            public void onInviteClick(com.example.eventlottery.domain.EventSummary event) {
+            public void onInviteClick(EventSummary event) {
                 requireCompletedProfile(() -> {
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
-                            .replace(R.id.fragment_container,
-                                    PrivateEventInviteFragment.newInstance(
-                                            event.getId(), event.getName()))
+                            .replace(
+                                    R.id.fragment_container,
+                                    PrivateEventInviteFragment.newInstance(event.getId(), event.getName())
+                            )
                             .addToBackStack(null)
                             .commit();
                 });
             }
         });
 
-
         adapter.setItemClickListener(event ->
                 requireCompletedProfile(() -> {
                     requireActivity().getSupportFragmentManager()
                             .beginTransaction()
-                            .replace(R.id.fragment_container,
-                                    OrganizerEventDetailFragment.newInstance(event))
+                            .replace(
+                                    R.id.fragment_container,
+                                    OrganizerEventDetailFragment.newInstance(event)
+                            )
                             .addToBackStack(null)
                             .commit();
                 })
@@ -190,17 +199,28 @@ public class OrganizerDashboardFragment extends Fragment {
     }
 
     /**
-     * Loads events created by the current organizer device ID and updates the UI.
+     * Loads events the current user can manage, including:
+     * - events they created
+     * - events where they are listed as a co-organizer
      */
     private void loadMyEvents() {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
 
-        repo.getEventsByOrganizer(deviceId, new EventRepository.ListCallback() {
+        repo.getAllEvents(new EventRepository.ListCallback() {
             @Override
-            public void onSuccess(java.util.List<com.example.eventlottery.domain.EventSummary> events) {
-                adapter.setItems(events);
-                boolean isEmpty = (events == null || events.isEmpty());
-                empty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+            public void onSuccess(List<EventSummary> events) {
+                List<EventSummary> manageableEvents = new ArrayList<>();
+
+                if (events != null) {
+                    for (EventSummary event : events) {
+                        if (event != null && event.isUserOrganizer(deviceId)) {
+                            manageableEvents.add(event);
+                        }
+                    }
+                }
+
+                adapter.setItems(manageableEvents);
+                empty.setVisibility(manageableEvents.isEmpty() ? View.VISIBLE : View.GONE);
             }
 
             @Override

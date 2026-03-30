@@ -8,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -34,6 +36,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,9 +46,10 @@ import java.util.Map;
  * Allows an organizer to:
  * - update or remove the poster image for an existing event
  * - enable or disable the geolocation requirement for that event
- * - add or remove co-organizers for that event
+ * - search for users by name or email and add them as co-organizers
+ * - remove co-organizers from that event
  *
- * Co-organizers are stored as event-level device IDs in "coOrganizerIds".
+ * Co-organizers are still stored internally as device IDs in "coOrganizerIds".
  *
  * User stories supported:
  * - US 01.07.01: User is identified by device
@@ -54,7 +58,7 @@ import java.util.Map;
  * - US 02.09.01: Organizer can add/remove a co-organizer for an event
  *
  * @author Fawaz Mansoor, Kenneth Joseph
- * @version 1.3
+ * @version 2.0
  */
 public class EditEventFragment extends Fragment {
 
@@ -68,20 +72,22 @@ public class EditEventFragment extends Fragment {
     private String currentPosterUrl;
     private boolean currentRequiresGeolocation;
     private boolean originalRequiresGeolocation;
-
     private String currentUserDeviceId;
 
-    private final List<String> currentCoOrganizerIds = new ArrayList<>();
     private final List<String> originalCoOrganizerIds = new ArrayList<>();
+    private final LinkedHashMap<String, CoOrganizerCandidate> selectedCoOrganizers =
+            new LinkedHashMap<>();
 
     private ImageView ivPosterPreview;
     private MaterialButton btnSelectPoster;
     private MaterialButton btnSavePoster;
     private MaterialButton btnRemovePoster;
-    private MaterialButton btnAddCoOrganizer;
+    private MaterialButton btnSearchCoOrganizers;
     private Switch switchGeoRequired;
-    private EditText etCoOrganizerDeviceId;
+    private EditText etCoOrganizerSearch;
     private ChipGroup chipGroupCoOrganizers;
+    private LinearLayout layoutSearchResults;
+    private TextView tvSearchResultsLabel;
 
     private Uri selectedPosterUri;
     private PosterService posterService;
@@ -143,9 +149,11 @@ public class EditEventFragment extends Fragment {
         btnRemovePoster = view.findViewById(R.id.btn_edit_remove_poster);
         switchGeoRequired = view.findViewById(R.id.switch_edit_geo_required);
 
-        etCoOrganizerDeviceId = view.findViewById(R.id.et_edit_coorganizer_device_id);
-        btnAddCoOrganizer = view.findViewById(R.id.btn_edit_add_coorganizer);
+        etCoOrganizerSearch = view.findViewById(R.id.et_edit_coorganizer_search);
+        btnSearchCoOrganizers = view.findViewById(R.id.btn_edit_search_coorganizers);
         chipGroupCoOrganizers = view.findViewById(R.id.chip_group_edit_coorganizers);
+        layoutSearchResults = view.findViewById(R.id.layout_edit_search_results);
+        tvSearchResultsLabel = view.findViewById(R.id.tv_edit_search_results_label);
 
         if (currentPosterUrl != null && !currentPosterUrl.isEmpty()) {
             Glide.with(this).load(currentPosterUrl).into(ivPosterPreview);
@@ -178,8 +186,8 @@ public class EditEventFragment extends Fragment {
                 requireCompletedProfile(this::removePoster)
         );
 
-        btnAddCoOrganizer.setOnClickListener(v ->
-                requireCompletedProfile(this::addCoOrganizerFromInput)
+        btnSearchCoOrganizers.setOnClickListener(v ->
+                requireCompletedProfile(this::searchProfiles)
         );
 
         loadCoOrganizers();
@@ -190,7 +198,8 @@ public class EditEventFragment extends Fragment {
     }
 
     /**
-     * Loads existing co-organizers directly from Firestore.
+     * Loads existing co-organizer IDs from the event, then resolves them to user profiles
+     * so the chips can show name/email instead of raw device IDs.
      */
     private void loadCoOrganizers() {
         FirebaseFirestore.getInstance()
@@ -202,15 +211,19 @@ public class EditEventFragment extends Fragment {
                         return;
                     }
 
-                    currentCoOrganizerIds.clear();
-                    originalCoOrganizerIds.clear();
-
                     List<String> loadedIds = extractCoOrganizerIds(snapshot);
-                    currentCoOrganizerIds.addAll(loadedIds);
+                    originalCoOrganizerIds.clear();
                     originalCoOrganizerIds.addAll(loadedIds);
 
-                    renderCoOrganizerChips();
-                    updateSaveButtonState();
+                    selectedCoOrganizers.clear();
+
+                    if (loadedIds.isEmpty()) {
+                        renderSelectedCoOrganizerChips();
+                        updateSaveButtonState();
+                        return;
+                    }
+
+                    resolveCoOrganizerProfiles(loadedIds);
                 })
                 .addOnFailureListener(e -> {
                     if (getActivity() == null) {
@@ -241,60 +254,238 @@ public class EditEventFragment extends Fragment {
         return result;
     }
 
-    /**
-     * Adds a co-organizer using the device ID entered in the EditText.
-     */
-    private void addCoOrganizerFromInput() {
-        String enteredId = safe(etCoOrganizerDeviceId);
+    private void resolveCoOrganizerProfiles(List<String> ids) {
+        final int total = ids.size();
+        final int[] resolved = {0};
 
-        if (TextUtils.isEmpty(enteredId)) {
-            etCoOrganizerDeviceId.setError("Enter a device ID");
-            return;
+        for (String id : ids) {
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(id)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
+                        selectedCoOrganizers.put(id, candidateFromUserDoc(doc, id));
+                        resolved[0]++;
+                        if (resolved[0] == total) {
+                            renderSelectedCoOrganizerChips();
+                            updateSaveButtonState();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
+                        selectedCoOrganizers.put(id,
+                                new CoOrganizerCandidate(id, "Unknown User", ""));
+                        resolved[0]++;
+                        if (resolved[0] == total) {
+                            renderSelectedCoOrganizerChips();
+                            updateSaveButtonState();
+                        }
+                    });
         }
-
-        if (enteredId.equals(currentUserDeviceId)) {
-            etCoOrganizerDeviceId.setError("Organizer is already attached to this event");
-            return;
-        }
-
-        if (currentCoOrganizerIds.contains(enteredId)) {
-            etCoOrganizerDeviceId.setError("That co-organizer is already added");
-            return;
-        }
-
-        currentCoOrganizerIds.add(enteredId);
-        etCoOrganizerDeviceId.setText("");
-        renderCoOrganizerChips();
-        updateSaveButtonState();
     }
 
     /**
-     * Renders removable chips for each co-organizer.
+     * Searches all user profiles, then filters client-side by name or email.
+     * This is simple and fine for a school project-sized dataset.
      */
-    private void renderCoOrganizerChips() {
+    private void searchProfiles() {
+        String query = safe(etCoOrganizerSearch);
+
+        if (TextUtils.isEmpty(query)) {
+            etCoOrganizerSearch.setError("Enter a name or email");
+            return;
+        }
+
+        btnSearchCoOrganizers.setEnabled(false);
+        btnSearchCoOrganizers.setText("SEARCHING...");
+        clearSearchResults();
+
+        String normalizedQuery = query.toLowerCase().trim();
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    if (getActivity() == null) {
+                        return;
+                    }
+
+                    List<CoOrganizerCandidate> matches = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        CoOrganizerCandidate candidate = candidateFromUserDoc(doc, doc.getId());
+
+                        String searchableName = candidate.name.toLowerCase();
+                        String searchableEmail = candidate.email.toLowerCase();
+
+                        boolean matchesQuery =
+                                searchableName.contains(normalizedQuery)
+                                        || searchableEmail.contains(normalizedQuery);
+
+                        boolean isCurrentUser = candidate.deviceId.equals(currentUserDeviceId);
+                        boolean alreadyAdded = selectedCoOrganizers.containsKey(candidate.deviceId);
+
+                        if (matchesQuery && !isCurrentUser && !alreadyAdded) {
+                            matches.add(candidate);
+                        }
+                    }
+
+                    renderSearchResults(matches);
+                    btnSearchCoOrganizers.setEnabled(true);
+                    btnSearchCoOrganizers.setText("SEARCH USERS");
+                })
+                .addOnFailureListener(e -> {
+                    if (getActivity() == null) {
+                        return;
+                    }
+
+                    btnSearchCoOrganizers.setEnabled(true);
+                    btnSearchCoOrganizers.setText("SEARCH USERS");
+                    Toast.makeText(requireContext(),
+                            "Failed to search users: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private CoOrganizerCandidate candidateFromUserDoc(DocumentSnapshot doc, String fallbackDeviceId) {
+        String deviceId = doc.getId();
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            deviceId = fallbackDeviceId;
+        }
+
+        String name = safeString(doc.getString("name"));
+        String email = safeString(doc.getString("email"));
+
+        if (name.isEmpty()) {
+            name = "Unnamed User";
+        }
+
+        return new CoOrganizerCandidate(deviceId, name, email);
+    }
+
+    private void renderSearchResults(List<CoOrganizerCandidate> matches) {
+        clearSearchResults();
+
+        tvSearchResultsLabel.setVisibility(View.VISIBLE);
+
+        if (matches.isEmpty()) {
+            TextView empty = new TextView(requireContext());
+            empty.setText("No matching users found.");
+            empty.setTextColor(0xFFFFFFFF);
+            empty.setTextSize(13f);
+            layoutSearchResults.addView(empty);
+            return;
+        }
+
+        for (CoOrganizerCandidate candidate : matches) {
+            layoutSearchResults.addView(createSearchResultView(candidate));
+        }
+    }
+
+    private View createSearchResultView(CoOrganizerCandidate candidate) {
+        LinearLayout row = new LinearLayout(requireContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setPadding(24, 20, 24, 20);
+        row.setBackgroundResource(R.drawable.bg_input_field);
+
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        rowParams.bottomMargin = 16;
+        row.setLayoutParams(rowParams);
+
+        LinearLayout textContainer = new LinearLayout(requireContext());
+        textContainer.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
+                0,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                1f
+        );
+        textContainer.setLayoutParams(textParams);
+
+        TextView tvName = new TextView(requireContext());
+        tvName.setText(candidate.name);
+        tvName.setTextColor(0xFF1A1A2E);
+        tvName.setTextSize(14f);
+        tvName.setTypeface(null, android.graphics.Typeface.BOLD);
+
+        TextView tvEmail = new TextView(requireContext());
+        tvEmail.setText(candidate.email.isEmpty() ? candidate.deviceId : candidate.email);
+        tvEmail.setTextColor(0x881A1A2E);
+        tvEmail.setTextSize(12f);
+
+        textContainer.addView(tvName);
+        textContainer.addView(tvEmail);
+
+        MaterialButton addButton = new MaterialButton(requireContext());
+        addButton.setText("ADD");
+        addButton.setInsetTop(0);
+        addButton.setInsetBottom(0);
+        addButton.setMinHeight(0);
+        addButton.setMinimumHeight(0);
+        addButton.setCornerRadius(12);
+        addButton.setTextSize(12f);
+
+        addButton.setOnClickListener(v -> {
+            selectedCoOrganizers.put(candidate.deviceId, candidate);
+            etCoOrganizerSearch.setText("");
+            clearSearchResults();
+            renderSelectedCoOrganizerChips();
+            updateSaveButtonState();
+        });
+
+        row.addView(textContainer);
+        row.addView(addButton);
+
+        return row;
+    }
+
+    private void clearSearchResults() {
+        tvSearchResultsLabel.setVisibility(View.GONE);
+        layoutSearchResults.removeAllViews();
+    }
+
+    /**
+     * Shows selected co-organizers as chips using name/email, not raw device IDs.
+     */
+    private void renderSelectedCoOrganizerChips() {
         chipGroupCoOrganizers.removeAllViews();
 
-        for (String coOrganizerId : currentCoOrganizerIds) {
+        for (CoOrganizerCandidate candidate : selectedCoOrganizers.values()) {
             Chip chip = new Chip(requireContext());
-            chip.setText(coOrganizerId);
+
+            String label = candidate.name;
+            if (!candidate.email.isEmpty()) {
+                label += " (" + candidate.email + ")";
+            }
+
+            chip.setText(label);
             chip.setCloseIconVisible(true);
             chip.setClickable(false);
 
             chip.setOnCloseIconClickListener(v ->
-                    showRemoveCoOrganizerDialog(coOrganizerId)
+                    showRemoveCoOrganizerDialog(candidate)
             );
 
             chipGroupCoOrganizers.addView(chip);
         }
     }
 
-    private void showRemoveCoOrganizerDialog(String coOrganizerId) {
+    private void showRemoveCoOrganizerDialog(CoOrganizerCandidate candidate) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Remove co-organizer")
-                .setMessage("Remove " + coOrganizerId + " from this event?")
+                .setMessage("Remove " + candidate.name + " from this event?")
                 .setPositiveButton("Remove", (dialog, which) -> {
-                    currentCoOrganizerIds.remove(coOrganizerId);
-                    renderCoOrganizerChips();
+                    selectedCoOrganizers.remove(candidate.deviceId);
+                    renderSelectedCoOrganizerChips();
                     updateSaveButtonState();
                 })
                 .setNegativeButton("Cancel", null)
@@ -306,8 +497,8 @@ public class EditEventFragment extends Fragment {
             btnSelectPoster.setEnabled(true);
             btnRemovePoster.setEnabled(true);
             switchGeoRequired.setEnabled(true);
-            etCoOrganizerDeviceId.setEnabled(true);
-            btnAddCoOrganizer.setEnabled(true);
+            etCoOrganizerSearch.setEnabled(true);
+            btnSearchCoOrganizers.setEnabled(true);
             setCoOrganizerChipRemovalEnabled(true);
             updateSaveButtonState();
         }, () -> {
@@ -315,8 +506,8 @@ public class EditEventFragment extends Fragment {
             btnSavePoster.setEnabled(false);
             btnRemovePoster.setEnabled(false);
             switchGeoRequired.setEnabled(false);
-            etCoOrganizerDeviceId.setEnabled(false);
-            btnAddCoOrganizer.setEnabled(false);
+            etCoOrganizerSearch.setEnabled(false);
+            btnSearchCoOrganizers.setEnabled(false);
             setCoOrganizerChipRemovalEnabled(false);
 
             Toast.makeText(requireContext(),
@@ -341,7 +532,7 @@ public class EditEventFragment extends Fragment {
     private void saveChanges() {
         boolean posterChanged = selectedPosterUri != null;
         boolean geoChanged = currentRequiresGeolocation != originalRequiresGeolocation;
-        boolean coOrganizersChanged = !sameIds(currentCoOrganizerIds, originalCoOrganizerIds);
+        boolean coOrganizersChanged = !sameIds(getSelectedCoOrganizerIds(), originalCoOrganizerIds);
 
         if (!posterChanged && !geoChanged && !coOrganizersChanged) {
             return;
@@ -400,14 +591,14 @@ public class EditEventFragment extends Fragment {
     private void updateEventMetadataOnly() {
         Map<String, Object> updates = new HashMap<>();
         boolean geoChanged = currentRequiresGeolocation != originalRequiresGeolocation;
-        boolean coOrganizersChanged = !sameIds(currentCoOrganizerIds, originalCoOrganizerIds);
+        boolean coOrganizersChanged = !sameIds(getSelectedCoOrganizerIds(), originalCoOrganizerIds);
 
         if (geoChanged) {
             updates.put("requiresGeolocation", currentRequiresGeolocation);
         }
 
         if (coOrganizersChanged) {
-            updates.put("coOrganizerIds", new ArrayList<>(currentCoOrganizerIds));
+            updates.put("coOrganizerIds", getSelectedCoOrganizerIds());
         }
 
         if (updates.isEmpty()) {
@@ -441,7 +632,7 @@ public class EditEventFragment extends Fragment {
     private void onSaveSucceeded() {
         originalRequiresGeolocation = currentRequiresGeolocation;
         originalCoOrganizerIds.clear();
-        originalCoOrganizerIds.addAll(currentCoOrganizerIds);
+        originalCoOrganizerIds.addAll(getSelectedCoOrganizerIds());
 
         Toast.makeText(getContext(),
                 "Event updated!",
@@ -493,10 +684,14 @@ public class EditEventFragment extends Fragment {
         boolean hasPendingChanges =
                 selectedPosterUri != null
                         || currentRequiresGeolocation != originalRequiresGeolocation
-                        || !sameIds(currentCoOrganizerIds, originalCoOrganizerIds);
+                        || !sameIds(getSelectedCoOrganizerIds(), originalCoOrganizerIds);
 
         btnSavePoster.setEnabled(hasPendingChanges);
         btnSavePoster.setText("SAVE CHANGES");
+    }
+
+    private List<String> getSelectedCoOrganizerIds() {
+        return new ArrayList<>(selectedCoOrganizers.keySet());
     }
 
     private boolean sameIds(List<String> first, List<String> second) {
@@ -517,24 +712,44 @@ public class EditEventFragment extends Fragment {
     private void requireCompletedProfile(Runnable onAllowed, Runnable onBlocked) {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
 
-        new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
-            @Override
-            public void onSuccess(UserProfile profile) {
-                if (profile != null && profile.isProfileCompleted()) {
-                    onAllowed.run();
-                } else {
-                    onBlocked.run();
-                }
-            }
+        new FirestoreProfileRepository().getProfile(deviceId,
+                new ProfileRepository.ProfileCallback() {
+                    @Override
+                    public void onSuccess(UserProfile profile) {
+                        if (profile != null && profile.isProfileCompleted()) {
+                            onAllowed.run();
+                        } else {
+                            onBlocked.run();
+                        }
+                    }
 
-            @Override
-            public void onFailure(Exception e) {
-                onBlocked.run();
-            }
-        });
+                    @Override
+                    public void onFailure(Exception e) {
+                        onBlocked.run();
+                    }
+                });
     }
 
     private String safe(EditText et) {
         return et.getText() == null ? "" : et.getText().toString().trim();
+    }
+
+    private String safeString(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    /**
+     * Lightweight UI model for co-organizer selection.
+     */
+    private static class CoOrganizerCandidate {
+        private final String deviceId;
+        private final String name;
+        private final String email;
+
+        CoOrganizerCandidate(String deviceId, String name, String email) {
+            this.deviceId = deviceId;
+            this.name = name;
+            this.email = email;
+        }
     }
 }

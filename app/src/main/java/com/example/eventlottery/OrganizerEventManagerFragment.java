@@ -15,12 +15,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.OrganizeLotteryController;
+import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
 import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
+import com.example.eventlottery.service.DeviceIdentityService;
 import com.example.eventlottery.service.PathosNotifyService;
 import com.example.eventlottery.service.PathosRaffleService;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
@@ -33,15 +36,19 @@ import java.util.List;
  * - View list of all chosen (invited) entrants
  * - View list of all entrants on the waiting list
  *
+ * Access protection:
+ * - Only the primary organizer or a co-organizer may access this screen
+ *
  * User stories supported:
  * - US 01.05.01: Another chance to be chosen when someone declines
  * - US 02.02.01: View the list of entrants who joined the event waiting list
  * - US 02.05.02: Sample a specified number of attendees
  * - US 02.05.03: Draw a replacement applicant
  * - US 02.06.01: View a list of all chosen entrants who are invited to apply
+ * - US 02.09.01: Co-organizers can help manage an event
  *
- * @author Dmitriy Limanets, Edwin David
- * @version 1.2
+ * @author Dmitriy Limanets, Edwin David, Kenneth Joseph
+ * @version 1.4
  */
 public class OrganizerEventManagerFragment extends Fragment {
 
@@ -53,11 +60,15 @@ public class OrganizerEventManagerFragment extends Fragment {
 
     private OrganizeLotteryController lotteryController;
 
-    //let other methods access waitlist data
     private FirestoreWaitListRepository waitListRepo;
-    private TextView tvEventName, tvDrawStatus;
+    private TextView tvEventName;
+    private TextView tvDrawStatus;
     private EditText etDrawCount;
-    private Button btnRunDraw, btnDrawReplacement, btnViewInvited, btnViewWaiting, btnViewCancelled;
+    private Button btnRunDraw;
+    private Button btnDrawReplacement;
+    private Button btnViewInvited;
+    private Button btnViewWaiting;
+    private Button btnViewCancelled;
 
     public static OrganizerEventManagerFragment newInstance(String eventId, String eventName) {
         OrganizerEventManagerFragment fragment = new OrganizerEventManagerFragment();
@@ -71,16 +82,17 @@ public class OrganizerEventManagerFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
             eventName = getArguments().getString(ARG_EVENT_NAME);
         }
 
-        //reused in showEntrantsByStatus()
         waitListRepo = new FirestoreWaitListRepository();
 
         PathosRaffleService raffleService = new PathosRaffleService(waitListRepo);
-        PathosNotifyService notifyService = new PathosNotifyService(new FirestoreNotificationLogRepository());
+        PathosNotifyService notifyService =
+                new PathosNotifyService(new FirestoreNotificationLogRepository());
         lotteryController = new OrganizeLotteryController(raffleService, notifyService);
     }
 
@@ -101,22 +113,67 @@ public class OrganizerEventManagerFragment extends Fragment {
         btnViewWaiting = root.findViewById(R.id.btn_view_waiting);
         btnViewCancelled = root.findViewById(R.id.btn_view_cancelled);
 
-
         tvEventName.setText(eventName);
+
+        verifyOrganizerAccess();
 
         btnRunDraw.setOnClickListener(v -> runInitialDraw());
         btnDrawReplacement.setOnClickListener(v -> runReplacementDraw());
 
-        // US 02.06.01: when clicked displays entrants who are invited for the event
-        btnViewInvited.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.INVITED, "Invited Entrants"));
+        btnViewInvited.setOnClickListener(v ->
+                showEntrantsByStatus(WaitStatus.INVITED, "Invited Entrants"));
 
-        // US 02.02.01: when clicked displays all entrants who joined the waiting list
-        btnViewWaiting.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.WAITING, "Waiting List"));
+        btnViewWaiting.setOnClickListener(v ->
+                showEntrantsByStatus(WaitStatus.WAITING, "Waiting List"));
 
-        // US 02.06.02: view all cancelled entrants
-        btnViewCancelled.setOnClickListener(v -> showEntrantsByStatus(WaitStatus.CANCELLED, "Cancelled Entrants"));
+        btnViewCancelled.setOnClickListener(v ->
+                showEntrantsByStatus(WaitStatus.CANCELLED, "Cancelled Entrants"));
 
         return root;
+    }
+
+    /**
+     * Ensures only the primary organizer or a co-organizer can access this fragment.
+     */
+    private void verifyOrganizerAccess() {
+        String currentDeviceId = DeviceIdentityService.getDeviceId(requireContext());
+
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (getActivity() == null) {
+                        return;
+                    }
+
+                    if (!doc.exists()) {
+                        Toast.makeText(requireContext(),
+                                "Event not found.",
+                                Toast.LENGTH_LONG).show();
+                        requireActivity().getSupportFragmentManager().popBackStack();
+                        return;
+                    }
+
+                    EventSummary event = EventSummary.fromDoc(doc);
+
+                    if (!event.isUserOrganizer(currentDeviceId)) {
+                        Toast.makeText(requireContext(),
+                                "You do not have permission to manage this event.",
+                                Toast.LENGTH_LONG).show();
+                        requireActivity().getSupportFragmentManager().popBackStack();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (getActivity() == null) {
+                        return;
+                    }
+
+                    Toast.makeText(requireContext(),
+                            "Failed to verify access.",
+                            Toast.LENGTH_LONG).show();
+                    requireActivity().getSupportFragmentManager().popBackStack();
+                });
     }
 
     private void runInitialDraw() {
@@ -145,6 +202,10 @@ public class OrganizerEventManagerFragment extends Fragment {
                 new OrganizeLotteryController.LotteryCallback() {
                     @Override
                     public void onSuccess(List<WaitListRecord> selected) {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
                         btnRunDraw.setEnabled(true);
                         btnRunDraw.setText("Run Initial Draw");
                         tvDrawStatus.setText(selected.size() + " entrant(s) selected and notified");
@@ -152,41 +213,58 @@ public class OrganizerEventManagerFragment extends Fragment {
 
                     @Override
                     public void onFailure(Exception e) {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
                         btnRunDraw.setEnabled(true);
                         btnRunDraw.setText("Run Initial Draw");
                         Toast.makeText(requireContext(),
-                                "Draw failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                "Draw failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
     private void showEntrantsByStatus(WaitStatus status, String title) {
-        // Query Firestore
         waitListRepo.getRecordsByStatusAsync(eventId, status,
                 new com.example.eventlottery.data.WaitListRepository.WaitListCallBack() {
                     @Override
-                    public void onSuccess(java.util.List<com.example.eventlottery.domain.WaitListRecord> records) {
-
-                        // when no entrants match this status
-                        if (records.isEmpty()) {
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle(title).setMessage("No entrants found.").setPositiveButton("OK", null).show();
+                    public void onSuccess(List<WaitListRecord> records) {
+                        if (getActivity() == null) {
                             return;
                         }
 
-                        // string with all device IDs
-                        StringBuilder sb = new StringBuilder();
-                        for (com.example.eventlottery.domain.WaitListRecord r : records) {
-                            sb.append("• ").append(r.getDeviceId()).append("\n");
+                        if (records.isEmpty()) {
+                            new AlertDialog.Builder(requireContext())
+                                    .setTitle(title)
+                                    .setMessage("No entrants found.")
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                            return;
                         }
+
+                        StringBuilder sb = new StringBuilder();
+                        for (WaitListRecord record : records) {
+                            sb.append("• ").append(record.getDeviceId()).append("\n");
+                        }
+
                         new AlertDialog.Builder(requireContext())
-                                .setTitle(title + " (" + records.size() + ")").setMessage(sb.toString().trim()).setPositiveButton("OK", null).show();
+                                .setTitle(title + " (" + records.size() + ")")
+                                .setMessage(sb.toString().trim())
+                                .setPositiveButton("OK", null)
+                                .show();
                     }
 
                     @Override
                     public void onFailure(Exception e) {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
                         Toast.makeText(requireContext(),
-                                "Failed to load list: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                "Failed to load list: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -199,8 +277,13 @@ public class OrganizerEventManagerFragment extends Fragment {
                 new OrganizeLotteryController.LotteryCallback() {
                     @Override
                     public void onSuccess(List<WaitListRecord> selected) {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
                         btnDrawReplacement.setEnabled(true);
                         btnDrawReplacement.setText("Draw Replacement");
+
                         if (selected.isEmpty()) {
                             tvDrawStatus.setText("No waiting entrants available for replacement");
                         } else {
@@ -210,10 +293,15 @@ public class OrganizerEventManagerFragment extends Fragment {
 
                     @Override
                     public void onFailure(Exception e) {
+                        if (getActivity() == null) {
+                            return;
+                        }
+
                         btnDrawReplacement.setEnabled(true);
                         btnDrawReplacement.setText("Draw Replacement");
                         Toast.makeText(requireContext(),
-                                "Replacement draw failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                "Replacement draw failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
