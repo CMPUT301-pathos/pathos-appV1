@@ -62,6 +62,69 @@ public class PathosNotifyServiceTest {
 
         assertNotNull(getField(r, "createdAt"));
     }
+    @Test
+    public void notifyNotSelected_addsLoseNotificationRecord() {
+        FakeNotificationLogRepository repo = new FakeNotificationLogRepository();
+        PathosNotifyService service = new PathosNotifyService(repo);
+
+        String recipientId = "entrant_456";
+        String eventId = "event_music_002";
+        String message = "You were not selected for this event.";
+
+        Task<Void> t = service.notifyNotSelected(recipientId, eventId, message);
+
+        assertNotNull(t);
+        assertTrue(t.isComplete());
+        assertFalse(t.isCanceled());
+        assertNull(t.getException());
+
+        assertEquals(1, repo.added.size());
+        NotificationRecord r = repo.added.get(0);
+
+        assertEquals(recipientId, getField(r, "recipientId"));
+        assertEquals(eventId, getField(r, "eventId"));
+        assertEquals(NotificationType.LOSE.name(), getField(r, "type"));
+        assertEquals(message, getField(r, "message"));
+
+        Object readVal = getField(r, "read");
+        assertNotNull(readVal);
+        assertTrue(readVal instanceof Boolean);
+        assertFalse((Boolean) readVal);
+
+        assertNotNull(getField(r, "createdAt"));
+    }
+
+    @Test
+    public void notifyCoOrganizerAdded_addsCoOrganizerNotificationRecord() {
+        FakeNotificationLogRepository repo = new FakeNotificationLogRepository();
+        PathosNotifyService service = new PathosNotifyService(repo);
+
+        String recipientId = "coorg_001";
+        String eventId = "event_hackathon_003";
+        String message = "You were added as a co-organizer for Hackathon Night";
+
+        Task<Void> t = service.notifyCoOrganizerAdded(recipientId, eventId, message);
+
+        assertNotNull(t);
+        assertTrue(t.isComplete());
+        assertFalse(t.isCanceled());
+        assertNull(t.getException());
+
+        assertEquals(1, repo.added.size());
+        NotificationRecord r = repo.added.get(0);
+
+        assertEquals(recipientId, getField(r, "recipientId"));
+        assertEquals(eventId, getField(r, "eventId"));
+        assertEquals(NotificationType.CO_ORGANIZER_ADDED.name(), getField(r, "type"));
+        assertEquals(message, getField(r, "message"));
+
+        Object readVal = getField(r, "read");
+        assertNotNull(readVal);
+        assertTrue(readVal instanceof Boolean);
+        assertFalse((Boolean) readVal);
+
+        assertNotNull(getField(r, "createdAt"));
+    }
 
     private static Object getField(Object obj, String fieldName) {
         try {

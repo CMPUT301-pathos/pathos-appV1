@@ -1,4 +1,4 @@
-package com.example.eventlottery;
+package com.example.eventlottery.ui;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.example.eventlottery.EventHistoryFragment;
+import com.example.eventlottery.R;
 import com.example.eventlottery.domain.EventHistoryRecord;
 
 import java.util.List;

@@ -18,6 +18,7 @@ import com.example.eventlottery.domain.WaitStatus;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.ui.EventHistoryAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

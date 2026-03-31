@@ -22,11 +22,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.eventlottery.data.NotificationLogRepository;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.service.PathosNotifyService;
 import com.example.eventlottery.service.PosterService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -585,6 +587,24 @@ public class EditEventFragment extends Fragment {
                 });
     }
 
+    // Helper function
+    private void sendCoOrganizerNotifications(List<String> addedIds) {
+        NotificationLogRepository repo =
+                new com.example.eventlottery.firebase.FirestoreNotificationLogRepository();
+
+        PathosNotifyService notifyService = new PathosNotifyService(repo);
+
+        for (String id : addedIds) {
+            notifyService.notifyCoOrganizerAdded(
+                    id,
+                    eventId,
+                    "You were added as a co-organizer for " + eventName
+            );
+        }
+    }
+    /**
+     * Updates non-poster event metadata in Firestore.
+     */
     /**
      * Updates non-poster event metadata in Firestore.
      */
@@ -593,12 +613,21 @@ public class EditEventFragment extends Fragment {
         boolean geoChanged = currentRequiresGeolocation != originalRequiresGeolocation;
         boolean coOrganizersChanged = !sameIds(getSelectedCoOrganizerIds(), originalCoOrganizerIds);
 
+        List<String> newIds = getSelectedCoOrganizerIds();
+        List<String> addedCoOrganizerIds = new ArrayList<>();
+
+        for (String id : newIds) {
+            if (!originalCoOrganizerIds.contains(id)) {
+                addedCoOrganizerIds.add(id);
+            }
+        }
+
         if (geoChanged) {
             updates.put("requiresGeolocation", currentRequiresGeolocation);
         }
 
         if (coOrganizersChanged) {
-            updates.put("coOrganizerIds", getSelectedCoOrganizerIds());
+            updates.put("coOrganizerIds", newIds);
         }
 
         if (updates.isEmpty()) {
@@ -614,6 +643,11 @@ public class EditEventFragment extends Fragment {
                     if (getActivity() == null) {
                         return;
                     }
+
+                    if (!addedCoOrganizerIds.isEmpty()) {
+                        sendCoOrganizerNotifications(addedCoOrganizerIds);
+                    }
+
                     onSaveSucceeded();
                 })
                 .addOnFailureListener(e -> {
