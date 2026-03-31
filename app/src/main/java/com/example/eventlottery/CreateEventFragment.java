@@ -24,10 +24,13 @@ import androidx.fragment.app.FragmentManager;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.espresso.idling.CountingIdlingResource;
 
+import com.example.eventlottery.data.NotificationLogRepository;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
+import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
+import com.example.eventlottery.service.PathosNotifyService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -554,6 +557,7 @@ public class CreateEventFragment extends Fragment {
     private void createEventDocument(String name, String desc, String location,
                                      Integer capacity, @Nullable String posterUrl) {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
+        List<String> coOrganizerIds = sanitizeCoOrganizerIds(organizerDeviceId);
 
         Map<String, Object> eventDoc = new HashMap<>();
         eventDoc.put("name", name);
@@ -565,7 +569,7 @@ public class CreateEventFragment extends Fragment {
         eventDoc.put("capacity", capacity);
         eventDoc.put("category", selectedCategory);
         eventDoc.put("organizerDeviceId", organizerDeviceId);
-        eventDoc.put("coOrganizerIds", sanitizeCoOrganizerIds(organizerDeviceId));
+        eventDoc.put("coOrganizerIds", coOrganizerIds);
         eventDoc.put("createdAt", System.currentTimeMillis());
         eventDoc.put("posterUrl", posterUrl);
         eventDoc.put("isPrivate", isPrivateEvent);
@@ -585,6 +589,19 @@ public class CreateEventFragment extends Fragment {
 
                     if (!isPrivateEvent) {
                         ref.update("qrPayload", qrPayload);
+                    }
+
+                    if (!coOrganizerIds.isEmpty()) {
+                        NotificationLogRepository repo = new FirestoreNotificationLogRepository();
+                        PathosNotifyService notifyService = new PathosNotifyService(repo);
+
+                        for (String id : coOrganizerIds) {
+                            notifyService.notifyCoOrganizerAdded(
+                                    id,
+                                    eventId,
+                                    "You were added as a co-organizer for " + name
+                            );
+                        }
                     }
 
                     Toast.makeText(requireContext(), "Event created!", Toast.LENGTH_SHORT).show();

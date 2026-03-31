@@ -73,4 +73,22 @@ public class PathosNotifyService {
         );
         return notificationRepo.add(record);
     }
+
+    /**
+     * Create/log a CO_ORGANIZER_ADDED notification for an entrnat who was chosen
+     *
+     * @param recipientId entrant device id or mapped profile id
+     * @param eventId event identifier
+     * @param message message shown in the in-app notifications list
+     *  @return asynchronous Firestore task
+     */
+    public Task<Void> notifyCoOrganizerAdded(String recipientId, String eventId, String message) {
+        NotificationRecord record = new NotificationRecord(
+                recipientId,
+                eventId,
+                NotificationType.CO_ORGANIZER_ADDED,
+                message
+        );
+        return notificationRepo.add(record);
+    }
 }
