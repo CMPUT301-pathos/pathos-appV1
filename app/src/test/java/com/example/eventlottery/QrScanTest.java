@@ -35,10 +35,11 @@ public class QrScanTest {
             public void getEventsByOrganizer(String organizerDeviceId, ListCallback callback) {}
 
             @Override
+            public void getManageableEvents(String organizerDeviceId, ListCallback callback) {}
+
+            @Override
             public void deleteEvent(String eventId, OperationCallback callback) {}
         });
-
-        beaconQrService = new BeaconQrService(null);
     }
 
     @Test

@@ -1,4 +1,5 @@
 package com.example.eventlottery.service;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -20,14 +21,6 @@ import java.util.Map;
 
 /**
  * Unit tests for US 01.02.04 – Delete profile.
- *
- * Covers:
- * - Deleting a profile removes it from the repository
- * - Deleting a profile that also owns events removes both profile and events
- * - Deleting a non-existent profile still calls success
- *
- * @author Dmitriy Limanets
- * @version 1.0
  */
 public class ProfileDeleteTest {
 
@@ -44,8 +37,7 @@ public class ProfileDeleteTest {
 
         @Override
         public void getProfile(String deviceId, ProfileCallback callback) {
-            UserProfile p = profiles.get(deviceId);
-            callback.onSuccess(p);
+            callback.onSuccess(profiles.get(deviceId));
         }
 
         @Override
@@ -90,6 +82,11 @@ public class ProfileDeleteTest {
                 }
             }
             callback.onSuccess(result);
+        }
+
+        @Override
+        public void getManageableEvents(String organizerDeviceId, ListCallback callback) {
+            getEventsByOrganizer(organizerDeviceId, callback);
         }
 
         @Override
@@ -156,6 +153,7 @@ public class ProfileDeleteTest {
                 now, "org1", "Sports", now + 100000, now - 100000, now + 50000, 50, 10, null);
         EventSummary event2 = new EventSummary("e2", "Event 2", "desc", "Edmonton",
                 now, "org1", "Music", now + 100000, now - 100000, now + 50000, 30, 5, null);
+
         fakeEventRepo.addEvent(event1);
         fakeEventRepo.addEvent(event2);
 
