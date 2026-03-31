@@ -25,7 +25,6 @@ public class LotteryCriteriaTest {
 
     @Before
     public void setUp() {
-        // Use a fake repository so Firebase is never touched
         controller = new EventController(new EventRepository() {
             @Override
             public void createEvent(Object event, CreateCallback callback) {}
@@ -37,10 +36,12 @@ public class LotteryCriteriaTest {
             public void getEventsByOrganizer(String organizerDeviceId, ListCallback callback) {}
 
             @Override
+            public void getManageableEvents(String organizerDeviceId, ListCallback callback) {}
+
+            @Override
             public void deleteEvent(String eventId, OperationCallback callback) {}
         });
     }
-
     private EventSummary makeEvent(int capacity, int drawSize,
                                    long regStart, long regEnd) {
         long now = System.currentTimeMillis();

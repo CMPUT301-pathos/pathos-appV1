@@ -2,20 +2,25 @@ package com.example.eventlottery.domain;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Lightweight model for showing events in lists.
  *
  * Extended to support filtering by category, location, date,
- * registration availability, lottery criteria, and geolocation requirement.
+ * registration availability, lottery criteria, geolocation requirement,
+ * and co-organizer support.
  *
  * User stories supported:
  * - US 01.01.03: See a list of events to join the waiting list for
  * - US 01.01.04: Filter events based on interests and availability
  * - US 01.05.05: Be informed about lottery selection criteria
  * - US 02.02.03: Organizer enables or disables geolocation requirement
+ * - US 02.09.01: Organizer adds co-organizers to an event
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.3
+ * @version 1.4
  */
 public class EventSummary {
     private final String id;
@@ -31,8 +36,10 @@ public class EventSummary {
     private final int capacity;
     private final int drawSize;
     private final String posterUrl;
+
     private boolean isPrivate;
     private boolean requiresGeolocation;
+    private List<String> coOrganizerIds;
 
     public EventSummary(String id, String name, String description, String location,
                         long createdAt, String organizerDeviceId, String category,
@@ -52,6 +59,7 @@ public class EventSummary {
         this.drawSize = drawSize;
         this.posterUrl = posterUrl;
         this.requiresGeolocation = false;
+        this.coOrganizerIds = new ArrayList<>();
     }
 
     public String getId() {
@@ -134,6 +142,25 @@ public class EventSummary {
         this.requiresGeolocation = requiresGeolocation;
     }
 
+    public List<String> getCoOrganizerIds() {
+        return new ArrayList<>(coOrganizerIds);
+    }
+
+    public void setCoOrganizerIds(List<String> coOrganizerIds) {
+        if (coOrganizerIds == null) {
+            this.coOrganizerIds = new ArrayList<>();
+        } else {
+            this.coOrganizerIds = new ArrayList<>(coOrganizerIds);
+        }
+    }
+
+    public boolean isUserOrganizer(String deviceId) {
+        if (deviceId == null || deviceId.trim().isEmpty()) {
+            return false;
+        }
+        return deviceId.equals(organizerDeviceId) || coOrganizerIds.contains(deviceId);
+    }
+
     public boolean isRegistrationOpen() {
         if (registrationStart <= 0 || registrationEnd <= 0) {
             return false;
@@ -178,7 +205,26 @@ public class EventSummary {
 
         summary.setPrivate(isPrivate != null && isPrivate);
         summary.setRequiresGeolocation(requiresGeolocation != null && requiresGeolocation);
+        summary.setCoOrganizerIds(extractStringList(doc, "coOrganizerIds"));
         return summary;
+    }
+
+    private static List<String> extractStringList(DocumentSnapshot doc, String field) {
+        List<String> result = new ArrayList<>();
+        Object raw = doc.get(field);
+
+        if (raw instanceof List<?>) {
+            for (Object item : (List<?>) raw) {
+                if (item != null) {
+                    String value = item.toString().trim();
+                    if (!value.isEmpty() && !result.contains(value)) {
+                        result.add(value);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     private static String safe(String s) {

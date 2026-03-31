@@ -1,6 +1,8 @@
 package com.example.eventlottery.domain;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,6 +11,7 @@ import java.util.Map;
  * Responsibilities:
  * - store event details such as name, description, organizer, dates, and capacity
  * - store event configuration options such as geolocation requirement
+ * - store co-organizer device IDs for shared event management
  * - convert event data into a Firestore-friendly map
  *
  * User stories supported:
@@ -16,9 +19,10 @@ import java.util.Map;
  * - US 02.01.02: Create a private event
  * - US 02.01.04: Set a registration period
  * - US 02.02.03: Enable or disable the geolocation requirement for an event
+ * - US 02.09.01: Add co-organizers to an event
  *
  * @author Kenneth Joseph, Fawaz Mansoor, Hasratsinghchauhan
- * @version 1.5
+ * @version 1.6
  */
 public class Event {
 
@@ -42,7 +46,14 @@ public class Event {
      */
     private boolean requiresGeolocation;
 
-    public Event() {}
+    /**
+     * Device IDs for co-organizers assigned to this event.
+     */
+    private List<String> coOrganizerIds;
+
+    public Event() {
+        this.coOrganizerIds = new ArrayList<>();
+    }
 
     public Event(String name, String description, String organizerDeviceId) {
         this.name = name;
@@ -50,6 +61,7 @@ public class Event {
         this.organizerDeviceId = organizerDeviceId;
         this.posterUrl = null;
         this.requiresGeolocation = false;
+        this.coOrganizerIds = new ArrayList<>();
     }
 
     public String getId() {
@@ -164,6 +176,18 @@ public class Event {
         this.requiresGeolocation = requiresGeolocation;
     }
 
+    public List<String> getCoOrganizerIds() {
+        return new ArrayList<>(coOrganizerIds);
+    }
+
+    public void setCoOrganizerIds(List<String> coOrganizerIds) {
+        if (coOrganizerIds == null) {
+            this.coOrganizerIds = new ArrayList<>();
+        } else {
+            this.coOrganizerIds = new ArrayList<>(coOrganizerIds);
+        }
+    }
+
     public boolean isRegistrationOpen() {
         long now = System.currentTimeMillis();
         return now >= getRegistrationStart() && now <= getRegistrationEnd();
@@ -198,6 +222,7 @@ public class Event {
         m.put("capacity", capacity);
         m.put("drawSize", drawSize);
         m.put("requiresGeolocation", requiresGeolocation);
+        m.put("coOrganizerIds", new ArrayList<>(coOrganizerIds));
         return m;
     }
 }

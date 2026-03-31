@@ -76,6 +76,29 @@ public class FirestoreEventRepository implements EventRepository {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+    @Override
+    public void getManageableEvents(String deviceId, ListCallback callback) {
+        db.collection(COLLECTION)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    List<EventSummary> out = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot doc : snap) {
+                        EventSummary event = EventSummary.fromDoc(doc);
+
+                        // Core logic: organizer OR co-organizer
+                        if (event != null && event.isUserOrganizer(deviceId)) {
+                            out.add(event);
+                        }
+                    }
+
+                    Collections.sort(out,
+                            Comparator.comparingLong(EventSummary::getCreatedAt).reversed());
+
+                    callback.onSuccess(out);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 
     @Override
     public void deleteEvent(String eventId, OperationCallback callback) {

@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="@drawable/bg_gradient_header">
 
-    <!-- Header -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +19,6 @@
         android:paddingTop="48dp"
         android:paddingBottom="24dp" />
 
-    <!-- Scrollable form -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -35,7 +33,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Name -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -49,16 +46,15 @@
                 android:id="@+id/et_event_name"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
                 android:hint="Name"
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
-            <!-- Description -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -72,16 +68,15 @@
                 android:id="@+id/et_event_description"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
                 android:hint="Type..."
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
-            <!-- Location -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -95,16 +90,15 @@
                 android:id="@+id/et_event_location"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
                 android:hint="e.g. Edmonton"
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
-            <!-- Capacity -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -118,17 +112,16 @@
                 android:id="@+id/et_event_capacity"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
                 android:hint="##"
                 android:inputType="number"
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
-            <!-- Event Date -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -142,21 +135,20 @@
                 android:id="@+id/et_event_date"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:hint="Select event date"
-                android:focusable="false"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
                 android:clickable="true"
                 android:cursorVisible="false"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:focusable="false"
+                android:hint="Select event date"
                 android:inputType="none"
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
-            <!-- Category -->
             <TextView
                 android:id="@+id/tv_selected_category"
                 android:layout_width="wrap_content"
@@ -171,14 +163,13 @@
                 android:id="@+id/btn_pick_category"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
                 android:text="PICK CATEGORY"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 app:backgroundTint="#40FFFFFF"
-                app:cornerRadius="12dp"
-                android:layout_marginBottom="16dp" />
+                app:cornerRadius="12dp" />
 
-            <!-- Registration Period -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -192,69 +183,67 @@
                 android:id="@+id/et_event_start"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:hint="Start (YYYY-MM-DD)"
-                android:focusable="false"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_input_field"
                 android:clickable="true"
                 android:cursorVisible="false"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:focusable="false"
+                android:hint="Start (YYYY-MM-DD)"
                 android:inputType="none"
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="8dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
             <EditText
                 android:id="@+id/et_event_end"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:hint="End (YYYY-MM-DD)"
-                android:focusable="false"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_input_field"
                 android:clickable="true"
                 android:cursorVisible="false"
+                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+                android:focusable="false"
+                android:hint="End (YYYY-MM-DD)"
                 android:inputType="none"
-                android:textColor="#1A1A2E"
-                android:textColorHint="#881A1A2E"
-                android:textSize="14sp"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:drawableEnd="@android:drawable/ic_menu_my_calendar"
-                android:background="@drawable/bg_input_field"
-                android:layout_marginBottom="16dp" />
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
 
-            <!-- Poster -->
             <ImageView
                 android:id="@+id/iv_event_poster_preview"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
-                android:scaleType="centerCrop"
-                android:src="@android:drawable/ic_menu_gallery"
-                android:background="@drawable/bg_input_field"
                 android:layout_marginBottom="8dp"
-                android:contentDescription="Event poster preview" />
+                android:background="@drawable/bg_input_field"
+                android:contentDescription="Event poster preview"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_select_event_poster"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
+                android:layout_marginBottom="16dp"
                 android:text="ADD EVENT POSTER"
                 android:textColor="#FFFFFF"
                 android:textSize="13sp"
                 app:backgroundTint="#40FFFFFF"
-                app:cornerRadius="12dp"
-                android:layout_marginBottom="16dp" />
+                app:cornerRadius="12dp" />
 
-            <!-- Private Event Toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_input_field"
-                android:padding="14dp"
-                android:layout_marginBottom="16dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -285,15 +274,14 @@
                     android:checked="false" />
             </LinearLayout>
 
-            <!-- Geolocation Requirement Toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_input_field"
-                android:padding="14dp"
-                android:layout_marginBottom="16dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="14dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -324,18 +312,77 @@
                     android:checked="false" />
             </LinearLayout>
 
-            <!-- Publish -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Co-organizers"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/et_coorganizer_search"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/bg_input_field"
+                android:hint="Search by name or email"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:textColor="#1A1A2E"
+                android:textColorHint="#881A1A2E"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_search_coorganizers"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="12dp"
+                android:text="SEARCH USERS"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                app:backgroundTint="#40FFFFFF"
+                app:cornerRadius="12dp" />
+
+            <TextView
+                android:id="@+id/tv_search_results_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Search Results"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/layout_search_results"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:orientation="vertical" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chip_group_coorganizers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="8dp"
+                app:singleLine="false" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_publish_event"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:layout_marginBottom="8dp"
                 android:text="GENERATE QR CODE &amp; POST"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:backgroundTint="#1A1A2E"
-                app:cornerRadius="16dp"
-                android:layout_marginBottom="8dp" />
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
     </ScrollView>
