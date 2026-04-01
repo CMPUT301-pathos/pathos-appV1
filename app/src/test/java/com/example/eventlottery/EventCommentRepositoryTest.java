@@ -17,9 +17,10 @@ import static org.junit.Assert.*;
  * User stories covered:
  * - US 01.08.01: Post comments on an event
  * - US 01.08.02: View comments on an event
+ * - US 02.08.01: Organizer can delete entrant comments
  *
  * @author Edwin David
- * @version 1.0
+ * @version 1.1
  */
 public class EventCommentRepositoryTest {
 
@@ -109,6 +110,33 @@ public class EventCommentRepositoryTest {
         repo.getCommentsByEvent("event1", new CommentRepository.CommentsCallback() {
             @Override
             public void onSuccess(List<EventComment> comments) { assertTrue(comments.isEmpty()); }
+            @Override public void onFailure(Exception e) { fail(); }
+        });
+    }
+
+    // Testing US 02.08.01
+
+    @Test
+    public void deleteComment_removesCommentFromEvent() {
+        // Organizer deletes a comment
+        EventComment c = new EventComment("event1", "device1", "Alice", "Hello!");
+
+        repo.addComment(c, new CommentRepository.OperationCallback() {
+            @Override public void onSuccess() {}
+            @Override public void onFailure(Exception e) { fail(); }
+        });
+
+        repo.deleteComment(c.getCommentId(), new CommentRepository.OperationCallback() {
+
+            @Override public void onSuccess() {}
+            @Override public void onFailure(Exception e) { fail(); }
+        });
+
+        repo.getCommentsByEvent("event1", new CommentRepository.CommentsCallback() {
+            @Override
+            public void onSuccess(List<EventComment> comments) {
+                assertTrue(comments.isEmpty());
+            }
             @Override public void onFailure(Exception e) { fail(); }
         });
     }

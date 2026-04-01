@@ -21,9 +21,11 @@ import java.util.stream.Collectors;
  * - US 01.06.02: Sign up for an event from the event details
  * - US 02.02.01: Organizer views the list of entrants who joined the waiting list
  * - US 02.06.01: Organizer views the list of all chosen/invited entrants
+ * - US 02.07.01: Organizer sends notifications to all entrants on the waiting list
+ * - US 02.07.02: Organizer sends notifications to all selected entrants
  *
  * @author Edwin David
- * @version 1.0
+ * @version 1.1
  */
 public class WaitingListControllerTest {
 
@@ -151,6 +153,39 @@ public class WaitingListControllerTest {
 
         fakeRepo.getRecordsByStatusAsync("event1", WaitStatus.INVITED, new WaitListRepository.WaitListCallBack() {
             @Override public void onSuccess(List<WaitListRecord> records) { assertTrue(records.isEmpty()); }
+            @Override public void onFailure(Exception e) { fail("Should not fail"); }
+        });
+    }
+
+    // Testing US 02.07.01
+
+    @Test
+    public void notifyWaiting_returnsWaitingEntrants() {
+        // Check that all WAITING entrants for an event can be fetched
+        // so the organizer can send notifications to each of them
+
+        fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
+        fakeRepo.addRecord("event1", "user2", WaitStatus.WAITING);
+        fakeRepo.addRecord("event1", "user3", WaitStatus.INVITED);
+
+        fakeRepo.getRecordsByStatusAsync("event1", WaitStatus.WAITING, new WaitListRepository.WaitListCallBack() {
+            @Override public void onSuccess(List<WaitListRecord> records) { assertEquals(2, records.size()); }
+            @Override public void onFailure(Exception e) { fail("Should not fail"); }
+        });
+    }
+
+    // Testing US 02.07.02
+
+    @Test
+    public void notifySelected_returnsInvitedEntrants() {
+        // Checks that all INVITED entrants for an event can be fetched
+        // so the organizer can send notifications to each of them
+        fakeRepo.addRecord("event1", "user1", WaitStatus.INVITED);
+        fakeRepo.addRecord("event1", "user2", WaitStatus.INVITED);
+        fakeRepo.addRecord("event1", "user3", WaitStatus.WAITING);
+
+        fakeRepo.getRecordsByStatusAsync("event1", WaitStatus.INVITED, new WaitListRepository.WaitListCallBack() {
+            @Override public void onSuccess(List<WaitListRecord> records) { assertEquals(2, records.size()); }
             @Override public void onFailure(Exception e) { fail("Should not fail"); }
         });
     }
