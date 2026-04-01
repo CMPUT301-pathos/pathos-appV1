@@ -53,14 +53,35 @@
                     app:cornerRadius="16dp" />
 
                 <!-- Waiting Entrants -->
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Waiting Entrants"
-                    android:textColor="#1E1E1E"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Waiting Entrants"
+                        android:textColor="#1E1E1E"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_notify_waiting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Notify All"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="#090909"
+                        app:cornerRadius="14dp" />
+
+                </LinearLayout>
 
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
@@ -115,6 +136,19 @@
                         android:textColor="#1E1E1E"
                         android:textSize="16sp"
                         android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_notify_selected"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Notify All"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="8dp"
+                        app:backgroundTint="#090909"
+                        app:cornerRadius="14dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_cancel_all_invited"

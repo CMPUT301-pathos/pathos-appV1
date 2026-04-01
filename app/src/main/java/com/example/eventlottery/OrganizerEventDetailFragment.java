@@ -35,13 +35,16 @@ import java.io.IOException;
  * OrganizerEventDetailFragment
  *
  * Shows the organizer a list of entrants on the waitlist and accepted entrants for their event.
+ * Allows the organizer to send notifications to entrants based on their current waitlist status
  *
  * User stories supported:
  * - US 02.06.01: View a list of all entrants on the waiting list
  * - US 02.06.02: View a list of all entrants who enrolled for the event
+ * - US 02.07.01: Send notifications to all entrants on the waiting list
+ * - US 02.07.02: Send notifications to all selected entrants
  *
- * @author Fawaz Mansoor
- * @version 1.1
+ * @author Fawaz Mansoor, Edwin David
+ * @version 1.2
  */
 public class OrganizerEventDetailFragment extends Fragment {
 
@@ -98,6 +101,12 @@ public class OrganizerEventDetailFragment extends Fragment {
         tvEnrolledEmpty = view.findViewById(R.id.tv_enrolled_empty);
         tvCancelledEmpty = view.findViewById(R.id.tv_cancelled_empty);
 
+        MaterialButton btnNotifyWaiting = view.findViewById(R.id.btn_notify_waiting);
+        btnNotifyWaiting.setOnClickListener(v -> notifyWaitingEntrants());
+
+        MaterialButton btnNotifySelected = view.findViewById(R.id.btn_notify_selected);
+        btnNotifySelected.setOnClickListener(v -> notifySelectedEntrants());
+
         MaterialButton btnCancelAllInvited = view.findViewById(R.id.btn_cancel_all_invited);
         btnCancelAllInvited.setOnClickListener(v -> cancelAllInvited());
 
@@ -109,6 +118,102 @@ public class OrganizerEventDetailFragment extends Fragment {
         loadEntrants();
 
         return view;
+    }
+
+    // US 02.07.01- Send a notification to all entrants currently on the waiting list
+    private void notifyWaitingEntrants() {
+
+       //get all waitlist records with status = WAITING
+        waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.WAITING,
+                new WaitListRepository.WaitListCallBack() {
+                    @Override
+                    public void onSuccess(List<WaitListRecord> records) {
+                        if (getActivity() == null) return;
+                        if (records.isEmpty()) {
+                            Toast.makeText(getContext(), "No entrants on the waiting list.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // confirmation before sending notifications
+
+                        new android.app.AlertDialog.Builder(requireContext())
+                                .setTitle("Notify Waiting Entrants")
+                                .setMessage("Send a notification to " + records.size() + " entrant(s) on the waiting list?")
+                                .setPositiveButton("Send", (dialog, which) -> {
+                                    for (WaitListRecord record : records) {
+
+                                        // notification data to store in Firestore
+                                        java.util.Map<String, Object> notifData = new java.util.HashMap<>();
+                                        notifData.put("deviceId", record.getDeviceId());
+                                        notifData.put("eventId", eventId);
+                                        notifData.put("type", "WAITING");
+                                        notifData.put("message", "You are on the waiting list for: " + eventName);
+                                        notifData.put("timestamp", System.currentTimeMillis());
+                                        notifData.put("read", false);
+
+                                        // Add to firestore
+                                        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                                .collection("notifications")
+                                                .add(notifData);
+                                    }
+                                    Toast.makeText(getContext(),
+                                            records.size() + " entrant(s) notified.", Toast.LENGTH_SHORT).show();
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        //  fragment is detached, stop
+                        if (getActivity() == null) return;
+                        Toast.makeText(getContext(), "Failed to load waiting entrants.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    // US 02.07.02 -  Send a notification to all selected entrants
+    private void notifySelectedEntrants() {
+        waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.INVITED,
+                new WaitListRepository.WaitListCallBack() {
+                    @Override
+                    public void onSuccess(List<WaitListRecord> records) {
+                        if (getActivity() == null) return;
+                        if (records.isEmpty()) {
+                            Toast.makeText(getContext(), "No selected entrants to notify.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Show confirmation
+                        new android.app.AlertDialog.Builder(requireContext())
+                                .setTitle("Notify Selected Entrants")
+                                .setMessage("Send a notification to " + records.size() + " selected entrant(s)?")
+                                .setPositiveButton("Send", (dialog, which) -> {
+                                    for (WaitListRecord record : records) {
+                                        java.util.Map<String, Object> notifData = new java.util.HashMap<>();
+                                        notifData.put("deviceId", record.getDeviceId());
+                                        notifData.put("eventId", eventId);
+                                        notifData.put("type", "INVITED");
+                                        notifData.put("message", "You have been selected for: " + eventName + ". Please accept or decline your invitation.");
+                                        notifData.put("timestamp", System.currentTimeMillis());
+                                        notifData.put("read", false);
+                                        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                                .collection("notifications")
+                                                .add(notifData);
+                                    }
+                                    Toast.makeText(getContext(),
+                                            records.size() + " entrant(s) notified.", Toast.LENGTH_SHORT).show();
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        if (getActivity() == null) return;
+                        Toast.makeText(getContext(), "Failed to load selected entrants.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void cancelAllInvited() {
