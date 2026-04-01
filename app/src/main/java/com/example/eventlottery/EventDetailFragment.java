@@ -56,6 +56,7 @@ import java.util.Map;
  * - US 01.07.01: User is identified by device
  * - US 01.08.01: Post a comment on an event
  * - US 01.08.02: View comments on an event
+ * - US 02.08.01: Organizer can delete entrant comments from event detail view
  * - US 02.02.03: Respect event geolocation requirement during join
  *
  * @author Edwin David, Kenneth Joseph, Fawaz Mansoor
@@ -403,10 +404,41 @@ public class EventDetailFragment extends Fragment {
 
         List<EventComment> commentList = new ArrayList<>();
         EventCommentAdapter adapter = new EventCommentAdapter(commentList);
+        adapter.setProfileRepository(new FirestoreProfileRepository());
         recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerComments.setAdapter(adapter);
 
         CommentRepository commentRepo = new FirestoreCommentRepository();
+
+        // US 02.08.01: organizer can delete any comment from the event detail view
+        boolean isOrganizer = organizerDeviceId != null && organizerDeviceId.equals(deviceId);
+        if (isOrganizer) {
+            adapter.setOnDeleteListener(comment -> {
+                new android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Delete Comment")
+                        .setMessage("Delete this comment by " + comment.getAuthorName() + "?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            commentRepo.deleteComment(comment.getCommentId(),
+                                    new CommentRepository.OperationCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            commentList.remove(comment);
+                                            adapter.notifyDataSetChanged();
+                                        }
+
+                                        @Override
+                                        public void onFailure(Exception e) {
+                                            Toast.makeText(getContext(),
+                                                    "Failed to delete comment.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        }
+
         commentRepo.getCommentsByEvent(eventId, new CommentRepository.CommentsCallback() {
             @Override
             public void onSuccess(List<EventComment> comments) {

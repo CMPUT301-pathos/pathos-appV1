@@ -82,7 +82,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Loading..."
-                        android:textColor="#1976D2"
+                        android:textColor="#0B0B0B"
                         android:textStyle="bold"
                         android:textSize="15sp" />
                 </LinearLayout>
@@ -96,7 +96,7 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#FFFFFF"
-                    app:backgroundTint="#1976D2"
+                    app:backgroundTint="#090909"
                     app:cornerRadius="18dp" />
 
                 <TextView
@@ -139,7 +139,7 @@
                         android:layout_marginStart="8dp"
                         android:text="Post"
                         android:textAllCaps="false"
-                        app:backgroundTint="#1976D2"
+                        app:backgroundTint="#000000"
                         app:cornerRadius="12dp" />
 
                 </LinearLayout>
