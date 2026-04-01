@@ -12,8 +12,11 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 
 import com.example.eventlottery.controller.WaitingListController;
+import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
+import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.google.android.material.button.MaterialButton;
@@ -72,6 +75,23 @@ public class EntrantInvitationFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_entrant_invitation, container, false);
         notificationsContainer = view.findViewById(R.id.notifications_container);
+        de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
+        String deviceId = DeviceIdentityService.getDeviceId(requireContext());
+        new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (getActivity() == null) return;
+                if (profile != null && profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
+                    com.bumptech.glide.Glide.with(requireContext())
+                            .load(profile.getProfilePhotoUri())
+                            .placeholder(R.drawable.ic_profile_placeholder_forstyledlayout)
+                            .into(ivProfilePhoto);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
 
         tvEmpty = new TextView(requireContext());
         tvEmpty.setText("No notifications yet.");
@@ -82,6 +102,7 @@ public class EntrantInvitationFragment extends Fragment {
         notificationsContainer.addView(tvEmpty);
 
         loadNotifications(inflater);
+
 
         return view;
     }

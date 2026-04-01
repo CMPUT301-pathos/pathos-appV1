@@ -25,6 +25,7 @@ import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreEventRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
+import com.example.eventlottery.service.DeviceIdentityService;
 import com.example.eventlottery.ui.EventSummaryAdapter;
 import com.google.android.material.button.MaterialButton;
 
@@ -74,8 +75,26 @@ public class EventsFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.fragment_events, container, false);
 
+
+        View root = inflater.inflate(R.layout.fragment_events, container, false);
+        de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto = root.findViewById(R.id.ivProfilePhoto);
+        String deviceId = DeviceIdentityService.getDeviceId(requireContext());
+        new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (getActivity() == null) return;
+                if (profile != null && profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
+                    com.bumptech.glide.Glide.with(requireContext())
+                            .load(profile.getProfilePhotoUri())
+                            .placeholder(R.drawable.ic_profile_placeholder_forstyledlayout)
+                            .into(ivProfilePhoto);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
         Button btnQrScan = root.findViewById(R.id.btnQrScan);
         btnFilter = root.findViewById(R.id.btnFilter);
         etSearch = root.findViewById(R.id.etSearch);
