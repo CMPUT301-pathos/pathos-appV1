@@ -1,215 +1,289 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:fillViewport="true"
+    android:background="@drawable/bg_gradient_header">
 
-    <!-- Header -->
-    <TextView
-        android:id="@+id/tv_organizer_event_title"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Event Name"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#000000"
-        android:letterSpacing="0.05"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="48dp"
-        android:paddingBottom="24dp" />
+        android:orientation="vertical"
+        android:padding="20dp">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="24dp"
-        android:clipToPadding="false">
-
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <!-- Waiting (WAITING status) -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="WAITING ENTRANTS"
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.08"
-                android:layout_marginBottom="8dp" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_run_lottery"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="RUN LOTTERY DRAW"
-                android:textColor="#FFFFFF"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginBottom="12dp"
-                app:backgroundTint="#1A1A2E"
-                app:cornerRadius="12dp"
-                xmlns:app="http://schemas.android.com/apk/res-auto"/>
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#CCFFFFFF">
 
             <LinearLayout
-                android:id="@+id/container_waiting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:id="@+id/tv_waiting_empty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No entrants waiting."
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:padding="12dp"
-                android:visibility="gone" />
-
-            <!-- Invited (US 02.06.01) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp">
+                android:padding="24dp">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:id="@+id/tv_organizer_event_title"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="INVITED ENTRANTS"
-                    android:textColor="#000000"
-                    android:textSize="13sp"
+                    android:text="Event Name"
+                    android:textColor="#1E1E1E"
+                    android:textSize="28sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.08" />
+                    android:layout_marginBottom="20dp" />
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_cancel_all_invited"
+                    android:id="@+id/btn_run_lottery"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="CANCEL ALL"
+                    android:layout_height="48dp"
+                    android:text="Run Lottery Draw"
+                    android:textAllCaps="false"
                     android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    app:backgroundTint="#B71C1C"
-                    app:cornerRadius="12dp"
-                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:paddingStart="24dp"
+                    android:paddingEnd="24dp"
+                    android:layout_marginBottom="28dp"
+                    app:backgroundTint="#090909"
+                    app:cornerRadius="16dp" />
 
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:id="@+id/container_invited"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:id="@+id/tv_invited_empty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No invited entrants."
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:padding="12dp"
-                android:visibility="gone" />
-
-            <!-- Enrolled (US 02.06.03) -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp">
-
+                <!-- Waiting Entrants -->
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="ENROLLED ENTRANTS"
-                    android:textColor="#000000"
-                    android:textSize="13sp"
+                    android:text="Waiting Entrants"
+                    android:textColor="#1E1E1E"
+                    android:textSize="16sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.08" />
+                    android:layout_marginBottom="8dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_export_csv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="EXPORT CSV"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    app:backgroundTint="#1A1A2E"
-                    app:cornerRadius="12dp"
-                    xmlns:app="http://schemas.android.com/apk/res-auto"/>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:strokeColor="#E8E8E8"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:id="@+id/container_waiting"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+
+                        <TextView
+                            android:id="@+id/tv_waiting_empty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No entrants waiting."
+                            android:textColor="#777777"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:paddingTop="12dp"
+                            android:paddingBottom="12dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Invited Entrants Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Invited Entrants"
+                        android:textColor="#1E1E1E"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_cancel_all_invited"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Cancel All"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="#C81919"
+                        app:cornerRadius="14dp" />
+
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:strokeColor="#E8E8E8"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:id="@+id/container_invited"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+
+                        <TextView
+                            android:id="@+id/tv_invited_empty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No invited entrants."
+                            android:textColor="#777777"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:paddingTop="12dp"
+                            android:paddingBottom="12dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Enrolled Entrants Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Enrolled Entrants"
+                        android:textColor="#1E1E1E"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_export_csv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Export CSV"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="#090909"
+                        app:cornerRadius="14dp" />
+
+                </LinearLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:strokeColor="#E8E8E8"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:id="@+id/container_enrolled"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+
+                        <TextView
+                            android:id="@+id/tv_enrolled_empty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No enrolled entrants."
+                            android:textColor="#777777"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:paddingTop="12dp"
+                            android:paddingBottom="12dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Cancelled Entrants -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Cancelled Entrants"
+                    android:textColor="#1E1E1E"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:strokeColor="#E8E8E8"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:id="@+id/container_cancelled"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+
+                        <TextView
+                            android:id="@+id/tv_cancelled_empty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No cancelled entrants."
+                            android:textColor="#777777"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:paddingTop="12dp"
+                            android:paddingBottom="12dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
-            <LinearLayout
-                android:id="@+id/container_enrolled"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="4dp" />
+        </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/tv_enrolled_empty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No enrolled entrants."
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:padding="12dp"
-                android:visibility="gone" />
-
-            <!-- Cancelled (US 02.06.02) -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="CANCELLED ENTRANTS"
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.08"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp" />
-
-            <LinearLayout
-                android:id="@+id/container_cancelled"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:id="@+id/tv_cancelled_empty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No cancelled entrants."
-                android:textColor="#000000"
-                android:textSize="13sp"
-                android:gravity="center"
-                android:padding="12dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
-
-    </ScrollView>
-
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>

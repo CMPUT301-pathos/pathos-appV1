@@ -10,9 +10,22 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="12dp"
+        android:gravity="top"
         android:background="#FFFFFF">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/img_comment_avatar"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/ic_profile_placeholder_forstyledlayout" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,6 +50,19 @@
                 android:textSize="11sp"
                 android:textColor="#888888" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_comment"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:textColor="#B71C1C"
+                android:textSize="11sp"
+                android:visibility="gone"
+                android:minWidth="0dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="0dp" />
+
         </LinearLayout>
 
         <TextView
@@ -46,6 +72,8 @@
             android:textSize="14sp"
             android:textColor="#444444"
             android:lineSpacingExtra="2dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
