@@ -62,7 +62,11 @@ public class EventSearchFilterTest {
 
             @Override
             public void deleteEvent(String eventId, OperationCallback callback) {}
+
+            public void getManageableEvents(String deviceId, ListCallback callback) {}
         });
+
+
 
         controller.loadAllEvents(new EventRepository.ListCallback() {
             @Override
