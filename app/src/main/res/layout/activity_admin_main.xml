@@ -46,6 +46,54 @@
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
+        <!-- Admin Profile Section - For US 03.09.01 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#CCFFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvAdminName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Admin Name"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E293B"/>
+
+                <TextView
+                    android:id="@+id/tvAdminEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="admin@example.com"
+                    android:textSize="14sp"
+                    android:textColor="#64748B"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/tvCurrentRole"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Current Role: ADMIN"
+                    android:textSize="12sp"
+                    android:textColor="#2563EB"
+                    android:layout_marginTop="8dp"
+                    android:padding="4dp"
+                    android:background="#EFF6FF"
+                    android:gravity="center"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Statistics Cards Row - 4 Cards WITH LIGHT EMOJIS -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -63,8 +111,6 @@
                 app:cardElevation="2dp"
                 app:cardCornerRadius="12dp"
                 app:cardBackgroundColor="#CCFFFFFF">
-                <!--app:cardBackgroundColor="#EFF6FF"-->
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -236,12 +282,11 @@
             </androidx.cardview.widget.CardView>
         </LinearLayout>
 
-
         <!-- Quick Actions Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Quick Actions"
+            android:text="Admin Actions"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="#1E293B"
@@ -407,6 +452,59 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Notification Logs Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardNotificationLogs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#CCFFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Notification Logs"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#1E293B"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="View all notification history"
+                        android:textSize="13sp"
+                        android:textColor="#64748B"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:text="→"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:textColor="#94A3B8"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Policy Violation Details Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardPolicyDetails"
@@ -460,9 +558,9 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Notification Logs Card - ONLY ONE! -->
+        <!-- US 03.10.01 - Comment Moderation Card -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/cardNotificationLogs"
+            android:id="@+id/cardCommentModeration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
@@ -489,7 +587,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Notification Logs"
+                        android:text="Comment Moderation"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="#1E293B"/>
@@ -497,7 +595,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="View all notification history"
+                        android:text="Remove violating event comments"
                         android:textSize="13sp"
                         android:textColor="#64748B"
                         android:layout_marginTop="2dp"/>
@@ -513,9 +611,140 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- US 03.09.01 - Role Switching Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Switch Role"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#1E293B"
+            android:letterSpacing="0.05"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Switch to Entrant Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSwitchToEntrant"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#CCFFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Switch to Entrant"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#16A34A"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="View and join events as an entrant"
+                        android:textSize="13sp"
+                        android:textColor="#64748B"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:text="→"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:textColor="#94A3B8"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Switch to Organizer Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSwitchToOrganizer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#CCFFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Switch to Organizer"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#9333EA"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Create and manage events as an organizer"
+                        android:textSize="13sp"
+                        android:textColor="#64748B"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:text="→"
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:textColor="#94A3B8"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Logout Button -->
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="20dp"
+            android:text="Logout"
+            android:textSize="14sp"
+            android:backgroundTint="#DC2626"
+            android:padding="12dp"
+            android:textColor="@android:color/white"/>
+
         <!-- Bottom padding -->
         <View
             android:layout_width="match_parent"
             android:layout_height="20dp"/>
-    </LinearLayout>  <!-- This closes the main LinearLayout that started at line 8 -->
+    </LinearLayout>
 </ScrollView>

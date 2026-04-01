@@ -1,51 +1,56 @@
 package com.example.eventlottery.domain;
 
-import kotlinx.serialization.Required;
+import com.google.firebase.Timestamp;
 
 /**
- * Domain model for comments posted on an event.
- *
- * User stories supported:
- * - US 01.08.01: Post a comment on an event
- * - US 01.08.02: View comments on an event
- *
- * @author Edwin David
- * @version 1.0
+ * Model class for event comments.
+ * Supports US 03.10.01 - Remove event comments that violate app policy.
  */
 public class EventComment {
-    private String commentId;
+    private String id;
     private String eventId;
-    private String deviceId;
-    private String authorName;
-    private String text;
-    private long createdAt;
+    private String userId;
+    private String userName;
+    private String content;
+    private Timestamp timestamp;
+    private boolean isFlagged;
+    private String flagReason;
 
-    // Required for Firestore deserialization.
-    public EventComment() {}
-
-    public EventComment(String eventId, String deviceId, String authorName, String text) {
-        this.eventId = eventId;
-        this.deviceId = deviceId;
-        this.authorName = authorName;
-        this.text = text;
-        this.createdAt = System.currentTimeMillis();
+    public EventComment() {
+        // Required for Firestore
     }
 
-    public String getCommentId() { return commentId; }
-    public void setCommentId(String commentId) { this.commentId = commentId; }
+    public EventComment(String eventId, String userId, String userName, String content) {
+        this.eventId = eventId;
+        this.userId = userId;
+        this.userName = userName;
+        this.content = content;
+        this.timestamp = Timestamp.now();
+        this.isFlagged = false;
+    }
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getEventId() { return eventId; }
     public void setEventId(String eventId) { this.eventId = eventId; }
 
-    public String getDeviceId() { return deviceId; }
-    public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
-    public String getAuthorName() { return authorName; }
-    public void setAuthorName(String authorName) { this.authorName = authorName; }
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
 
-    public String getText() { return text; }
-    public void setText(String text) { this.text = text; }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
 
-    public long getCreatedAt() { return createdAt; }
-    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+    public Timestamp getTimestamp() { return timestamp; }
+    public void setTimestamp(Timestamp timestamp) { this.timestamp = timestamp; }
+
+    public boolean isFlagged() { return isFlagged; }
+    public void setFlagged(boolean flagged) { isFlagged = flagged; }
+
+    public String getFlagReason() { return flagReason; }
+    public void setFlagReason(String flagReason) { this.flagReason = flagReason; }
 }

@@ -42,24 +42,36 @@
             android:exported="false" />
 
         <activity
-            android:name=".AdminMainActivity"
+            android:name=".admin.AdminMainActivity"
             android:exported="true" />
 
         <activity
             android:name=".admin.AdminBrowseEventsActivity"
+            android:exported="false"
             android:theme="@style/Theme.MyApplication" />
 
-        <activity android:name=".admin.AdminPolicyViolationsActivity" />
+        <activity
+            android:name=".admin.AdminPolicyViolationsActivity"
+            android:exported="false" />
 
         <activity
             android:name=".admin.AdminBrowseUsersActivity"
+            android:exported="false"
             android:theme="@style/Theme.MyApplication" />
 
         <activity
             android:name=".admin.AdminNotificationLogs"
+            android:exported="false"
             android:theme="@style/Theme.MyApplication" />
 
-        <activity android:name=".admin.AdminBrowseImages" />
+        <activity
+            android:name=".admin.AdminBrowseImages"
+            android:exported="false" />
+
+        <activity
+            android:name=".admin.AdminCommentModerationActivity"
+            android:exported="false" />
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

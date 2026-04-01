@@ -43,25 +43,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * EventDetailFragment
- *
- * Displays detailed information for a selected event including poster image.
- *
- * User stories supported:
- * - US 01.05.04: Know how many total entrants are on the waiting list
- * - US 01.06.02: Sign up for an event from the event details
- * - US 01.02.01: Entrant provides personal information
- * - US 01.02.02: Entrant updates profile information
- * - US 01.07.01: User is identified by device
- * - US 01.08.01: Post a comment on an event
- * - US 01.08.02: View comments on an event
- * - US 02.08.01: Organizer can delete entrant comments from event detail view
- * - US 02.02.03: Respect event geolocation requirement during join
- *
- * @author Edwin David, Kenneth Joseph, Fawaz Mansoor
- * @version 1.4
- */
 public class EventDetailFragment extends Fragment {
 
     private static final String ARG_EVENT_ID = "eventId";
@@ -403,52 +384,29 @@ public class EventDetailFragment extends Fragment {
         Button buttonPost = view.findViewById(R.id.button_post_comment);
 
         List<EventComment> commentList = new ArrayList<>();
-        EventCommentAdapter adapter = new EventCommentAdapter(commentList);
-        adapter.setProfileRepository(new FirestoreProfileRepository());
+        EventCommentAdapter adapter = new EventCommentAdapter();
         recyclerComments.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerComments.setAdapter(adapter);
 
         CommentRepository commentRepo = new FirestoreCommentRepository();
 
-        // US 02.08.01: organizer can delete any comment from the event detail view
-        boolean isOrganizer = organizerDeviceId != null && organizerDeviceId.equals(deviceId);
-        if (isOrganizer) {
-            adapter.setOnDeleteListener(comment -> {
-                new android.app.AlertDialog.Builder(requireContext())
-                        .setTitle("Delete Comment")
-                        .setMessage("Delete this comment by " + comment.getAuthorName() + "?")
-                        .setPositiveButton("Delete", (dialog, which) -> {
-                            commentRepo.deleteComment(comment.getCommentId(),
-                                    new CommentRepository.OperationCallback() {
-                                        @Override
-                                        public void onSuccess() {
-                                            commentList.remove(comment);
-                                            adapter.notifyDataSetChanged();
-                                        }
-
-                                        @Override
-                                        public void onFailure(Exception e) {
-                                            Toast.makeText(getContext(),
-                                                    "Failed to delete comment.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
-            });
-        }
-
-        commentRepo.getCommentsByEvent(eventId, new CommentRepository.CommentsCallback() {
+        // Load comments
+        commentRepo.getComments(eventId, new CommentRepository.CommentCallback() {
             @Override
             public void onSuccess(List<EventComment> comments) {
                 commentList.clear();
                 commentList.addAll(comments);
-                adapter.notifyDataSetChanged();
+                adapter.setComments(commentList);
+            }
+
+            @Override
+            public void onSuccess(EventComment comment) {
+                // Not used for getComments
             }
 
             @Override
             public void onFailure(Exception e) {
+                Toast.makeText(getContext(), "Failed to load comments", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -465,10 +423,10 @@ public class EventDetailFragment extends Fragment {
                             String name = (profile != null && profile.getName() != null)
                                     ? profile.getName() : "Anonymous";
                             EventComment comment = new EventComment(eventId, deviceId, name, text);
-                            commentRepo.addComment(comment,
-                                    new CommentRepository.OperationCallback() {
+                            commentRepo.addComment(eventId, comment,
+                                    new CommentRepository.CommentCallback() {
                                         @Override
-                                        public void onSuccess() {
+                                        public void onSuccess(EventComment addedComment) {
                                             editComment.setText("");
                                             InputMethodManager imm = (InputMethodManager)
                                                     requireContext().getSystemService(
@@ -477,9 +435,14 @@ public class EventDetailFragment extends Fragment {
                                                 imm.hideSoftInputFromWindow(
                                                         editComment.getWindowToken(), 0);
                                             }
-                                            commentList.add(comment);
-                                            adapter.notifyItemInserted(commentList.size() - 1);
-                                            recyclerComments.scrollToPosition(commentList.size() - 1);
+                                            commentList.add(0, addedComment);
+                                            adapter.setComments(commentList);
+                                            recyclerComments.scrollToPosition(0);
+                                        }
+
+                                        @Override
+                                        public void onSuccess(List<EventComment> comments) {
+                                            // Not used for addComment
                                         }
 
                                         @Override
