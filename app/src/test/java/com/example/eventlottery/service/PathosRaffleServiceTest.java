@@ -281,6 +281,7 @@ public class PathosRaffleServiceTest {
 
         raffleService.drawReplacement("event1", new PathosRaffleService.RaffleCallback() {
             @Override
+
             public void onDrawComplete(List<WaitListRecord> selected) {
                 assertEquals(1, selected.size());
                 WaitListRecord updated = fakeRepo.getRecord("event1", "user1");

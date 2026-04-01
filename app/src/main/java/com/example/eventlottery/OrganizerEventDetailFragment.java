@@ -14,14 +14,17 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.FileProvider;
 
+import com.example.eventlottery.controller.OrganizeLotteryController;
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.data.WaitListRepository;
 import com.example.eventlottery.domain.EventSummary;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.domain.WaitListRecord;
 import com.example.eventlottery.domain.WaitStatus;
+import com.example.eventlottery.firebase.FirestoreNotificationLogRepository;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.firebase.FirestoreWaitListRepository;
+import com.example.eventlottery.service.PathosNotifyService;
 import com.example.eventlottery.service.PathosRaffleService;
 import com.google.android.material.button.MaterialButton;
 
@@ -56,7 +59,7 @@ public class OrganizerEventDetailFragment extends Fragment {
 
     private FirestoreWaitListRepository waitListRepository;
     private FirestoreProfileRepository profileRepository;
-    private PathosRaffleService raffleService;
+    private OrganizeLotteryController lotteryController;
 
     public static OrganizerEventDetailFragment newInstance(EventSummary event) {
         OrganizerEventDetailFragment fragment = new OrganizerEventDetailFragment();
@@ -76,7 +79,9 @@ public class OrganizerEventDetailFragment extends Fragment {
         }
         waitListRepository = new FirestoreWaitListRepository();
         profileRepository = new FirestoreProfileRepository();
-        raffleService = new PathosRaffleService(waitListRepository);
+        PathosRaffleService raffleService = new PathosRaffleService(waitListRepository);
+        PathosNotifyService notifyService = new PathosNotifyService(new FirestoreNotificationLogRepository());
+        lotteryController = new OrganizeLotteryController(raffleService, notifyService);
     }
 
     @Nullable
@@ -416,29 +421,30 @@ public class OrganizerEventDetailFragment extends Fragment {
     }
 
     private void runLotteryDraw(int count) {
-        raffleService.drawInitial(eventId, count, new PathosRaffleService.RaffleCallback() {
-            @Override
-            public void onDrawComplete(List<WaitListRecord> selected) {
-                if (getActivity() == null) return;
-                if (selected.isEmpty()) {
-                    Toast.makeText(getContext(),
-                            "No waiting entrants to draw from.",
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(),
-                            selected.size() + " entrant(s) invited!",
-                            Toast.LENGTH_SHORT).show();
-                }
-                loadEntrants();
-            }
+        lotteryController.runInitialDraw(eventId, eventName, count,
+                new OrganizeLotteryController.LotteryCallback() {
+                    @Override
+                    public void onSuccess(List<WaitListRecord> selected) {
+                        if (getActivity() == null) return;
+                        if (selected.isEmpty()) {
+                            Toast.makeText(getContext(),
+                                    "No waiting entrants to draw from.",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(),
+                                    selected.size() + " entrant(s) invited and notified!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                        loadEntrants();
+                    }
 
-            @Override
-            public void onFailure(Exception e) {
-                if (getActivity() == null) return;
-                Toast.makeText(getContext(),
-                        "Draw failed: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Exception e) {
+                        if (getActivity() == null) return;
+                        Toast.makeText(getContext(),
+                                "Draw failed: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
