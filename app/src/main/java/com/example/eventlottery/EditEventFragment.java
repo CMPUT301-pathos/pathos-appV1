@@ -596,7 +596,7 @@ public class EditEventFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         for (String deviceId : addedIds) {
-            db.collection("profiles")
+            db.collection("users")
                     .document(deviceId)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
