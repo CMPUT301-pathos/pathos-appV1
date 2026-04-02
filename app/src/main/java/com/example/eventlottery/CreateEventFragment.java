@@ -595,12 +595,26 @@ public class CreateEventFragment extends Fragment {
                         NotificationLogRepository repo = new FirestoreNotificationLogRepository();
                         PathosNotifyService notifyService = new PathosNotifyService(repo);
 
-                        for (String id : coOrganizerIds) {
-                            notifyService.notifyCoOrganizerAdded(
-                                    id,
-                                    eventId,
-                                    "You were added as a co-organizer for " + name
-                            );
+                        for (String deviceId : coOrganizerIds) {
+                            db.collection("users")
+                                    .document(deviceId)
+                                    .get()
+                                    .addOnSuccessListener(userDoc -> {
+                                        if (!userDoc.exists()) {
+                                            return;
+                                        }
+
+                                        String recipientName = safeString(userDoc.getString("name"));
+                                        if (recipientName.isEmpty()) {
+                                            return;
+                                        }
+
+                                        notifyService.notifyCoOrganizerAdded(
+                                                recipientName,
+                                                eventId,
+                                                "You were added as a co-organizer for " + name
+                                        );
+                                    });
                         }
                     }
 

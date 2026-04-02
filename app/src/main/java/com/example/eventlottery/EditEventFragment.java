@@ -593,13 +593,28 @@ public class EditEventFragment extends Fragment {
                 new com.example.eventlottery.firebase.FirestoreNotificationLogRepository();
 
         PathosNotifyService notifyService = new PathosNotifyService(repo);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        for (String id : addedIds) {
-            notifyService.notifyCoOrganizerAdded(
-                    id,
-                    eventId,
-                    "You were added as a co-organizer for " + eventName
-            );
+        for (String deviceId : addedIds) {
+            db.collection("profiles")
+                    .document(deviceId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (!documentSnapshot.exists()) {
+                            return;
+                        }
+
+                        String recipientName = documentSnapshot.getString("name");
+                        if (recipientName == null || recipientName.trim().isEmpty()) {
+                            return;
+                        }
+
+                        notifyService.notifyCoOrganizerAdded(
+                                recipientName,
+                                eventId,
+                                "You were added as a co-organizer for " + eventName
+                        );
+                    });
         }
     }
     /**
