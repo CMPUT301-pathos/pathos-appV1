@@ -601,20 +601,34 @@ public class CreateEventFragment extends Fragment {
                                     .get()
                                     .addOnSuccessListener(userDoc -> {
                                         if (!userDoc.exists()) {
+                                            android.util.Log.d("COORG_NOTIFY", "User doc not found for deviceId=" + deviceId);
                                             return;
                                         }
 
                                         String recipientName = safeString(userDoc.getString("name"));
+                                        android.util.Log.d("COORG_NOTIFY",
+                                                "deviceId=" + deviceId + ", recipientName=" + recipientName);
+
                                         if (recipientName.isEmpty()) {
+                                            android.util.Log.d("COORG_NOTIFY", "Recipient name empty for deviceId=" + deviceId);
                                             return;
                                         }
 
                                         notifyService.notifyCoOrganizerAdded(
-                                                recipientName,
-                                                eventId,
-                                                "You were added as a co-organizer for " + name
-                                        );
-                                    });
+                                                        recipientName,
+                                                        eventId,
+                                                        "You were added as a co-organizer for " + name
+                                                )
+                                                .addOnSuccessListener(unused ->
+                                                        android.util.Log.d("COORG_NOTIFY",
+                                                                "Notification saved for recipient=" + recipientName))
+                                                .addOnFailureListener(e ->
+                                                        android.util.Log.e("COORG_NOTIFY",
+                                                                "Failed to save notification", e));
+                                    })
+                                    .addOnFailureListener(e ->
+                                            android.util.Log.e("COORG_NOTIFY",
+                                                    "Failed to fetch user for deviceId=" + deviceId, e));
                         }
                     }
 
