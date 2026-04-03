@@ -20,6 +20,7 @@ public class CommentModerationAdapter extends RecyclerView.Adapter<CommentModera
 
     private List<EventComment> comments = new ArrayList<>();
     private OnCommentDeleteListener deleteListener;
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
 
     public interface OnCommentDeleteListener {
         void onDeleteClick(EventComment comment);
@@ -68,12 +69,17 @@ public class CommentModerationAdapter extends RecyclerView.Adapter<CommentModera
         }
 
         void bind(EventComment comment) {
-            tvContent.setText(comment.getContent());
-            tvAuthor.setText("By: " + comment.getUserName());
-
+            // Display comment content
+            tvContent.setText(comment.getContent() != null ? comment.getContent() : "No content");
+            
+            // Display author info
+            String author = comment.getUserName() != null ? comment.getUserName() : "Unknown";
+            String userId = comment.getUserId() != null ? comment.getUserId() : "Unknown ID";
+            tvAuthor.setText("By: " + author + " (ID: " + userId + ")");
+            
+            // Display timestamp
             if (comment.getTimestamp() != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
-                tvTimestamp.setText(sdf.format(comment.getTimestamp().toDate()));
+                tvTimestamp.setText(DATE_FORMAT.format(comment.getTimestamp().toDate()));
             } else {
                 tvTimestamp.setText("Unknown date");
             }
