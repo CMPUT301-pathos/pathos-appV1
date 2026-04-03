@@ -1,128 +1,116 @@
 package com.example.eventlottery.firebase;
 
+import android.util.Log;
+
 import com.example.eventlottery.data.ProfileRepository;
 import com.example.eventlottery.domain.UserProfile;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import java.util.List;
-import java.util.ArrayList;
 
-/**
- * Firestore implementation of ProfileRepository.
- * Handles reading, saving, and deleting user profiles from Firestore.
- * Profiles are stored in the "users" collection with the device ID as the document key.
- *
- * Stored profile data includes:
- * - deviceId
- * - name
- * - email
- * - phoneNumber
- * - role
- * - profileCompleted
- * - notificationsEnabled
- * - eventHistory
- *
- * @author Dmitriy Limanets, Kenneth Joseph
- * @version 1.1
- * @see ProfileRepository
- * @see UserProfile
- */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class FirestoreProfileRepository implements ProfileRepository {
-
+    
+    private static final String TAG = "FirestoreProfileRepo";
     private final FirebaseFirestore db;
-
-    /** Firestore collection name for user profiles. */
-    private static final String COLLECTION_NAME = "users";
-    /**
-     * Creates a new FirestoreProfileRepository with a Firestore database instance.
-     */
-
-    public FirestoreProfileRepository(){
+    private static final String USERS_COLLECTION = "users";
+    
+    public FirestoreProfileRepository() {
         this.db = FirebaseFirestore.getInstance();
     }
-
-    /**
-     * Retrieves a user profile from Firestore by device ID.
-     * Returns null via callback if the profile does not exist.
-     *
-     * @param deviceId the unique device identifier
-     * @param callback the callback to handle success or failure
-     */
+    
     @Override
-    public void getProfile(String deviceId, ProfileCallback callback){
-        db.collection(COLLECTION_NAME).document(deviceId)
+    public void getProfile(String deviceId, ProfileCallback callback) {
+        if (deviceId == null || deviceId.isEmpty()) {
+            callback.onFailure(new Exception("Device ID is null or empty"));
+            return;
+        }
+        
+        db.collection(USERS_COLLECTION)
+                .document(deviceId)
                 .get()
-                .addOnSuccessListener(document->{
-                    if(document.exists()){
-                        UserProfile profile = document.toObject(UserProfile.class);
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        UserProfile profile = documentSnapshot.toObject(UserProfile.class);
+                        if (profile != null) {
+                            profile.setDeviceId(deviceId);
+                        }
                         callback.onSuccess(profile);
-                    }else{
+                    } else {
+                        // User doesn't exist yet - return null
                         callback.onSuccess(null);
                     }
                 })
                 .addOnFailureListener(callback::onFailure);
     }
-
-    /**
-     * Saves a user profile to Firestore.
-     * Uses the profile's device ID as the document key.
-     *
-     * @param profile  the user profile to save
-     * @param callback the callback to handle success or failure
-     */
+    
     @Override
-    public void saveProfile(UserProfile profile, ProfileCallback callback){
-        if (profile == null || profile.getDeviceId() == null || profile.getDeviceId().trim().isEmpty()) {
-            callback.onFailure(new IllegalArgumentException("Profile or deviceId cannot be null/empty"));
+    public void saveProfile(UserProfile profile, ProfileCallback callback) {
+        if (profile == null) {
+            callback.onFailure(new Exception("Profile is null"));
             return;
         }
-
-        db.collection(COLLECTION_NAME).document(profile.getDeviceId())
+        
+        String deviceId = profile.getDeviceId();
+        if (deviceId == null || deviceId.isEmpty()) {
+            callback.onFailure(new Exception("Device ID is null or empty"));
+            return;
+        }
+        
+        db.collection(USERS_COLLECTION)
+                .document(deviceId)
                 .set(profile)
                 .addOnSuccessListener(aVoid -> callback.onSuccess(profile))
                 .addOnFailureListener(callback::onFailure);
     }
-    /**
-     * Deletes a user profile from Firestore by device ID.
-     * Returns null via onSuccess callback upon successful deletion.
-     *
-     * @param deviceId the unique device identifier of the profile to delete
-     * @param callback the callback to handle success or failure
-     */
+    
     @Override
-    public void deleteProfile(String deviceId, ProfileCallback callback){
-        db.collection(COLLECTION_NAME).document(deviceId)
+    public void deleteProfile(String deviceId, ProfileCallback callback) {
+        if (deviceId == null || deviceId.isEmpty()) {
+            callback.onFailure(new Exception("Device ID is null or empty"));
+            return;
+        }
+        
+        db.collection(USERS_COLLECTION)
+                .document(deviceId)
                 .delete()
                 .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
-
+    
     public interface SearchCallback {
         void onSuccess(List<UserProfile> profiles);
         void onFailure(Exception e);
     }
-
+    
     public void searchProfiles(String query, SearchCallback callback) {
-        db.collection("users")
+        if (query == null || query.trim().isEmpty()) {
+            callback.onSuccess(new ArrayList<>());
+            return;
+        }
+        
+        String searchTerm = query.trim().toLowerCase();
+        
+        // Search by name or email
+        db.collection(USERS_COLLECTION)
                 .get()
-                .addOnSuccessListener(snap -> {
+                .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<UserProfile> results = new ArrayList<>();
-                    String lower = query.toLowerCase().trim();
-                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snap) {
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         UserProfile profile = doc.toObject(UserProfile.class);
-                        if (profile == null) continue;
-                        boolean nameMatch = profile.getName() != null
-                                && profile.getName().toLowerCase().contains(lower);
-                        boolean emailMatch = profile.getEmail() != null
-                                && profile.getEmail().toLowerCase().contains(lower);
-                        boolean phoneMatch = profile.getPhoneNumber() != null
-                                && profile.getPhoneNumber().contains(query.trim());
-                        if (nameMatch || emailMatch || phoneMatch) {
-                            results.add(profile);
+                        if (profile != null) {
+                            String name = profile.getName() != null ? profile.getName().toLowerCase() : "";
+                            String email = profile.getEmail() != null ? profile.getEmail().toLowerCase() : "";
+                            if (name.contains(searchTerm) || email.contains(searchTerm)) {
+                                profile.setDeviceId(doc.getId());
+                                results.add(profile);
+                            }
                         }
                     }
                     callback.onSuccess(results);
                 })
-                .addOnFailureListener(e -> callback.onFailure(e));
+                .addOnFailureListener(callback::onFailure);
     }
 }
