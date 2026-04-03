@@ -68,6 +68,23 @@ public class DashboardFragment extends Fragment {
         waitListRepo = new FirestoreWaitListRepository();
         eventRepo = new FirestoreEventRepository();
 
+        de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
+        new com.example.eventlottery.firebase.FirestoreProfileRepository().getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(com.example.eventlottery.domain.UserProfile profile) {
+                if (getActivity() == null) return;
+                if (profile != null && profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
+                    com.bumptech.glide.Glide.with(requireContext())
+                            .load(profile.getProfilePhotoUri())
+                            .placeholder(R.drawable.ic_profile_placeholder_forstyledlayout)
+                            .into(ivProfilePhoto);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
         loadDashboard();
 
         return view;

@@ -86,6 +86,24 @@ public class OrganizerDashboardFragment extends Fragment {
                 })
         );
 
+        de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto = root.findViewById(R.id.ivProfilePhoto);
+        String deviceId = DeviceIdentityService.getDeviceId(requireContext());
+        new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                if (getActivity() == null) return;
+                if (profile != null && profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
+                    com.bumptech.glide.Glide.with(requireContext())
+                            .load(profile.getProfilePhotoUri())
+                            .placeholder(R.drawable.ic_profile_placeholder_forstyledlayout)
+                            .into(ivProfilePhoto);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
         repo = new FirestoreEventRepository();
         eventController = new EventController(repo);
 
