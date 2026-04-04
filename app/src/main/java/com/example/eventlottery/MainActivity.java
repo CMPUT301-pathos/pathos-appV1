@@ -1,50 +1,28 @@
 package com.example.eventlottery;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.eventlottery.AdminMainActivity;
+import com.example.eventlottery.data.ProfileRepository;
+import com.example.eventlottery.domain.UserProfile;
+import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.example.eventlottery.service.DeviceIdentityService;
 import com.example.eventlottery.service.NotificationListenerService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-/**
- * MainActivity
- *
- * Hosts the main bottom-navigation experience for regular users and swaps
- * fragments into the fragment container.
- *
- * Tabs:
- * - Home (DashboardFragment)
- * - Events (EventsFragment)
- * - Organize (OrganizerDashboardFragment)
- * - Notifications (EntrantInvitationFragment)
- * - Profile (ProfileFragment)
- *
- * Behavior:
- * - Receives the user's profile completion state from RouterActivity
- * - Allows users to browse the app even if their profile is incomplete
- * - Restricts protected actions inside relevant fragments until the user's
- *   required profile information has been completed
- * - Starts a Firestore real-time listener for entrant event invitations
- * - Requests notification permission on Android 13+
- *
- * User stories supported:
- * - US 01.02.01: Entrant provides personal information
- * - US 01.02.02: Entrant updates profile information
- * - US 01.07.01: User is identified by device
- *
- * @author Kenneth Joseph, Fawaz Mansoor
- * @version 1.3
- */
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNav;
     private NotificationListenerService notificationListenerService;
     private boolean profileCompleted;
+    private String currentDeviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,9 +30,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         profileCompleted = getIntent().getBooleanExtra("profileCompleted", false);
+        currentDeviceId = DeviceIdentityService.getDeviceId(this);
 
-        String deviceId = DeviceIdentityService.getDeviceId(this);
-        notificationListenerService = new NotificationListenerService(this, deviceId);
+        notificationListenerService = new NotificationListenerService(this, currentDeviceId);
         notificationListenerService.startListening();
         notificationListenerService.setOnInviteReceivedListener(eventName -> {
             runOnUiThread(() ->
@@ -77,6 +55,9 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNav = findViewById(R.id.bottom_nav);
 
+        // Setup bottom navigation
+        setupBottomNavigation();
+
         if (savedInstanceState == null) {
             switchTo(new DashboardFragment());
             bottomNav.setSelectedItemId(R.id.nav_home);
@@ -87,6 +68,17 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    private void setupBottomNavigation() {
+        // First, hide admin tab by default
+        MenuItem adminItem = bottomNav.getMenu().findItem(R.id.nav_admin);
+        if (adminItem != null) {
+            adminItem.setVisible(false);
+        }
+
+        // Check if user is admin
+        checkAdminRole();
 
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -116,8 +108,36 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            Toast.makeText(this, "Unknown tab", Toast.LENGTH_SHORT).show();
+            if (id == R.id.nav_admin) {
+                Intent intent = new Intent(this, AdminMainActivity.class);
+                intent.putExtra("deviceId", currentDeviceId);
+                startActivity(intent);
+                return true;
+            }
+
             return false;
+        });
+    }
+
+    private void checkAdminRole() {
+        new FirestoreProfileRepository().getProfile(currentDeviceId, new ProfileRepository.ProfileCallback() {
+            @Override
+            public void onSuccess(UserProfile profile) {
+                runOnUiThread(() -> {
+                    if (profile != null && "admin".equalsIgnoreCase(profile.getRole())) {
+                        MenuItem adminItem = bottomNav.getMenu().findItem(R.id.nav_admin);
+                        if (adminItem != null) {
+                            adminItem.setVisible(true);
+                            Toast.makeText(MainActivity.this, "Admin mode enabled", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                // Not admin, keep admin tab hidden
+            }
         });
     }
 
@@ -125,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshProfileCompletionIfNeeded();
+        // Re-check admin role when returning
+        checkAdminRole();
     }
 
     @Override
@@ -136,12 +158,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshProfileCompletionIfNeeded() {
-        String deviceId = DeviceIdentityService.getDeviceId(this);
-
-        new com.example.eventlottery.firebase.FirestoreProfileRepository()
-                .getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+        new FirestoreProfileRepository()
+                .getProfile(currentDeviceId, new ProfileRepository.ProfileCallback() {
                     @Override
-                    public void onSuccess(com.example.eventlottery.domain.UserProfile profile) {
+                    public void onSuccess(UserProfile profile) {
                         if (profile != null) {
                             boolean wasCompleted = profileCompleted;
                             profileCompleted = profile.isProfileCompleted();

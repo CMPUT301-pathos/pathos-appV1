@@ -2,15 +2,17 @@
 <!--
 author: Kenneth Joseph
 author : Hasrat Singh Chauhan
-Purpose: MainActivity.java
-menu_entrant_bottom_nav.xml
-Purpose: Defines bottom navigation items for the entrant app experience.
+Purpose: AdminMainActivity.java
+bottom_nav_admin_menu.xml
+Purpose: Defines bottom navigation items for the admin app experience.
 
 Tabs:
 - Dashboard (nav_home)
-- Events (nav_scan)  [repurposed placeholder for QR scan + event list]
+- Events (nav_events)
 - Notifications (nav_notifications)
 - Profile (nav_profile)
+- Organize events (nav_organizer)
+- Admin (nav_admin_dashboard)
 -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
@@ -21,7 +23,6 @@ Tabs:
         android:icon="@drawable/dashboard_icon"
         android:title="Dashboard" />
 
-    <!-- Keep id nav_scan, but repurpose as Events -->
     <item
         android:id="@+id/nav_events"
         android:icon="@android:drawable/ic_menu_my_calendar"
@@ -32,20 +33,18 @@ Tabs:
         android:icon="@drawable/notifications_icon"
         android:title="Notifications" />
 
-    <!--  Organizer Dashboard -->
     <item
         android:id="@+id/nav_organizer"
         android:icon="@drawable/ic_clipboard"
         android:title="Organize events" />
 
-
     <item
         android:id="@+id/nav_profile"
         android:icon="@drawable/ic_profile_placeholder_forstyledlayout"
         android:title="Profile" />
-    <!--  Admin Dashboard -->
+
     <item
-        android:id="@+id/nav_admin"
+        android:id="@+id/nav_admin_dashboard"
         android:icon="@drawable/ic_admin"
         android:title="Admin" />
 
