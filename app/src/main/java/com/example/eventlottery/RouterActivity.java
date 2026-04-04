@@ -2,6 +2,7 @@ package com.example.eventlottery;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,6 +39,12 @@ public class RouterActivity extends AppCompatActivity {
         repo = new FirestoreProfileRepository();
 
         String deviceId = DeviceIdentityService.getDeviceId(this);
+        Log.d("MY_DEVICE_ID", "=====================================");
+        Log.d("MY_DEVICE_ID", "YOUR DEVICE ID IS: " + deviceId);
+        Log.d("MY_DEVICE_ID", "=====================================");
+        // ADD THIS TOAST TO SEE YOUR DEVICE ID
+
+        Toast.makeText(this, "Your Device ID: " + deviceId, Toast.LENGTH_LONG).show();
 
         repo.getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
@@ -60,6 +67,7 @@ public class RouterActivity extends AppCompatActivity {
                 createDefaultProfile(deviceId);
             }
         });
+
     }
 
     private void createDefaultProfile(String deviceId) {
@@ -81,6 +89,7 @@ public class RouterActivity extends AppCompatActivity {
                 finish();
             }
         });
+
     }
 
     private void routeToRoleHome(UserProfile profile) {

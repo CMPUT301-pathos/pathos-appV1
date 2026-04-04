@@ -1,12 +1,9 @@
 package com.example.eventlottery;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -19,22 +16,17 @@ import com.example.eventlottery.admin.AdminNotificationLogs;
 import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
 import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-/**
- * Admin Main Dashboard Activity
- * This activity serves as the central hub for all administrative functions.
- *
- * @author hasratsinghchauhan
- * @version 1.0
- */
 public class AdminMainActivity extends AppCompatActivity {
 
     private TextView tvEventsCount, tvUsersCount, tvOrganizersCount, tvPolicyViolations;
     private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages,
             cardNotificationLogs, cardPolicyDetails, cardCommentModeration;
-    private Button btnLogout;
     private FirebaseFirestore db;
+    private BottomNavigationView bottomNav;
+    private String currentDeviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +34,13 @@ public class AdminMainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_main);
 
         db = FirebaseFirestore.getInstance();
+        currentDeviceId = getIntent().getStringExtra("deviceId");
 
         initViews();
         setupClickListeners();
         loadStatistics();
         loadAdminInfo();
+        setupBottomNavigation();
     }
 
     private void initViews() {
@@ -60,7 +54,38 @@ public class AdminMainActivity extends AppCompatActivity {
         cardNotificationLogs = findViewById(R.id.cardNotificationLogs);
         cardPolicyDetails = findViewById(R.id.cardPolicyDetails);
         cardCommentModeration = findViewById(R.id.cardCommentModeration);
-        btnLogout = findViewById(R.id.btnLogout);
+        bottomNav = findViewById(R.id.bottom_nav_admin);
+    }
+
+    private void setupBottomNavigation() {
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            // Map admin menu IDs to entrant menu IDs
+            if (id == R.id.nav_home || id == R.id.nav_events ||
+                    id == R.id.nav_organizer || id == R.id.nav_notifications ||
+                    id == R.id.nav_profile) {
+
+                // Navigate back to MainActivity with the selected tab
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("deviceId", currentDeviceId);
+                intent.putExtra("selectedTab", id);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+
+            if (id == R.id.nav_admin_dashboard) {
+                // Already on admin dashboard
+                return true;
+            }
+
+            return false;
+        });
+
+        // Highlight the admin dashboard item
+        bottomNav.setSelectedItemId(R.id.nav_admin_dashboard);
     }
 
     private void setupClickListeners() {
@@ -81,32 +106,21 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardCommentModeration.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminCommentModerationActivity.class)));
-
-        btnLogout.setOnClickListener(v -> {
-            // Logout and go back to RouterActivity
-            Intent intent = new Intent(this, RouterActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        });
     }
 
     private void loadStatistics() {
-        // Count events
         db.collection("events")
                 .get()
                 .addOnSuccessListener(query ->
                         tvEventsCount.setText(String.valueOf(query.size())))
                 .addOnFailureListener(e -> Log.e("AdminMain", "Error loading events", e));
 
-        // Count users
         db.collection("users")
                 .get()
                 .addOnSuccessListener(query ->
                         tvUsersCount.setText(String.valueOf(query.size())))
                 .addOnFailureListener(e -> Log.e("AdminMain", "Error loading users", e));
 
-        // Count organizers
         db.collection("users")
                 .whereEqualTo("role", "organizer")
                 .get()
@@ -114,14 +128,11 @@ public class AdminMainActivity extends AppCompatActivity {
                         tvOrganizersCount.setText(String.valueOf(query.size())))
                 .addOnFailureListener(e -> Log.e("AdminMain", "Error loading organizers", e));
 
-        // Load ONLY user policy violations (where violationType is "User Violation")
         db.collection("policy_violations")
-                //.whereEqualTo("violationType", "User Violation")
+                .whereEqualTo("violationType", "User Violation")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    int count = snapshot.size();
-                    tvPolicyViolations.setText(String.valueOf(count));
-                    Log.d("AdminMain", "User policy violations loaded: " + count);
+                    tvPolicyViolations.setText(String.valueOf(snapshot.size()));
                 })
                 .addOnFailureListener(e -> {
                     Log.e("AdminMain", "Error loading policy violations", e);
@@ -130,9 +141,8 @@ public class AdminMainActivity extends AppCompatActivity {
     }
 
     private void loadAdminInfo() {
-        String deviceId = getIntent().getStringExtra("deviceId");
-        if (deviceId != null) {
-            new FirestoreProfileRepository().getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+        if (currentDeviceId != null) {
+            new FirestoreProfileRepository().getProfile(currentDeviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
                 @Override
                 public void onSuccess(UserProfile profile) {
                     if (profile != null) {
