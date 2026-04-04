@@ -4,79 +4,59 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@drawable/bg_gradient_header">
 
-    <!-- Header using androidx.appcompat.widget.Toolbar with built-in navigation -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/purple_500"
+        android:background="#33000000"
         android:elevation="4dp"
         app:navigationIcon="?attr/homeAsUpIndicator"
-        app:title="Event Comments"
         app:titleTextColor="@android:color/white" />
 
-    <!-- Event Info -->
-    <LinearLayout
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@android:color/white"
-        android:elevation="2dp">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/tvEventName"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewComments"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Event Name"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false" />
 
-        <TextView
-            android:id="@+id/tvEventId"
+        <LinearLayout
+            android:id="@+id/emptyStateLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Event ID: "
-            android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="4dp" />
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💬"
+                android:textSize="48sp" />
 
-    <!-- Progress Bar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="32dp"
-        android:visibility="gone" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="No comments for this event"
+                android:textSize="16sp"
+                android:textColor="#CCFFFFFF" />
 
-    <!-- RecyclerView for Comments -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewComments"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="visible" />
+        </LinearLayout>
 
-    <!-- Empty State -->
-    <LinearLayout
-        android:id="@+id/emptyStateLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
+        <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No comments found"
-            android:textSize="16sp"
-            android:textColor="@android:color/darker_gray" />
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
-    </LinearLayout>
+    </FrameLayout>
 
 </LinearLayout>

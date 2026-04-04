@@ -365,7 +365,7 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
  });
  }
 */
-    private void deleteUser(UserProfile user, String reason) {
+   /* private void deleteUser(UserProfile user, String reason) {
         boolean isPolicyViolation = reason.equals("Violated app policy");
 
         // If policy violation, SAVE TO FIRESTORE FIRST
@@ -399,6 +399,57 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                     }
                     userList.remove(user);
                     updateUI();
+                });
+    }*/
+    private void deleteUser(UserProfile user, String reason) {
+        boolean isPolicyViolation = reason.equals("Violated app policy");
+
+        // If policy violation, SAVE TO FIRESTORE FIRST with ALL required fields
+        if (isPolicyViolation) {
+            Map<String, Object> violation = new HashMap<>();
+            violation.put("userId", user.getDeviceId());
+            violation.put("userName", user.getName());
+            violation.put("userEmail", user.getEmail());
+            violation.put("deletedAt", System.currentTimeMillis());
+            violation.put("deletedBy", "Admin");
+            violation.put("reason", reason);
+            violation.put("violationType", "User Violation");  // CRITICAL: This is needed for filtering
+            violation.put("content", "User account deleted for: " + reason);
+
+            // Save to Firestore
+            db.collection("policy_violations")
+                    .add(violation)
+                    .addOnSuccessListener(docRef -> {
+                        Log.d("Admin", "Violation saved with ID: " + docRef.getId());
+                        // After saving violation, delete the user
+                        performUserDeletion(user, isPolicyViolation);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Admin", "Failed to save violation", e);
+                        // Still try to delete the user
+                        performUserDeletion(user, isPolicyViolation);
+                    });
+        } else {
+            // Not a policy violation, just delete
+            performUserDeletion(user, isPolicyViolation);
+        }
+    }
+
+    private void performUserDeletion(UserProfile user, boolean isPolicyViolation) {
+        db.collection("users")
+                .document(user.getDeviceId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    if (isPolicyViolation) {
+                        Toast.makeText(this, "User deleted for policy violation", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(this, "User deleted", Toast.LENGTH_SHORT).show();
+                    }
+                    userList.remove(user);
+                    updateUI();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error deleting user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
     private void incrementPolicyViolationCount() {

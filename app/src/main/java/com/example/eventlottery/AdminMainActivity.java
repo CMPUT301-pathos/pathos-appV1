@@ -33,6 +33,7 @@ public class AdminMainActivity extends AppCompatActivity {
     private TextView tvEventsCount, tvUsersCount, tvOrganizersCount, tvPolicyViolations;
     private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages,
             cardNotificationLogs, cardPolicyDetails, cardCommentModeration;
+    private Button btnLogout;
     private FirebaseFirestore db;
 
     @Override
@@ -45,6 +46,7 @@ public class AdminMainActivity extends AppCompatActivity {
         initViews();
         setupClickListeners();
         loadStatistics();
+        loadAdminInfo();
     }
 
     private void initViews() {
@@ -58,6 +60,7 @@ public class AdminMainActivity extends AppCompatActivity {
         cardNotificationLogs = findViewById(R.id.cardNotificationLogs);
         cardPolicyDetails = findViewById(R.id.cardPolicyDetails);
         cardCommentModeration = findViewById(R.id.cardCommentModeration);
+        btnLogout = findViewById(R.id.btnLogout);
     }
 
     private void setupClickListeners() {
@@ -78,6 +81,14 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardCommentModeration.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminCommentModerationActivity.class)));
+
+        btnLogout.setOnClickListener(v -> {
+            // Logout and go back to RouterActivity
+            Intent intent = new Intent(this, RouterActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadStatistics() {
@@ -103,17 +114,41 @@ public class AdminMainActivity extends AppCompatActivity {
                         tvOrganizersCount.setText(String.valueOf(query.size())))
                 .addOnFailureListener(e -> Log.e("AdminMain", "Error loading organizers", e));
 
-        // Load policy violations count
+        // Load ONLY user policy violations (where violationType is "User Violation")
         db.collection("policy_violations")
+                //.whereEqualTo("violationType", "User Violation")
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    tvPolicyViolations.setText(String.valueOf(snapshot.size()));
-                    Log.d("AdminMain", "Policy violations loaded: " + snapshot.size());
+                    int count = snapshot.size();
+                    tvPolicyViolations.setText(String.valueOf(count));
+                    Log.d("AdminMain", "User policy violations loaded: " + count);
                 })
                 .addOnFailureListener(e -> {
                     Log.e("AdminMain", "Error loading policy violations", e);
                     tvPolicyViolations.setText("0");
                 });
+    }
+
+    private void loadAdminInfo() {
+        String deviceId = getIntent().getStringExtra("deviceId");
+        if (deviceId != null) {
+            new FirestoreProfileRepository().getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+                @Override
+                public void onSuccess(UserProfile profile) {
+                    if (profile != null) {
+                        TextView tvAdminName = findViewById(R.id.tvAdminName);
+                        TextView tvAdminEmail = findViewById(R.id.tvAdminEmail);
+                        if (tvAdminName != null) tvAdminName.setText(profile.getName());
+                        if (tvAdminEmail != null) tvAdminEmail.setText(profile.getEmail());
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("AdminMain", "Error loading admin info", e);
+                }
+            });
+        }
     }
 
     @Override

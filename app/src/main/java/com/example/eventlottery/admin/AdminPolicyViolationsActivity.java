@@ -24,6 +24,8 @@ import java.util.List;
 
 public class AdminPolicyViolationsActivity extends AppCompatActivity {
 
+    private static final String TAG = "PolicyViolations";
+
     private RecyclerView recyclerView;
     private LinearLayout emptyState;
     private ProgressBar progressBar;
@@ -38,16 +40,19 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
         setContentView(R.layout.admin_policy_violations);
 
         // Back button
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> finish());
+        }
 
         db = FirebaseFirestore.getInstance();
         violationList = new ArrayList<>();
 
         initViews();
         setupRecyclerView();
-        loadViolations();
-        checkFirestoreData();
 
+        // First, check ALL violations without filter to debug
+        checkAllViolations();
     }
 
     private void initViews() {
@@ -63,52 +68,135 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    /*private void loadViolations() {
-        progressBar.setVisibility(View.VISIBLE);
+    private void checkAllViolations() {
+        Log.d(TAG, "=== CHECKING ALL VIOLATIONS IN DATABASE ===");
 
         db.collection("policy_violations")
-                .orderBy("deletedAt", Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    violationList.clear();
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        PolicyViolation violation = doc.toObject(PolicyViolation.class);
-                        violationList.add(violation);
-                        Log.d("Policy", "Loaded: " + violation.getUserName()); // Debug log
+                .addOnSuccessListener(querySnapshot -> {
+                    Log.d(TAG, "Total violations in DB: " + querySnapshot.size());
+
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        Log.d(TAG, "Violation ID: " + doc.getId());
+                        Log.d(TAG, "  Data: " + doc.getData());
+                        Log.d(TAG, "  violationType: " + doc.getString("violationType"));
+                        Log.d(TAG, "  userName: " + doc.getString("userName"));
+                        Log.d(TAG, "  reason: " + doc.getString("reason"));
+                        Log.d(TAG, "---");
                     }
-                    updateUI();
-                    progressBar.setVisibility(View.GONE);
+
+                    // Now load only user violations
+                    loadUserViolations();
                 })
                 .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Error loading violations", Toast.LENGTH_SHORT).show();
-                    updateUI();
+                    Log.e(TAG, "Error checking violations", e);
+                    loadUserViolations();
                 });
-    }*/
-    private void loadViolations() {
-        progressBar.setVisibility(View.VISIBLE);
+    }
 
+    /*private void loadUserViolations() {
+        progressBar.setVisibility(View.VISIBLE);
+        violationList.clear();
+
+        // Load ONLY user violations
         db.collection("policy_violations")
+                .whereEqualTo("violationType", "User Violation")
                 .orderBy("deletedAt", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     progressBar.setVisibility(View.GONE);
-                    violationList.clear();
 
-                    Log.d("PolicyViolations", "Found " + querySnapshot.size() + " documents");
+                    Log.d(TAG, "Found " + querySnapshot.size() + " USER policy violations");
 
                     for (QueryDocumentSnapshot doc : querySnapshot) {
-                        PolicyViolation violation = doc.toObject(PolicyViolation.class);
+                        PolicyViolation violation = new PolicyViolation();
+                        violation.setId(doc.getId());
+                        violation.setUserId(doc.getString("userId"));
+                        violation.setUserName(doc.getString("userName"));
+                        violation.setUserEmail(doc.getString("userEmail"));
+
+                        Object deletedAt = doc.get("deletedAt");
+                        if (deletedAt instanceof Long) {
+                            violation.setDeletedAt((Long) deletedAt);
+                        }
+
+                        violation.setDeletedBy(doc.getString("deletedBy"));
+                        violation.setReason(doc.getString("reason"));
+                        violation.setViolationType(doc.getString("violationType"));
+                        violation.setContent(doc.getString("content"));
+
                         violationList.add(violation);
-                        Log.d("PolicyViolations", "Loaded: " + violation.getUserName());
+                        Log.d(TAG, "Loaded user violation: " + violation.getUserName() + " - " + violation.getReason());
+                    }
+
+                    updateUI();
+
+                    if (violationList.isEmpty()) {
+                        Toast.makeText(this, "No user violations found. Check if deleted users had 'Violated app policy' selected.", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Log.e(TAG, "Error loading violations", e);
+                    Toast.makeText(this, "Error loading violations: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    updateUI();
+                });
+    }*/
+    private void loadUserViolations() {
+        progressBar.setVisibility(View.VISIBLE);
+        violationList.clear();
+
+        // Load ONLY user violations WITHOUT orderBy to avoid index requirement
+        db.collection("policy_violations")
+                .whereEqualTo("violationType", "User Violation")
+                // .orderBy("deletedAt", Query.Direction.DESCENDING)  // COMMENT OUT TEMPORARILY
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    progressBar.setVisibility(View.GONE);
+
+                    Log.d(TAG, "Found " + querySnapshot.size() + " USER policy violations");
+
+                    // Manually sort in memory
+                    List<QueryDocumentSnapshot> docs = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        docs.add(doc);
+                    }
+                    docs.sort((a, b) -> {
+                        Long aTime = a.getLong("deletedAt");
+                        Long bTime = b.getLong("deletedAt");
+                        if (aTime == null) aTime = 0L;
+                        if (bTime == null) bTime = 0L;
+                        return bTime.compareTo(aTime); // Descending
+                    });
+
+                    for (QueryDocumentSnapshot doc : docs) {
+                        PolicyViolation violation = new PolicyViolation();
+                        violation.setId(doc.getId());
+                        violation.setUserId(doc.getString("userId"));
+                        violation.setUserName(doc.getString("userName"));
+                        violation.setUserEmail(doc.getString("userEmail"));
+
+                        Object deletedAt = doc.get("deletedAt");
+                        if (deletedAt instanceof Long) {
+                            violation.setDeletedAt((Long) deletedAt);
+                        }
+
+                        violation.setDeletedBy(doc.getString("deletedBy"));
+                        violation.setReason(doc.getString("reason"));
+                        violation.setViolationType(doc.getString("violationType"));
+                        violation.setContent(doc.getString("content"));
+
+                        violationList.add(violation);
+                        Log.d(TAG, "Loaded user violation: " + violation.getUserName() + " - " + violation.getReason());
                     }
 
                     updateUI();
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
-                    Log.e("PolicyViolations", "Error loading", e);
-                    Toast.makeText(this, "Error loading violations", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error loading violations", e);
+                    Toast.makeText(this, "Error loading violations: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    updateUI();
                 });
     }
 
@@ -124,20 +212,11 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
             adapter.setViolations(violationList);
         }
     }
-    private void checkFirestoreData() {
-        db.collection("policy_violations")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    Log.d("PolicyViolations", "Found " + querySnapshot.size() + " documents");
-                    if (querySnapshot.size() > 0) {
-                        // Force update UI
-                        violationList.clear();
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            violationList.add(doc.toObject(PolicyViolation.class));
-                        }
-                        updateUI();
-                    }
-                });
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadUserViolations();
     }
 
     @Override

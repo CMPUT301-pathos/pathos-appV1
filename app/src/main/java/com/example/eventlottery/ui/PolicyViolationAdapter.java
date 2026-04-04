@@ -48,25 +48,44 @@ public class PolicyViolationAdapter extends RecyclerView.Adapter<PolicyViolation
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvUserName, tvUserEmail, tvDate, tvReason, tvDeletedBy;
-        private CardView cardView;
+        private TextView tvUserName, tvUserEmail, tvReason, tvDate;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvUserEmail = itemView.findViewById(R.id.tvUserEmail);
-            tvDate = itemView.findViewById(R.id.tvDate);
             tvReason = itemView.findViewById(R.id.tvReason);
-            tvDeletedBy = itemView.findViewById(R.id.tvDeletedBy);
-            cardView = (CardView) itemView;
+            tvDate = itemView.findViewById(R.id.tvDate);
         }
 
         void bind(PolicyViolation violation) {
-            tvUserName.setText(violation.getUserName());
-            tvUserEmail.setText(violation.getUserEmail());
-            tvDate.setText(dateFormat.format(new Date(violation.getDeletedAt())));
-            tvReason.setText("Reason: " + violation.getReason());
-            tvDeletedBy.setText("Deleted by: " + violation.getDeletedBy());
+            // User Name
+            if (violation.getUserName() != null && !violation.getUserName().isEmpty()) {
+                tvUserName.setText(violation.getUserName());
+            } else {
+                tvUserName.setText("Unknown User");
+            }
+
+            // User Email
+            if (violation.getUserEmail() != null && !violation.getUserEmail().isEmpty()) {
+                tvUserEmail.setText(violation.getUserEmail());
+            } else {
+                tvUserEmail.setText("Email not provided");
+            }
+
+            // Reason
+            if (violation.getReason() != null && !violation.getReason().isEmpty()) {
+                tvReason.setText("Reason: " + violation.getReason());
+            } else {
+                tvReason.setText("Reason: Not specified");
+            }
+
+            // Date
+            if (violation.getDeletedAt() > 0) {
+                tvDate.setText(dateFormat.format(new Date(violation.getDeletedAt())));
+            } else {
+                tvDate.setText("Date unknown");
+            }
         }
     }
 }

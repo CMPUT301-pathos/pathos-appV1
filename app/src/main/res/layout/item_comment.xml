@@ -3,9 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#CCFFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,9 +18,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tvCommentAuthor"
@@ -27,14 +27,14 @@
                 android:layout_weight="1"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#2196F3" />
+                android:textColor="#1E293B" />
 
             <TextView
                 android:id="@+id/tvCommentTimestamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="11sp"
-                android:textColor="#999" />
+                android:textSize="12sp"
+                android:textColor="#64748B" />
 
         </LinearLayout>
 
@@ -42,9 +42,22 @@
             android:id="@+id/tvCommentText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textSize="14sp"
-            android:textColor="#333"
-            android:layout_marginTop="4dp" />
+            android:textColor="#424242" />
+
+        <!-- Delete button for admin -->
+        <TextView
+            android:id="@+id/btnDeleteComment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="🗑️ Delete"
+            android:textColor="#DC2626"
+            android:textSize="12sp"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:visibility="visible" />
 
     </LinearLayout>
 
