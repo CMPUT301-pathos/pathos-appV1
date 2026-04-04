@@ -25,9 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AdminCommentModerationActivity extends AppCompatActivity {
+public class AdminCommentModerationActivity extends AppCompatActivity
+        implements EventsWithCommentsAdapter.OnEventClickListener {
 
     private static final String TAG = "CommentModeration";
+
     private RecyclerView recyclerViewEvents;
     private LinearLayout emptyStateLayout;
     private ProgressBar progressBar;
@@ -36,6 +38,7 @@ public class AdminCommentModerationActivity extends AppCompatActivity {
     private EventsWithCommentsAdapter eventsAdapter;
     private List<Map<String, Object>> eventsWithCommentsList;
     private FirebaseFirestore db;
+    private boolean isLoading = false;  // Prevent multiple simultaneous loads
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,101 +60,108 @@ public class AdminCommentModerationActivity extends AppCompatActivity {
         loadEventsWithComments();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh the list when returning from detail screen
+        Log.d(TAG, "onResume - Refreshing events with comments");
+        loadEventsWithComments();
+    }
+
     private void initViews() {
         recyclerViewEvents = findViewById(R.id.recyclerViewComments);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         progressBar = findViewById(R.id.progressBar);
         tvEmptyMessage = findViewById(R.id.tvEmptyMessage);
-
-        if (tvEmptyMessage != null) {
-            tvEmptyMessage.setText("No events with comments found");
-        }
     }
 
     private void setupRecyclerView() {
         eventsAdapter = new EventsWithCommentsAdapter();
-        eventsAdapter.setOnEventClickListener(this::navigateToEventComments);
-
+        eventsAdapter.setOnEventClickListener(this);
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewEvents.setAdapter(eventsAdapter);
     }
 
     private void loadEventsWithComments() {
+        // Prevent multiple simultaneous loads
+        if (isLoading) {
+            Log.d(TAG, "Already loading, skipping...");
+            return;
+        }
+
+        isLoading = true;
         progressBar.setVisibility(View.VISIBLE);
+
+        // CRITICAL: Clear the list BEFORE starting the query
         eventsWithCommentsList.clear();
 
-        Log.d(TAG, "========== STARTING TO LOAD EVENTS WITH COMMENTS ==========");
+        // Also clear the adapter to prevent showing old data
+        eventsAdapter.setEvents(new ArrayList<>());
 
-        // First, let's check if there are ANY comments in the entire database
-        db.collectionGroup("comments")
-                .limit(1)
-                .get()
-                .addOnSuccessListener(anyComments -> {
-                    if (anyComments.isEmpty()) {
-                        Log.e(TAG, "❌ NO COMMENTS FOUND ANYWHERE IN THE DATABASE!");
-                        Toast.makeText(this, "No comments found in any event", Toast.LENGTH_LONG).show();
-                    } else {
-                        Log.d(TAG, "✅ Found at least one comment in the database!");
-                    }
-                });
+        Log.d(TAG, "Loading events with comments...");
 
-        // Get all events
+        // Get all events and check their comments
         db.collection("events")
                 .get()
                 .addOnSuccessListener(eventsSnapshot -> {
-                    Log.d(TAG, "📊 Total events found: " + eventsSnapshot.size());
+                    Log.d(TAG, "Total events found: " + eventsSnapshot.size());
 
                     if (eventsSnapshot.isEmpty()) {
                         progressBar.setVisibility(View.GONE);
+                        isLoading = false;
                         updateUI();
-                        Toast.makeText(this, "No events found", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     AtomicInteger processedCount = new AtomicInteger(0);
                     int totalEvents = eventsSnapshot.size();
-                    Log.d(TAG, "📊 Processing " + totalEvents + " events...");
+
+                    // Use a Set to track unique event IDs to prevent duplicates
+                    Map<String, Map<String, Object>> uniqueEvents = new HashMap<>();
 
                     for (QueryDocumentSnapshot eventDoc : eventsSnapshot) {
-                        String eventId = eventDoc.getId();
-                        String eventName = eventDoc.getString("name");
-                        if (eventName == null) eventName = eventDoc.getString("title");
-                        if (eventName == null) eventName = "Unnamed Event";
+                        final String eventId = eventDoc.getId();
+                        String eventNameRaw = eventDoc.getString("name");
+                        if (eventNameRaw == null) eventNameRaw = eventDoc.getString("title");
+                        if (eventNameRaw == null) eventNameRaw = "Unnamed Event";
+                        final String eventName = eventNameRaw;
 
-                        Log.d(TAG, "🔍 Checking event: " + eventId + " - " + eventName);
-
-                        final String finalEventId = eventId;
-                        final String finalEventName = eventName;
-
-                        // Check comments for this specific event
-                        db.collection("events")
-                                .document(eventId)
-                                .collection("comments")
+                        // Count comments from top-level comments collection
+                        db.collection("comments")
+                                .whereEqualTo("eventId", eventId)
                                 .get()
                                 .addOnSuccessListener(commentsSnapshot -> {
-                                    int commentCount = commentsSnapshot.size();
-                                    Log.d(TAG, "📝 Event " + finalEventId + " has " + commentCount + " comments");
+                                    final int commentCount = commentsSnapshot.size();
+                                    Log.d(TAG, "Event " + eventName + " has " + commentCount + " comments");
 
                                     if (commentCount > 0) {
+                                        // Use eventId as key to prevent duplicates
                                         Map<String, Object> eventInfo = new HashMap<>();
-                                        eventInfo.put("eventId", finalEventId);
-                                        eventInfo.put("eventName", finalEventName);
+                                        eventInfo.put("eventId", eventId);
+                                        eventInfo.put("eventName", eventName);
                                         eventInfo.put("commentCount", commentCount);
-                                        eventsWithCommentsList.add(eventInfo);
-                                        Log.d(TAG, "✅ Added event to list: " + finalEventName + " (" + commentCount + " comments)");
+                                        uniqueEvents.put(eventId, eventInfo);
                                     }
 
                                     if (processedCount.incrementAndGet() == totalEvents) {
+                                        // Clear and add all unique events
+                                        eventsWithCommentsList.clear();
+                                        eventsWithCommentsList.addAll(uniqueEvents.values());
+
                                         progressBar.setVisibility(View.GONE);
+                                        isLoading = false;
                                         updateUI();
-                                        Log.d(TAG, "========== COMPLETE: Found " + eventsWithCommentsList.size() + " events with comments ==========");
-                                        Toast.makeText(this, "Found " + eventsWithCommentsList.size() + " events with comments", Toast.LENGTH_LONG).show();
+                                        Log.d(TAG, "Found " + eventsWithCommentsList.size() + " unique events with comments");
                                     }
                                 })
                                 .addOnFailureListener(e -> {
-                                    Log.e(TAG, "❌ Error getting comments for event: " + finalEventId, e);
+                                    Log.e(TAG, "Error getting comments for event: " + eventId, e);
                                     if (processedCount.incrementAndGet() == totalEvents) {
+                                        eventsWithCommentsList.clear();
+                                        eventsWithCommentsList.addAll(uniqueEvents.values());
+
                                         progressBar.setVisibility(View.GONE);
+                                        isLoading = false;
                                         updateUI();
                                     }
                                 });
@@ -159,13 +169,15 @@ public class AdminCommentModerationActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
-                    Log.e(TAG, "❌ Error loading events", e);
+                    isLoading = false;
+                    Log.e(TAG, "Error loading events", e);
                     Toast.makeText(this, "Error loading events: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     updateUI();
                 });
     }
 
-    private void navigateToEventComments(String eventId, String eventName) {
+    @Override
+    public void onEventClick(String eventId, String eventName) {
         Intent intent = new Intent(this, AdminEventCommentsActivity.class);
         intent.putExtra("eventId", eventId);
         intent.putExtra("eventName", eventName);
@@ -174,11 +186,12 @@ public class AdminCommentModerationActivity extends AppCompatActivity {
 
     private void updateUI() {
         if (eventsWithCommentsList.isEmpty()) {
-            Log.d(TAG, "📭 No events with comments to display");
             recyclerViewEvents.setVisibility(View.GONE);
             emptyStateLayout.setVisibility(View.VISIBLE);
+            if (tvEmptyMessage != null) {
+                tvEmptyMessage.setText("No events with comments found");
+            }
         } else {
-            Log.d(TAG, "📱 Displaying " + eventsWithCommentsList.size() + " events in RecyclerView");
             recyclerViewEvents.setVisibility(View.VISIBLE);
             emptyStateLayout.setVisibility(View.GONE);
             eventsAdapter.setEvents(eventsWithCommentsList);

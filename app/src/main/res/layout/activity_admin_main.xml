@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- Gradient Header - NO EMOJIS, just text -->
+        <!-- Gradient Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="120dp"
@@ -46,7 +46,7 @@
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
-        <!-- Admin Profile Section - For US 03.09.01 -->
+        <!-- Admin Profile Section -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -94,14 +94,14 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Statistics Cards Row - 4 Cards WITH LIGHT EMOJIS -->
+        <!-- Statistics Cards Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="24dp">
 
-            <!-- Events Card - Blue with emoji -->
+            <!-- Events Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardEvents"
                 android:layout_width="0dp"
@@ -145,7 +145,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Users Card - Green with emoji -->
+            <!-- Users Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardUsers"
                 android:layout_width="0dp"
@@ -190,7 +190,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Organizers Card - Purple with emoji -->
+            <!-- Organizers Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardOrganizers"
                 android:layout_width="0dp"
@@ -201,6 +201,7 @@
                 app:cardElevation="2dp"
                 app:cardCornerRadius="12dp"
                 app:cardBackgroundColor="#CCFFFFFF">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -234,7 +235,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Policy Violations Card - Red with emoji -->
+            <!-- Policy Violations Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardPolicyViolations"
                 android:layout_width="0dp"
@@ -282,7 +283,7 @@
             </androidx.cardview.widget.CardView>
         </LinearLayout>
 
-        <!-- Quick Actions Section -->
+        <!-- Admin Actions Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -558,7 +559,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- US 03.10.01 - Comment Moderation Card -->
+        <!-- Comment Moderation Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardCommentModeration"
             android:layout_width="match_parent"
@@ -596,124 +597,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Remove violating event comments"
-                        android:textSize="13sp"
-                        android:textColor="#64748B"
-                        android:layout_marginTop="2dp"/>
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:text="→"
-                    android:textSize="18sp"
-                    android:gravity="center"
-                    android:textColor="#94A3B8"/>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- US 03.09.01 - Role Switching Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Switch Role"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="#1E293B"
-            android:letterSpacing="0.05"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="12dp"/>
-
-        <!-- Switch to Entrant Card -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardSwitchToEntrant"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="0dp"
-            app:cardCornerRadius="12dp"
-            app:cardBackgroundColor="#CCFFFFFF"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Switch to Entrant"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#16A34A"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="View and join events as an entrant"
-                        android:textSize="13sp"
-                        android:textColor="#64748B"
-                        android:layout_marginTop="2dp"/>
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:text="→"
-                    android:textSize="18sp"
-                    android:gravity="center"
-                    android:textColor="#94A3B8"/>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Switch to Organizer Card -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardSwitchToOrganizer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            app:cardElevation="0dp"
-            app:cardCornerRadius="12dp"
-            app:cardBackgroundColor="#CCFFFFFF"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Switch to Organizer"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#9333EA"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Create and manage events as an organizer"
                         android:textSize="13sp"
                         android:textColor="#64748B"
                         android:layout_marginTop="2dp"/>

@@ -25,6 +25,7 @@ public class EventCommentAdapter extends RecyclerView.Adapter<EventCommentAdapte
     public interface OnCommentClickListener {
         void onCommentClick(EventComment comment);
         void onCommentLongClick(EventComment comment);
+        void onDeleteClick(EventComment comment);
     }
 
     public EventCommentAdapter() {}
@@ -61,32 +62,39 @@ public class EventCommentAdapter extends RecyclerView.Adapter<EventCommentAdapte
         TextView authorName;
         TextView text;
         TextView timestamp;
+        TextView btnDelete;
 
         CommentViewHolder(@NonNull View itemView) {
             super(itemView);
             authorName = itemView.findViewById(R.id.tvCommentAuthor);
             text = itemView.findViewById(R.id.tvCommentText);
             timestamp = itemView.findViewById(R.id.tvCommentTimestamp);
+            btnDelete = itemView.findViewById(R.id.btnDeleteComment);
 
+            // Normal click - show details
             itemView.setOnClickListener(v -> {
-                if (clickListener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
-                    clickListener.onCommentClick(comments.get(getAdapterPosition()));
+                int pos = getAdapterPosition();
+                if (clickListener != null && pos != RecyclerView.NO_POSITION) {
+                    clickListener.onCommentClick(comments.get(pos));
                 }
             });
 
-            itemView.setOnLongClickListener(v -> {
-                if (clickListener != null && getAdapterPosition() != RecyclerView.NO_POSITION) {
-                    clickListener.onCommentLongClick(comments.get(getAdapterPosition()));
-                    return true;
-                }
-                return false;
-            });
+            // Delete button click
+            if (btnDelete != null) {
+                btnDelete.setOnClickListener(v -> {
+                    int pos = getAdapterPosition();
+                    if (clickListener != null && pos != RecyclerView.NO_POSITION) {
+                        clickListener.onDeleteClick(comments.get(pos));
+                    }
+                });
+            }
         }
 
         void bind(EventComment comment) {
-            authorName.setText(comment.getUserName() != null ? comment.getUserName() : "Anonymous");
+            authorName.setText(comment.getUserName() != null && !comment.getUserName().isEmpty()
+                    ? comment.getUserName() : "Anonymous");
             text.setText(comment.getContent() != null ? comment.getContent() : "");
-            
+
             if (comment.getTimestamp() != null) {
                 timestamp.setText(DATE_FORMAT.format(comment.getTimestamp().toDate()));
             } else {

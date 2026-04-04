@@ -4,9 +4,11 @@
     android:id="@+id/cardEvent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#CCFFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,27 +20,25 @@
             android:id="@+id/tvEventName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Event Name"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#1E293B" />
 
         <TextView
             android:id="@+id/tvEventId"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Event ID: "
+            android:layout_marginTop="4dp"
             android:textSize="12sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="4dp" />
+            android:textColor="#64748B" />
 
         <TextView
             android:id="@+id/tvCommentCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="0 comments"
+            android:layout_marginTop="8dp"
             android:textSize="14sp"
-            android:textColor="@color/purple_500"
-            android:layout_marginTop="8dp" />
+            android:textColor="#6200EE" />
 
     </LinearLayout>
 
