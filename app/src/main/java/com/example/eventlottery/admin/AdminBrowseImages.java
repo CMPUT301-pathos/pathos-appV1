@@ -34,7 +34,7 @@ import java.util.List;
  * - US 03.06.01: Browse uploaded images
  * - US 03.03.01: Remove images
  */
-public class AdminBrowseImages extends AppCompatActivity {
+/*public class AdminBrowseImages extends AppCompatActivity {
 
     private RecyclerView recyclerViewImages;
     private LinearLayout emptyStateLayout;
@@ -187,7 +187,7 @@ public class AdminBrowseImages extends AppCompatActivity {
     /**
      * Simple model class for image data
      */
-    public static class ImageData {
+    /*public static class ImageData {
         private String imageId;
         private String imageUrl;
         private String uploadedBy;
@@ -209,44 +209,285 @@ public class AdminBrowseImages extends AppCompatActivity {
         public String getStoragePath() { return storagePath; }
         public void setStoragePath(String storagePath) { this.storagePath = storagePath; }
     }
-    /*private void addSampleImages() {
-        // Only add if empty
-        if (!imageList.isEmpty()) return;
 
-        // Sample image URLs (replace with actual image URLs or use placeholders)
-        String[] sampleUrls = {
-                "https://picsum.photos/200/300?random=1",
-                "https://picsum.photos/200/300?random=2",
-                "https://picsum.photos/200/300?random=3",
-                "https://picsum.photos/200/300?random=4"
-        };
+}*/
+/**
+ * Browse/delete images (US 03.06.01, 03.03.01)
+ * @author hasratsinghchauhan
+ */
 
-        for (int i = 0; i < sampleUrls.length; i++) {
-            ImageData sample = new ImageData(
-                    "sample_" + i,
-                    sampleUrls[i],
-                    "test_organizer",
-                    i % 2 == 0 ? "event_poster" : "profile_picture"
-            );
-            sample.setStoragePath("samples/image_" + i + ".jpg");
-            imageList.add(sample);
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.eventlottery.R;
+import com.example.eventlottery.ui.AdminImageAdapter;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Activity for administrators to browse and manage uploaded images.
+ * Supports:
+ * - US 03.06.01: Browse uploaded images
+ * - US 03.03.01: Remove images
+ *
+ * Updated to load images from Firestore (where they're stored as Base64 in events and users)
+ */
+public class AdminBrowseImages extends AppCompatActivity {
+
+    private RecyclerView recyclerViewImages;
+    private LinearLayout emptyStateLayout;
+    private ProgressBar progressBar;
+    private AdminImageAdapter imageAdapter;
+    private FirebaseFirestore db;
+    private List<ImageData> imageList;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.admin_browse_images);
+
+        ImageButton btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Browse Images");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        updateUI();
-    }*/
-    /*private void loadImages() {
+        db = FirebaseFirestore.getInstance();
+        imageList = new ArrayList<>();
+
+        initViews();
+        setupRecyclerView();
+        loadImages();
+    }
+
+    private void initViews() {
+        recyclerViewImages = findViewById(R.id.recyclerViewImages);
+        emptyStateLayout = findViewById(R.id.emptyStateLayout);
+        progressBar = findViewById(R.id.progressBar);
+    }
+
+    private void setupRecyclerView() {
+        imageAdapter = new AdminImageAdapter();
+        imageAdapter.setOnImageClickListener(new AdminImageAdapter.OnImageClickListener() {
+            @Override
+            public void onImageClick(ImageData image) {
+                showImageDetails(image);
+            }
+
+            @Override
+            public void onDeleteClick(ImageData image) {
+                showDeleteConfirmation(image);
+            }
+        });
+
+        recyclerViewImages.setLayoutManager(new GridLayoutManager(this, 2));
+        recyclerViewImages.setAdapter(imageAdapter);
+    }
+
+    private void loadImages() {
         progressBar.setVisibility(View.VISIBLE);
         imageList.clear();
 
-        // FOR TESTING: Add sample images
-        addSampleImages();  // Add this line
-        progressBar.setVisibility(View.GONE);
-        updateUI();
-        return;
-    */
-    /* Your existing Firebase code (comment out temporarily)
-    loadFromStorageFolder("event_posters", "event_poster");
-    loadFromStorageFolder("profile_pictures", "profile_picture");
-    */
+        // Load event posters from Firestore events collection
+        loadEventPosters();
 
+        // Load profile pictures from Firestore users collection
+        loadProfilePictures();
+    }
+
+    private void loadEventPosters() {
+        db.collection("events")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        String posterUrl = doc.getString("posterUrl");
+                        if (posterUrl != null && !posterUrl.isEmpty()) {
+                            ImageData imageData = new ImageData(
+                                    doc.getId(),
+                                    posterUrl,
+                                    doc.getString("organizerDeviceId"),
+                                    "event_poster"
+                            );
+                            imageData.setEventName(doc.getString("name"));
+                            imageData.setStoragePath("events/" + doc.getId());
+                            imageList.add(imageData);
+                        }
+                    }
+                    updateUI();
+                    progressBar.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Error loading event posters: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                    updateUI();
+                });
+    }
+
+    private void loadProfilePictures() {
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        String profilePhotoUri = doc.getString("profilePhotoUri");
+                        if (profilePhotoUri != null && !profilePhotoUri.isEmpty()) {
+                            ImageData imageData = new ImageData(
+                                    doc.getId(),
+                                    profilePhotoUri,
+                                    doc.getString("deviceId"),
+                                    "profile_picture"
+                            );
+                            imageData.setUserName(doc.getString("name"));
+                            imageData.setStoragePath("users/" + doc.getId());
+                            imageList.add(imageData);
+                        }
+                    }
+                    updateUI();
+                    progressBar.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Error loading profile pictures: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                    updateUI();
+                });
+    }
+
+    private void showImageDetails(ImageData image) {
+        String details;
+        if ("event_poster".equals(image.getType())) {
+            details = "Type: Event Poster\n" +
+                    "Event: " + image.getEventName() + "\n" +
+                    "Event ID: " + image.getImageId() + "\n" +
+                    "Organizer: " + image.getUploadedBy() + "\n" +
+                    "Storage: " + image.getStoragePath();
+        } else {
+            details = "Type: Profile Picture\n" +
+                    "User: " + image.getUserName() + "\n" +
+                    "User ID: " + image.getImageId() + "\n" +
+                    "Email: " + image.getUploadedBy() + "\n" +
+                    "Storage: " + image.getStoragePath();
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Image Details")
+                .setMessage(details)
+                .setPositiveButton("OK", null)
+                .setNeutralButton("Delete", (dialog, which) -> showDeleteConfirmation(image))
+                .show();
+    }
+
+    private void showDeleteConfirmation(ImageData image) {
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Image")
+                .setMessage("Delete this " +
+                        ("event_poster".equals(image.getType()) ? "event poster" : "profile picture") +
+                        "?\n\nThis cannot be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> deleteImage(image))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteImage(ImageData image) {
+        progressBar.setVisibility(View.VISIBLE);
+
+        if ("event_poster".equals(image.getType())) {
+            // Delete event poster - set posterUrl to null
+            db.collection("events")
+                    .document(image.getImageId())
+                    .update("posterUrl", null)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Event poster removed", Toast.LENGTH_SHORT).show();
+                        imageList.remove(image);
+                        updateUI();
+                        progressBar.setVisibility(View.GONE);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+        } else {
+            // Delete profile picture - set profilePhotoUri to null
+            db.collection("users")
+                    .document(image.getImageId())
+                    .update("profilePhotoUri", null)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Profile picture removed", Toast.LENGTH_SHORT).show();
+                        imageList.remove(image);
+                        updateUI();
+                        progressBar.setVisibility(View.GONE);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+        }
+    }
+
+    private void updateUI() {
+        runOnUiThread(() -> {
+            if (imageList.isEmpty()) {
+                recyclerViewImages.setVisibility(View.GONE);
+                emptyStateLayout.setVisibility(View.VISIBLE);
+            } else {
+                recyclerViewImages.setVisibility(View.VISIBLE);
+                emptyStateLayout.setVisibility(View.GONE);
+                imageAdapter.setImages(new ArrayList<>(imageList));
+            }
+        });
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
+
+    /**
+     * Simple model class for image data
+     */
+    public static class ImageData {
+        private String imageId;
+        private String imageUrl;
+        private String uploadedBy;
+        private String type;
+        private String storagePath;
+        private String eventName;
+        private String userName;
+
+        public ImageData(String imageId, String imageUrl, String uploadedBy, String type) {
+            this.imageId = imageId;
+            this.imageUrl = imageUrl;
+            this.uploadedBy = uploadedBy;
+            this.type = type;
+        }
+
+        // Getters and setters
+        public String getImageId() { return imageId; }
+        public String getImageUrl() { return imageUrl; }
+        public String getUploadedBy() { return uploadedBy; }
+        public String getType() { return type; }
+        public String getStoragePath() { return storagePath; }
+        public void setStoragePath(String storagePath) { this.storagePath = storagePath; }
+
+        public String getEventName() { return eventName; }
+        public void setEventName(String eventName) { this.eventName = eventName; }
+
+        public String getUserName() { return userName; }
+        public void setUserName(String userName) { this.userName = userName; }
+    }
 }

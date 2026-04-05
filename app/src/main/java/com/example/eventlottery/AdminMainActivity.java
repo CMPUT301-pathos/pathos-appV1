@@ -1,20 +1,6 @@
-/**
- * @author hasratsinghchauhan
- *  * P.S do not change the contents of the file w/o informing/collaboratng (with)  the author.
- * @version: 1.0
- * @see: activity_admin_main.xml
- */
-/**public class AdminMainActivity extends AppCompatActivity {
-@Override
-protected void onCreate(Bundle savedInstanceState) {
-super.onCreate(savedInstanceState);
-setContentView(R.layout.activity_admin_main);
-}
-}*/
 package com.example.eventlottery;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -25,60 +11,38 @@ import androidx.cardview.widget.CardView;
 import com.example.eventlottery.admin.AdminBrowseEventsActivity;
 import com.example.eventlottery.admin.AdminBrowseImages;
 import com.example.eventlottery.admin.AdminBrowseUsersActivity;
+import com.example.eventlottery.admin.AdminCommentModerationActivity;
 import com.example.eventlottery.admin.AdminNotificationLogs;
 import com.example.eventlottery.admin.AdminPolicyViolationsActivity;
+import com.example.eventlottery.domain.UserProfile;
+import com.example.eventlottery.firebase.FirestoreProfileRepository;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-
-
-/**
- * Admin Main Dashboard Activity
- * This activity serves as the central hub for all administrative functions in the application.
- * It provides a dashboard with platform statistics and navigation to various admin management screens.
- * Administrators can monitor key metrics and access tools for managing events, users, and content.
- *
- * Features include:
- *     Platform statistics display (total events, users, organizers)
- *     Navigation to event browsing and management (US 03.04.01)
- *     Navigation to user browsing and management (US 03.05.01)
- *     Placeholder for image management functionality (US 03.06.01)
- *     Real-time statistics loading from Firebase
- *User Stories Supported:
- *     US 03.04.01 - As an administrator, I want to be able to browse events
- *     US 03.05.01 - As an administrator, I want to be able to browse profiles
- *     US 03.06.01 - As an administrator, I want to be able to browse images
- * @author hasratsinghchauhan
- * @version 1.0
- * @see AdminBrowseEventsActivity
- * @see AdminBrowseUsersActivity
- * @see R.layout#activity_admin_main
- */
 public class AdminMainActivity extends AppCompatActivity {
 
-    private TextView tvEventsCount, tvUsersCount, tvOrganizersCount;
-    private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages;
+    private TextView tvEventsCount, tvUsersCount, tvOrganizersCount, tvPolicyViolations;
+    private CardView cardBrowseEvents, cardBrowseUsers, cardBrowseImages,
+            cardNotificationLogs, cardPolicyDetails, cardCommentModeration;
     private FirebaseFirestore db;
-    private CardView cardPolicyDetails;  // ← Make sure this line exists
-
-    private TextView tvPolicyViolations;
-
-    private CardView cardNotificationLogs;  // ADD THIS
+    private BottomNavigationView bottomNav;
+    private String currentDeviceId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_main);  // This layout already exists!
+        setContentView(R.layout.activity_admin_main);
 
         db = FirebaseFirestore.getInstance();
+        currentDeviceId = getIntent().getStringExtra("deviceId");
 
         initViews();
         setupClickListeners();
         loadStatistics();
+        loadAdminInfo();
+        setupBottomNavigation();
     }
-    /**
-     * Initializes all view references used in the dashboard.
-     * Binds the layout elements to their corresponding member variables.
-     */
+
     private void initViews() {
         tvEventsCount = findViewById(R.id.tvEventsCount);
         tvUsersCount = findViewById(R.id.tvUsersCount);
@@ -89,14 +53,42 @@ public class AdminMainActivity extends AppCompatActivity {
         cardBrowseImages = findViewById(R.id.cardBrowseImages);
         cardNotificationLogs = findViewById(R.id.cardNotificationLogs);
         cardPolicyDetails = findViewById(R.id.cardPolicyDetails);
-
+        cardCommentModeration = findViewById(R.id.cardCommentModeration);
+        bottomNav = findViewById(R.id.bottom_nav_admin);
     }
-    /**
-     * Configures click listeners for all navigation cards.
-     * Each card launches its corresponding admin management activity.
-     */
-    private void setupClickListeners()
-    {
+
+    private void setupBottomNavigation() {
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            // Map admin menu IDs to entrant menu IDs
+            if (id == R.id.nav_home || id == R.id.nav_events ||
+                    id == R.id.nav_organizer || id == R.id.nav_notifications ||
+                    id == R.id.nav_profile) {
+
+                // Navigate back to MainActivity with the selected tab
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra("deviceId", currentDeviceId);
+                intent.putExtra("selectedTab", id);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+
+            if (id == R.id.nav_admin_dashboard) {
+                // Already on admin dashboard
+                return true;
+            }
+
+            return false;
+        });
+
+        // Highlight the admin dashboard item
+        bottomNav.setSelectedItemId(R.id.nav_admin_dashboard);
+    }
+
+    private void setupClickListeners() {
         cardBrowseEvents.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminBrowseEventsActivity.class)));
 
@@ -111,94 +103,73 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardPolicyDetails.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminPolicyViolationsActivity.class)));
+
+        cardCommentModeration.setOnClickListener(v ->
+                startActivity(new Intent(this, AdminCommentModerationActivity.class)));
     }
-    /**
-     * Loads and displays platform statistics from Firebase.
-     * Fetches and displays:
-     *
-     *    Total number of events in the system
-     *    Total number of user profiles
-     *     Total number of users with organizer role
-     *
-     * Each query runs independently to prevent one failure from affecting others.
-     */
-   /* private void loadStatistics() {
-        // Count events
-        db.collection("events")
-                .get()
-                .addOnSuccessListener(query ->
-                        tvEventsCount.setText(String.valueOf(query.size())));
 
-        // Count users
-        db.collection("users")
-                .get()
-                .addOnSuccessListener(query ->
-                        tvUsersCount.setText(String.valueOf(query.size())));
-
-        // Count organizers
-        db.collection("users")
-                .whereEqualTo("role", "organizer")
-                .get()
-                .addOnSuccessListener(query ->
-                        tvOrganizersCount.setText(String.valueOf(query.size())));
-
-        SharedPreferences prefs = getSharedPreferences("AdminStats", MODE_PRIVATE);
-        int violations = prefs.getInt("policyViolations", 0);
-        tvPolicyViolations.setText(String.valueOf(violations));
-    }*/
     private void loadStatistics() {
-        // Count events
         db.collection("events")
                 .get()
                 .addOnSuccessListener(query ->
-                        tvEventsCount.setText(String.valueOf(query.size())));
+                        tvEventsCount.setText(String.valueOf(query.size())))
+                .addOnFailureListener(e -> Log.e("AdminMain", "Error loading events", e));
 
-        // Count users
         db.collection("users")
                 .get()
                 .addOnSuccessListener(query ->
-                        tvUsersCount.setText(String.valueOf(query.size())));
+                        tvUsersCount.setText(String.valueOf(query.size())))
+                .addOnFailureListener(e -> Log.e("AdminMain", "Error loading users", e));
 
-        // Count organizers
         db.collection("users")
                 .whereEqualTo("role", "organizer")
                 .get()
                 .addOnSuccessListener(query ->
-                        tvOrganizersCount.setText(String.valueOf(query.size())));
+                        tvOrganizersCount.setText(String.valueOf(query.size())))
+                .addOnFailureListener(e -> Log.e("AdminMain", "Error loading organizers", e));
 
-        // Load policy violations count - FIXED VERSION
-        try {
-            SharedPreferences prefs = getSharedPreferences("AdminStats", MODE_PRIVATE);
-            int violations = prefs.getInt("policyViolations", 0);
-            tvPolicyViolations.setText(String.valueOf(violations));
+        db.collection("policy_violations")
+                .whereEqualTo("violationType", "User Violation")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    tvPolicyViolations.setText(String.valueOf(snapshot.size()));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("AdminMain", "Error loading policy violations", e);
+                    tvPolicyViolations.setText("0");
+                });
+    }
 
-            // Debug log
-            Log.d("AdminMain", "📊 Policy violations loaded: " + violations);
-        } catch (Exception e) {
-            Log.e("AdminMain", "Error loading policy violations", e);
-            tvPolicyViolations.setText("0");
+    private void loadAdminInfo() {
+        if (currentDeviceId != null) {
+            new FirestoreProfileRepository().getProfile(currentDeviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+                @Override
+                public void onSuccess(UserProfile profile) {
+                    if (profile != null) {
+                        TextView tvAdminName = findViewById(R.id.tvAdminName);
+                        TextView tvAdminEmail = findViewById(R.id.tvAdminEmail);
+                        if (tvAdminName != null) tvAdminName.setText(profile.getName());
+                        if (tvAdminEmail != null) tvAdminEmail.setText(profile.getEmail());
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("AdminMain", "Error loading admin info", e);
+                }
+            });
         }
     }
-    /**
-     * Handles the Up navigation button in the action bar.
-     * Closes the current activity and returns to the previous screen.
-     *
-     * @return true to indicate the navigation was handled
-     */
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
-    }
 
-    /**
-     * Refreshes statistics when the activity resumes.
-     * Ensures the dashboard always shows current data when returning to it.
-     */
     @Override
     protected void onResume() {
         super.onResume();
         loadStatistics();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return true;
+    }
 }
