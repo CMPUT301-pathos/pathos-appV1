@@ -595,12 +595,40 @@ public class CreateEventFragment extends Fragment {
                         NotificationLogRepository repo = new FirestoreNotificationLogRepository();
                         PathosNotifyService notifyService = new PathosNotifyService(repo);
 
-                        for (String id : coOrganizerIds) {
-                            notifyService.notifyCoOrganizerAdded(
-                                    id,
-                                    eventId,
-                                    "You were added as a co-organizer for " + name
-                            );
+                        for (String deviceId : coOrganizerIds) {
+                            db.collection("users")
+                                    .document(deviceId)
+                                    .get()
+                                    .addOnSuccessListener(userDoc -> {
+                                        if (!userDoc.exists()) {
+                                            android.util.Log.d("COORG_NOTIFY", "User doc not found for deviceId=" + deviceId);
+                                            return;
+                                        }
+
+                                        String recipientName = safeString(userDoc.getString("name"));
+                                        android.util.Log.d("COORG_NOTIFY",
+                                                "deviceId=" + deviceId + ", recipientName=" + recipientName);
+
+                                        if (recipientName.isEmpty()) {
+                                            android.util.Log.d("COORG_NOTIFY", "Recipient name empty for deviceId=" + deviceId);
+                                            return;
+                                        }
+
+                                        notifyService.notifyCoOrganizerAdded(
+                                                        recipientName,
+                                                        eventId,
+                                                        "You were added as a co-organizer for " + name
+                                                )
+                                                .addOnSuccessListener(unused ->
+                                                        android.util.Log.d("COORG_NOTIFY",
+                                                                "Notification saved for recipient=" + recipientName))
+                                                .addOnFailureListener(e ->
+                                                        android.util.Log.e("COORG_NOTIFY",
+                                                                "Failed to save notification", e));
+                                    })
+                                    .addOnFailureListener(e ->
+                                            android.util.Log.e("COORG_NOTIFY",
+                                                    "Failed to fetch user for deviceId=" + deviceId, e));
                         }
                     }
 
