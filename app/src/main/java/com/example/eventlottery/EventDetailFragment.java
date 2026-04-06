@@ -390,6 +390,45 @@ public class EventDetailFragment extends Fragment {
 
         CommentRepository commentRepo = new FirestoreCommentRepository();
 
+        boolean isOrganizer = organizerDeviceId != null && organizerDeviceId.equals(deviceId);
+        adapter.setOrganizerMode(isOrganizer);
+        adapter.setOnCommentClickListener(new EventCommentAdapter.OnCommentClickListener() {
+            @Override
+            public void onCommentClick(EventComment comment) {}
+
+            @Override
+            public void onCommentLongClick(EventComment comment) {}
+
+            @Override
+            public void onDeleteClick(EventComment comment) {
+                new android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("Delete Comment")
+                        .setMessage("Delete this comment by " + comment.getUserName() + "?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            commentRepo.deleteComment(comment.getId(), eventId,
+                                    new CommentRepository.CommentCallback() {
+                                        @Override
+                                        public void onSuccess(List<EventComment> comments) {}
+
+                                        @Override
+                                        public void onSuccess(EventComment c) {
+                                            commentList.remove(comment);
+                                            adapter.setComments(new ArrayList<>(commentList));
+                                        }
+
+                                        @Override
+                                        public void onFailure(Exception e) {
+                                            Toast.makeText(getContext(),
+                                                    "Failed to delete comment.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            }
+        });
+
         // Load comments
         commentRepo.getComments(eventId, new CommentRepository.CommentCallback() {
             @Override
@@ -416,50 +455,59 @@ public class EventDetailFragment extends Fragment {
                 return;
             }
 
-            new FirestoreProfileRepository().getProfile(deviceId,
-                    new ProfileRepository.ProfileCallback() {
-                        @Override
-                        public void onSuccess(UserProfile profile) {
-                            String name = (profile != null && profile.getName() != null)
-                                    ? profile.getName() : "Anonymous";
-                            EventComment comment = new EventComment(eventId, deviceId, name, text);
-                            commentRepo.addComment(eventId, comment,
-                                    new CommentRepository.CommentCallback() {
-                                        @Override
-                                        public void onSuccess(EventComment addedComment) {
-                                            editComment.setText("");
-                                            InputMethodManager imm = (InputMethodManager)
-                                                    requireContext().getSystemService(
-                                                            android.content.Context.INPUT_METHOD_SERVICE);
-                                            if (imm != null) {
-                                                imm.hideSoftInputFromWindow(
-                                                        editComment.getWindowToken(), 0);
+            requireCompletedProfile(isCompleted -> {
+                if (!isCompleted) {
+                    Toast.makeText(requireContext(),
+                            "Complete your profile first to post comments.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                new FirestoreProfileRepository().getProfile(deviceId,
+                        new ProfileRepository.ProfileCallback() {
+                            @Override
+                            public void onSuccess(UserProfile profile) {
+                                String name = (profile != null && profile.getName() != null)
+                                        ? profile.getName() : "Anonymous";
+                                EventComment comment = new EventComment(eventId, deviceId, name, text);
+                                commentRepo.addComment(eventId, comment,
+                                        new CommentRepository.CommentCallback() {
+                                            @Override
+                                            public void onSuccess(EventComment addedComment) {
+                                                editComment.setText("");
+                                                InputMethodManager imm = (InputMethodManager)
+                                                        requireContext().getSystemService(
+                                                                android.content.Context.INPUT_METHOD_SERVICE);
+                                                if (imm != null) {
+                                                    imm.hideSoftInputFromWindow(
+                                                            editComment.getWindowToken(), 0);
+                                                }
+                                                commentList.add(0, addedComment);
+                                                adapter.setComments(commentList);
+                                                recyclerComments.scrollToPosition(0);
                                             }
-                                            commentList.add(0, addedComment);
-                                            adapter.setComments(commentList);
-                                            recyclerComments.scrollToPosition(0);
-                                        }
 
-                                        @Override
-                                        public void onSuccess(List<EventComment> comments) {
-                                            // Not used for addComment
-                                        }
+                                            @Override
+                                            public void onSuccess(List<EventComment> comments) {
+                                                // Not used for addComment
+                                            }
 
-                                        @Override
-                                        public void onFailure(Exception e) {
-                                            Toast.makeText(getContext(),
-                                                    "Failed to post comment.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        }
+                                            @Override
+                                            public void onFailure(Exception e) {
+                                                Toast.makeText(getContext(),
+                                                        "Failed to post comment.",
+                                                        Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            Toast.makeText(getContext(),
-                                    "Could not load profile.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(getContext(),
+                                        "Could not load profile.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            });
         });
     }
 
