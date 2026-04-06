@@ -609,13 +609,8 @@ public class CreateEventFragment extends Fragment {
                                         android.util.Log.d("COORG_NOTIFY",
                                                 "deviceId=" + deviceId + ", recipientName=" + recipientName);
 
-                                        if (recipientName.isEmpty()) {
-                                            android.util.Log.d("COORG_NOTIFY", "Recipient name empty for deviceId=" + deviceId);
-                                            return;
-                                        }
-
                                         notifyService.notifyCoOrganizerAdded(
-                                                        recipientName,
+                                                        deviceId,
                                                         eventId,
                                                         "You were added as a co-organizer for " + name
                                                 )
