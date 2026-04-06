@@ -203,7 +203,10 @@ public class DashboardFragment extends Fragment {
                         event.getName(),
                         event.getDescription(),
                         event.getOrganizerDeviceId(),
-                        event.getPosterUrl()))
+                        event.getPosterUrl(),
+                        event.isRequiresGeolocation(),
+                        event.getCoOrganizerIds()
+                ))
                 .addToBackStack(null)
                 .commit();
     }
