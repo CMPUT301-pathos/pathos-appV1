@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:background="@drawable/bg_gradient_header">
 
-    <!-- Header -->
+    <!-- ── Header ─────────────────────────────────────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -15,7 +15,7 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:paddingTop="48dp"
-        android:paddingBottom="24dp">
+        android:paddingBottom="16dp">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/ivProfilePhoto"
@@ -36,6 +36,7 @@
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:letterSpacing="0.1" />
+
     </LinearLayout>
 
     <ScrollView
@@ -52,7 +53,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- AI Assistant Card -->
+            <!-- ── AI Assistant Card ──────────────────────────── -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/card_ai_assistant"
                 android:layout_width="match_parent"
@@ -62,30 +63,32 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#FF1A1A2E">
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#00000000">
 
+                <!-- Gradient border wrapper -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/bg_ai_card"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:padding="18dp">
+                    android:padding="16dp">
 
-                    <!-- AI icon circle -->
+                    <!-- Icon container -->
                     <LinearLayout
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="#40FFFFFF"
+                        android:background="@drawable/bg_ai_icon"
                         android:gravity="center"
                         android:layout_marginEnd="14dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="✦"
-                            android:textSize="22sp"
-                            android:textColor="#FFFFFF" />
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_clipboard"
+                            app:tint="#FFFFFF" />
+
                     </LinearLayout>
 
                     <!-- Text -->
@@ -106,24 +109,24 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Ask about events, lotteries &amp; more"
+                            android:text="Find events, explain your status, lottery help"
                             android:textColor="#CCFFFFFF"
                             android:textSize="12sp"
                             android:layout_marginTop="2dp" />
+
                     </LinearLayout>
 
                     <!-- Arrow -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="›"
-                        android:textColor="#CCFFFFFF"
-                        android:textSize="24sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@android:drawable/ic_media_play"
+                        app:tint="#AAFFFFFF" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Upcoming events label -->
+            <!-- ── Upcoming events label ─────────────────────── -->
             <TextView
                 android:id="@+id/tvUpcomingTitle"
                 android:layout_width="match_parent"
@@ -135,7 +138,6 @@
                 android:letterSpacing="0.08"
                 android:layout_marginBottom="8dp" />
 
-            <!-- Empty state for upcoming events -->
             <TextView
                 android:id="@+id/tvUpcomingEmpty"
                 android:layout_width="match_parent"
@@ -148,7 +150,6 @@
                 android:paddingBottom="8dp"
                 android:visibility="gone" />
 
-            <!-- Dynamic upcoming events container -->
             <LinearLayout
                 android:id="@+id/containerUpcomingEvents"
                 android:layout_width="match_parent"
@@ -156,7 +157,7 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="24dp" />
 
-            <!-- Waitlist label -->
+            <!-- ── Waitlist label ────────────────────────────── -->
             <TextView
                 android:id="@+id/tvWaitlistTitle"
                 android:layout_width="match_parent"
@@ -168,7 +169,6 @@
                 android:letterSpacing="0.08"
                 android:layout_marginBottom="8dp" />
 
-            <!-- Empty state for waitlist -->
             <TextView
                 android:id="@+id/tvWaitlistEmpty"
                 android:layout_width="match_parent"
@@ -181,7 +181,6 @@
                 android:paddingBottom="8dp"
                 android:visibility="gone" />
 
-            <!-- Dynamic waitlist container -->
             <LinearLayout
                 android:id="@+id/containerWaitlist"
                 android:layout_width="match_parent"

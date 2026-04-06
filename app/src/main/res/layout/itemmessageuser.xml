@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- User message bubble — right aligned, gradient surface -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingBottom="6dp"
+    android:paddingTop="6dp"
+    android:gravity="end">
+
+    <!-- Bubble -->
+    <TextView
+        android:id="@+id/tv_message_text"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:background="@drawable/bg_bubble_user"
+        android:padding="12dp"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:lineSpacingMultiplier="1.5" />
+
+    <!-- Avatar circle -->
+    <TextView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:text="You"
+        android:textColor="#FFFFFF"
+        android:textSize="9sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:background="@drawable/bg_user_avatar"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp" />
+
+</LinearLayout>

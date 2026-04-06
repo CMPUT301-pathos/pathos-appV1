@@ -68,6 +68,8 @@ dependencies {
 
     implementation(libs.navigation.fragment)
 
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
     implementation(libs.espresso.idling.resource)
     implementation(libs.espresso.contrib) {
         exclude(group = "com.google.protobuf", module = "protobuf-lite")
