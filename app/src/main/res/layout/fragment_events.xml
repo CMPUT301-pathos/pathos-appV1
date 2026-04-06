@@ -122,7 +122,6 @@
     </LinearLayout>
 
     <!-- Event list -->
-    <!-- Event list - Remove ScrollView, use RecyclerView directly -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
