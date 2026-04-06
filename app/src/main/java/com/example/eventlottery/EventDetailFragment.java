@@ -51,6 +51,7 @@ public class EventDetailFragment extends Fragment {
     private static final String ARG_ORGANIZER_DEVICE_ID = "organizerDeviceId";
     private static final String ARG_POSTER_URL = "posterUrl";
     private static final String ARG_REQUIRES_GEOLOCATION = "requiresGeolocation";
+    private static final String ARG_CO_ORGANIZER_IDS = "coOrganizerIds";
 
     private String eventId;
     private String eventName;
@@ -58,6 +59,7 @@ public class EventDetailFragment extends Fragment {
     private String organizerDeviceId;
     private String posterUrl;
     private boolean requiresGeolocation;
+    private List<String> coOrganizerIds = new ArrayList<>();
 
     private WaitingListController waitingListController;
     private String deviceId;
@@ -74,14 +76,7 @@ public class EventDetailFragment extends Fragment {
                                                   String description,
                                                   String organizerDeviceId,
                                                   String posterUrl) {
-        return newInstance(
-                eventId,
-                eventName,
-                description,
-                organizerDeviceId,
-                posterUrl,
-                false
-        );
+        return newInstance(eventId, eventName, description, organizerDeviceId, posterUrl, false, new ArrayList<>());
     }
 
     public static EventDetailFragment newInstance(String eventId,
@@ -90,6 +85,16 @@ public class EventDetailFragment extends Fragment {
                                                   String organizerDeviceId,
                                                   String posterUrl,
                                                   boolean requiresGeolocation) {
+        return newInstance(eventId, eventName, description, organizerDeviceId, posterUrl, requiresGeolocation, new ArrayList<>());
+    }
+
+    public static EventDetailFragment newInstance(String eventId,
+                                                  String eventName,
+                                                  String description,
+                                                  String organizerDeviceId,
+                                                  String posterUrl,
+                                                  boolean requiresGeolocation,
+                                                  List<String> coOrganizerIds) {
         EventDetailFragment fragment = new EventDetailFragment();
         Bundle args = new Bundle();
         args.putString(ARG_EVENT_ID, eventId);
@@ -98,6 +103,7 @@ public class EventDetailFragment extends Fragment {
         args.putString(ARG_ORGANIZER_DEVICE_ID, organizerDeviceId);
         args.putString(ARG_POSTER_URL, posterUrl);
         args.putBoolean(ARG_REQUIRES_GEOLOCATION, requiresGeolocation);
+        args.putStringArrayList(ARG_CO_ORGANIZER_IDS, coOrganizerIds != null ? new ArrayList<>(coOrganizerIds) : new ArrayList<>());
         fragment.setArguments(args);
         return fragment;
     }
@@ -113,6 +119,8 @@ public class EventDetailFragment extends Fragment {
             organizerDeviceId = getArguments().getString(ARG_ORGANIZER_DEVICE_ID);
             posterUrl = getArguments().getString(ARG_POSTER_URL);
             requiresGeolocation = getArguments().getBoolean(ARG_REQUIRES_GEOLOCATION, false);
+            List<String> ids = getArguments().getStringArrayList(ARG_CO_ORGANIZER_IDS);
+            coOrganizerIds = ids != null ? ids : new ArrayList<>();
         }
 
         waitingListController = new WaitingListController(new FirestoreWaitListRepository());
@@ -172,8 +180,13 @@ public class EventDetailFragment extends Fragment {
         return view;
     }
 
+    private boolean isOrganizerOrCoOrganizer() {
+        if (organizerDeviceId != null && organizerDeviceId.equals(deviceId)) return true;
+        return coOrganizerIds != null && coOrganizerIds.contains(deviceId);
+    }
+
     private void configureParticipationButton(Button buttonJoin, TextView textWaitCount) {
-        if (organizerDeviceId != null && organizerDeviceId.equals(deviceId)) {
+        if (isOrganizerOrCoOrganizer()) {
             buttonJoin.setEnabled(false);
             buttonJoin.setText("You cannot join your own event");
             return;
@@ -390,8 +403,7 @@ public class EventDetailFragment extends Fragment {
 
         CommentRepository commentRepo = new FirestoreCommentRepository();
 
-        boolean isOrganizer = organizerDeviceId != null && organizerDeviceId.equals(deviceId);
-        adapter.setOrganizerMode(isOrganizer);
+        adapter.setOrganizerMode(isOrganizerOrCoOrganizer());
         adapter.setOnCommentClickListener(new EventCommentAdapter.OnCommentClickListener() {
             @Override
             public void onCommentClick(EventComment comment) {}
