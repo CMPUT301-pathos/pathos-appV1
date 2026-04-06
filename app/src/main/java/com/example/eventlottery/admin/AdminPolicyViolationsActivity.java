@@ -34,6 +34,9 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<PolicyViolation> violationList;
 
+    /**
+     * Entry point for the policy violations activity. Sets up the UI, Firestore, and initial loading.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +58,9 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
         checkAllViolations();
     }
 
+    /**
+     * Initializes view references for the policy violations activity.
+     */
     private void initViews() {
         recyclerView = findViewById(R.id.recyclerViewViolations);
         emptyState = findViewById(R.id.emptyStateLayout);
@@ -62,12 +68,18 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
         tvTotalViolations = findViewById(R.id.tvTotalViolations);
     }
 
+    /**
+     * Sets up the RecyclerView adapter and layout manager for displaying violations.
+     */
     private void setupRecyclerView() {
         adapter = new PolicyViolationAdapter();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Reads all policy violations from Firestore for debug logging, then loads only user violations.
+     */
     private void checkAllViolations() {
         Log.d(TAG, "=== CHECKING ALL VIOLATIONS IN DATABASE ===");
 
@@ -142,6 +154,9 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
                     updateUI();
                 });
     }*/
+    /**
+     * Loads only user-related policy violations and updates the UI with the retrieved list.
+     */
     private void loadUserViolations() {
         progressBar.setVisibility(View.VISIBLE);
         violationList.clear();
@@ -200,6 +215,9 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Refreshes the visible UI based on whether policy violations have been loaded.
+     */
     private void updateUI() {
         if (violationList.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -213,12 +231,18 @@ public class AdminPolicyViolationsActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Reloads user policy violations each time the activity resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         loadUserViolations();
     }
 
+    /**
+     * Handles the toolbar up button by finishing the activity.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

@@ -49,6 +49,9 @@ public class AdminEventDetails extends AppCompatActivity {
     private Event currentEvent;
     private String eventId;
 
+    /**
+     * Activity entry point. Sets up the event details screen and loads the selected event.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +76,9 @@ public class AdminEventDetails extends AppCompatActivity {
         loadEventDetails();
     }
 
+    /**
+     * Finds and stores references to the view elements used for displaying event details.
+     */
     private void initViews() {
         cardPoster = findViewById(R.id.cardPoster);
         ivEventPoster = findViewById(R.id.ivEventPoster);
@@ -90,10 +96,16 @@ public class AdminEventDetails extends AppCompatActivity {
         btnDeleteEvent = findViewById(R.id.btnDeleteEvent);
     }
 
+    /**
+     * Binds the delete button to show the confirmation dialog.
+     */
     private void setupDeleteButton() {
         btnDeleteEvent.setOnClickListener(v -> showDeleteConfirmation());
     }
 
+    /**
+     * Loads the event document from Firestore and displays its details.
+     */
     private void loadEventDetails() {
         db.collection("events")
                 .document(eventId)
@@ -120,6 +132,9 @@ public class AdminEventDetails extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Populates the UI with the current event's details.
+     */
     private void displayEventDetails() {
         tvDetailEventName.setText(currentEvent.getName());
 
@@ -195,6 +210,9 @@ public class AdminEventDetails extends AppCompatActivity {
         cardWarning.setVisibility(View.GONE); // Placeholder
     }
 
+    /**
+     * Computes the current event status based on registration dates.
+     */
     private String getEventStatus(Event event) {
         long now = System.currentTimeMillis();
         if (now < event.getRegistrationStart()) {
@@ -206,6 +224,9 @@ public class AdminEventDetails extends AppCompatActivity {
         }
     }
 
+    /**
+     * Shows a confirmation dialog before deleting the event.
+     */
     private void showDeleteConfirmation() {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Event")
@@ -217,6 +238,9 @@ public class AdminEventDetails extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Deletes the event document from Firestore and closes the screen on success.
+     */
     private void deleteEvent() {
         btnDeleteEvent.setEnabled(false);
         btnDeleteEvent.setText("Deleting...");
@@ -236,6 +260,10 @@ public class AdminEventDetails extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Handles action bar up navigation by closing the activity.
+     * @return true when navigation is handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

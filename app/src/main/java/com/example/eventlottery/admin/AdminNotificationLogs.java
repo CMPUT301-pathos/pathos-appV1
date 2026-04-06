@@ -52,6 +52,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
     private List<NotificationLog> originalLogList;
     private Map<String, String> userNamesCache; // Cache user names by device ID
 
+    /**
+     * Entry point for the activity. Initializes Firebase, UI controls, and begins loading logs.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +76,10 @@ public class AdminNotificationLogs extends AppCompatActivity {
         loadNotificationLogs();
         startRealtimeNotificationListener();
     }
+    /**
+     * Starts a real-time listener for notification documents across all Firestore collections.
+     * When any notification changes, the activity reloads the notification list.
+     */
     private void startRealtimeNotificationListener() {
         db.collectionGroup("notifications")
                 .addSnapshotListener((snapshots, error) -> {
@@ -89,6 +96,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Initializes all UI views used by this activity.
+     */
     private void initViews() {
         etSearch = findViewById(R.id.etSearchLogs);
         spinnerFilter = findViewById(R.id.spinnerFilter);
@@ -98,6 +108,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
         tvTotalLogs = findViewById(R.id.tvTotalLogs);
     }
 
+    /**
+     * Sets up the search text listener to filter notification logs as the user types.
+     */
     private void setupSearch() {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -113,6 +126,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
         });
     }
 
+    /**
+     * Configures the notification type filter spinner and applies filtering when a selection changes.
+     */
     private void setupFilter() {
         String[] filterOptions = {
                 "All Notifications",
@@ -143,6 +159,11 @@ public class AdminNotificationLogs extends AppCompatActivity {
         });
     }
 
+    /**
+     * Applies a notification type filter to the displayed log list.
+     *
+     * @param filter filter label selected from the spinner
+     */
     private void applyFilter(String filter) {
         List<NotificationLog> filteredList = new ArrayList<>();
 
@@ -193,6 +214,11 @@ public class AdminNotificationLogs extends AppCompatActivity {
         tvTotalLogs.setText("Total: " + filteredList.size() + " logs");
     }
 
+    /**
+     * Filters notification logs by the current search text over recipient, name, and message content.
+     *
+     * @param searchText search query entered by the user
+     */
     private void filterLogs(String searchText) {
         if (searchText.isEmpty()) {
             applyFilter(spinnerFilter.getSelectedItem().toString());
@@ -214,6 +240,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
         tvTotalLogs.setText("Total: " + filteredList.size() + " logs");
     }
 
+    /**
+     * Configures the RecyclerView and adapter used to display notification logs.
+     */
     private void setupRecyclerView() {
         logAdapter = new NotificationLogAdapter();
         logAdapter.setOnLogClickListener(this::showLogDetails);
@@ -348,6 +377,10 @@ public class AdminNotificationLogs extends AppCompatActivity {
                 });
     }
     */
+    /**
+     * Loads all notification logs across Firestore using a collectionGroup query.
+     * This method also resolves user names for each recipient and updates the UI.
+     */
     private void loadNotificationLogs() {
         progressBar.setVisibility(View.VISIBLE);
         logList.clear();
@@ -487,6 +520,12 @@ public class AdminNotificationLogs extends AppCompatActivity {
                     updateUI();
                 });
     }
+    /**
+     * Fetches the display name for a user from Firestore and caches it to avoid duplicate lookups.
+     *
+     * @param userId the user document ID to resolve
+     * @param log the notification log object to update with the fetched name
+     */
     private void fetchUserName(String userId, NotificationLog log) {
         if (userId == null || userId.isEmpty()) {
             return;
@@ -521,6 +560,11 @@ public class AdminNotificationLogs extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Shows a dialog with detailed information for the selected notification log.
+     *
+     * @param log the selected notification log entry
+     */
     private void showLogDetails(NotificationLog log) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.getDefault());
 
@@ -540,6 +584,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Updates the activity UI to show either the log list or the empty state.
+     */
     private void updateUI() {
         if (logList.isEmpty()) {
             recyclerViewLogs.setVisibility(View.GONE);
@@ -553,6 +600,9 @@ public class AdminNotificationLogs extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles the toolbar navigation up action by closing the activity.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

@@ -57,7 +57,18 @@ public class GeoService {
      * Callback used when requesting the current device location.
      */
     public interface GeoCallback {
+        /**
+         * Called when location retrieval succeeds.
+         *
+         * @param locationData the captured location information
+         */
         void onSuccess(@NonNull LocationData locationData);
+
+        /**
+         * Called when location retrieval fails.
+         *
+         * @param errorMessage reason for the failure
+         */
         void onFailure(@NonNull String errorMessage);
     }
 
@@ -70,6 +81,14 @@ public class GeoService {
         private final float accuracyMeters;
         private final long capturedAtMillis;
 
+        /**
+         * Constructs immutable location data.
+         *
+         * @param latitude latitude in degrees
+         * @param longitude longitude in degrees
+         * @param accuracyMeters accuracy in meters
+         * @param capturedAtMillis timestamp when the location was captured
+         */
         public LocationData(double latitude, double longitude,
                             float accuracyMeters, long capturedAtMillis) {
             this.latitude = latitude;
@@ -78,18 +97,30 @@ public class GeoService {
             this.capturedAtMillis = capturedAtMillis;
         }
 
+        /**
+         * Returns the captured latitude.
+         */
         public double getLatitude() {
             return latitude;
         }
 
+        /**
+         * Returns the captured longitude.
+         */
         public double getLongitude() {
             return longitude;
         }
 
+        /**
+         * Returns the reported accuracy in meters.
+         */
         public float getAccuracyMeters() {
             return accuracyMeters;
         }
 
+        /**
+         * Returns the timestamp when the location was recorded.
+         */
         public long getCapturedAtMillis() {
             return capturedAtMillis;
         }
@@ -210,6 +241,10 @@ public class GeoService {
     }
 
     @SuppressLint("MissingPermission")
+    /**
+     * Requests a fresh location update from available providers, falling back to
+     * a cached last-known location if the request times out.
+     */
     private void requestFreshLocation(@NonNull Context context,
                                       @NonNull LocationManager locationManager,
                                       @Nullable Location fallbackLocation,
@@ -295,6 +330,9 @@ public class GeoService {
 
     @Nullable
     @SuppressLint("MissingPermission")
+    /**
+     * Returns the best available last-known location from enabled providers.
+     */
     private Location getBestLastKnownLocation(@NonNull Context context,
                                               @NonNull LocationManager locationManager) {
         Location best = null;
@@ -331,6 +369,10 @@ public class GeoService {
     }
 
     @Nullable
+    /**
+     * Compares two location candidates and returns the one that is newer or
+     * more accurate.
+     */
     private Location chooseBetterLocation(@Nullable Location currentBest,
                                           @Nullable Location candidate) {
         if (candidate == null) {
@@ -363,6 +405,9 @@ public class GeoService {
         return age <= FRESH_LOCATION_WINDOW_MS;
     }
 
+    /**
+     * Safely removes location updates for the given listener, ignoring errors.
+     */
     private void removeUpdatesSafely(@NonNull LocationManager locationManager,
                                      @Nullable LocationListener listener) {
         if (listener == null) {

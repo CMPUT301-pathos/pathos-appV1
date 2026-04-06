@@ -253,6 +253,9 @@ public class AdminBrowseImages extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<ImageData> imageList;
 
+    /**
+     * Activity entry point. Initializes UI components, sets up the toolbar, and starts image loading.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -274,12 +277,18 @@ public class AdminBrowseImages extends AppCompatActivity {
         loadImages();
     }
 
+    /**
+     * Gets references to the main layout views for the image browser.
+     */
     private void initViews() {
         recyclerViewImages = findViewById(R.id.recyclerViewImages);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         progressBar = findViewById(R.id.progressBar);
     }
 
+    /**
+     * Sets up the RecyclerView adapter and click handlers for image items.
+     */
     private void setupRecyclerView() {
         imageAdapter = new AdminImageAdapter();
         imageAdapter.setOnImageClickListener(new AdminImageAdapter.OnImageClickListener() {
@@ -298,6 +307,10 @@ public class AdminBrowseImages extends AppCompatActivity {
         recyclerViewImages.setAdapter(imageAdapter);
     }
 
+    /**
+     * Begins loading images for both event posters and user profile pictures.
+     * Shows a progress indicator while loading and clears any existing image data.
+     */
     private void loadImages() {
         progressBar.setVisibility(View.VISIBLE);
         imageList.clear();
@@ -309,6 +322,10 @@ public class AdminBrowseImages extends AppCompatActivity {
         loadProfilePictures();
     }
 
+    /**
+     * Loads event poster images from the Firestore events collection.
+     * Adds each found poster to the shared image list and refreshes the UI.
+     */
     private void loadEventPosters() {
         db.collection("events")
                 .get()
@@ -338,6 +355,10 @@ public class AdminBrowseImages extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Loads user profile pictures from the Firestore users collection.
+     * Adds each found profile image to the shared image list and refreshes the UI.
+     */
     private void loadProfilePictures() {
         db.collection("users")
                 .get()
@@ -367,6 +388,9 @@ public class AdminBrowseImages extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Shows a details dialog for the selected image and allows the admin to delete it.
+     */
     private void showImageDetails(ImageData image) {
         String details;
         if ("event_poster".equals(image.getType())) {
@@ -391,6 +415,9 @@ public class AdminBrowseImages extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Prompts the admin to confirm deletion of the selected image.
+     */
     private void showDeleteConfirmation(ImageData image) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Image")
@@ -402,6 +429,10 @@ public class AdminBrowseImages extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Removes the selected image reference from Firestore and updates the UI.
+     * Event posters are cleared from events documents, profile pictures are cleared from users documents.
+     */
     private void deleteImage(ImageData image) {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -438,6 +469,9 @@ public class AdminBrowseImages extends AppCompatActivity {
         }
     }
 
+    /**
+     * Refreshes the displayed image list and empty-state view on the UI thread.
+     */
     private void updateUI() {
         runOnUiThread(() -> {
             if (imageList.isEmpty()) {
@@ -451,6 +485,10 @@ public class AdminBrowseImages extends AppCompatActivity {
         });
     }
 
+    /**
+     * Handles the action bar up button by closing the activity.
+     * @return true when navigation up has been handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();
@@ -458,7 +496,7 @@ public class AdminBrowseImages extends AppCompatActivity {
     }
 
     /**
-     * Simple model class for image data
+     * Simple model class for image list entries.
      */
     public static class ImageData {
         private String imageId;
@@ -469,6 +507,9 @@ public class AdminBrowseImages extends AppCompatActivity {
         private String eventName;
         private String userName;
 
+        /**
+         * Creates a new ImageData object to represent an image entry.
+         */
         public ImageData(String imageId, String imageUrl, String uploadedBy, String type) {
             this.imageId = imageId;
             this.imageUrl = imageUrl;

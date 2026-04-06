@@ -125,20 +125,35 @@ public class CreateEventFragment extends Fragment {
     public CreateEventFragment() {
     }
 
+    /**
+     * Returns the Espresso idling resource used during publish operations.
+     *
+     * This is used for UI tests to wait until background event publishing
+     * has completed.
+     */
     public static IdlingResource getPublishIdlingResource() {
         return PUBLISH_IDLING;
     }
 
+    /**
+     * Signals the Espresso idling resource that a publish operation has started.
+     */
     private static void beginPublishAsync() {
         PUBLISH_IDLING.increment();
     }
 
+    /**
+     * Signals the Espresso idling resource that a publish operation has finished.
+     */
     private static void endPublishAsync() {
         if (!PUBLISH_IDLING.isIdleNow()) {
             PUBLISH_IDLING.decrement();
         }
     }
 
+    /**
+     * Inflates the create event layout and wires UI controls to fragment state.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,

@@ -31,12 +31,26 @@ public class PosterService {
     private static final int MAX_WIDTH = 600;
     private static final int JPEG_QUALITY = 70;
 
+    /**
+     * Creates the poster service backed by the default Firestore instance.
+     */
     public PosterService() {
         this.db = FirebaseFirestore.getInstance();
     }
 
     public interface PosterCallback {
+        /**
+         * Called when the poster operation succeeds.
+         *
+         * @param posterUrl the stored poster URL, or null after deletion
+         */
         void onSuccess(String posterUrl);
+
+        /**
+         * Called when the poster operation fails.
+         *
+         * @param e exception describing the failure
+         */
         void onFailure(Exception e);
     }
 

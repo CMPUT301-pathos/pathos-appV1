@@ -79,6 +79,10 @@ public class EntrantCategorizationTest {
         allRecords.add(r8);
     }
 
+    /**
+     * Verifies that filtering for WAITING status returns only entrants
+     * in the waiting state.
+     */
     @Test
     public void testWaitingSectionShowsOnlyWaitingEntrants() {
         List<WaitListRecord> waiting = filterByStatuses(allRecords, WaitStatus.WAITING);
@@ -88,6 +92,10 @@ public class EntrantCategorizationTest {
         }
     }
 
+    /**
+     * Verifies that filtering for INVITED status returns only entrants
+     * in the invited state.
+     */
     @Test
     public void testInvitedSectionShowsOnlyInvitedEntrants() {
         List<WaitListRecord> invited = filterByStatuses(allRecords, WaitStatus.INVITED);
@@ -97,6 +105,10 @@ public class EntrantCategorizationTest {
         }
     }
 
+    /**
+     * Verifies that filtering for ACCEPTED status returns only entrants
+     * who have accepted (enrolled in) the event.
+     */
     @Test
     public void testEnrolledSectionShowsOnlyAcceptedEntrants() {
         List<WaitListRecord> enrolled = filterByStatuses(allRecords, WaitStatus.ACCEPTED);
@@ -106,6 +118,10 @@ public class EntrantCategorizationTest {
         }
     }
 
+    /**
+     * Verifies that filtering for CANCELLED and DECLINED statuses returns
+     * all entrants who declined or were cancelled.
+     */
     @Test
     public void testCancelledSectionShowsCancelledAndDeclined() {
         List<WaitListRecord> cancelled = filterByStatuses(allRecords, WaitStatus.CANCELLED, WaitStatus.DECLINED);
@@ -115,6 +131,10 @@ public class EntrantCategorizationTest {
         }
     }
 
+    /**
+     * Verifies that summing all categorized sections (waiting, invited,
+     * enrolled, cancelled) equals the total number of entrants.
+     */
     @Test
     public void testAllEntrantsAreCategorized() {
         List<WaitListRecord> waiting = filterByStatuses(allRecords, WaitStatus.WAITING);
@@ -126,6 +146,9 @@ public class EntrantCategorizationTest {
         assertEquals(allRecords.size(), total);
     }
 
+    /**
+     * Verifies that filtering an empty list returns empty sections for all statuses.
+     */
     @Test
     public void testEmptyListReturnsEmptySections() {
         List<WaitListRecord> empty = new ArrayList<>();
@@ -135,6 +158,10 @@ public class EntrantCategorizationTest {
         assertEquals(0, filterByStatuses(empty, WaitStatus.CANCELLED, WaitStatus.DECLINED).size());
     }
 
+    /**
+     * Verifies that accepting an invitation transitions an entrant from
+     * INVITED status to ACCEPTED (enrolled) status.
+     */
     @Test
     public void testAcceptTransitionMovesFromInvitedToEnrolled() {
         WaitListRecord record = new WaitListRecord("event1", "device99");
@@ -150,6 +177,10 @@ public class EntrantCategorizationTest {
         assertEquals(1, filterByStatuses(list, WaitStatus.ACCEPTED).size());
     }
 
+    /**
+     * Verifies that declining an invitation transitions an entrant from
+     * INVITED status to DECLINED status.
+     */
     @Test
     public void testDeclineTransitionMovesFromInvitedToCancelled() {
         WaitListRecord record = new WaitListRecord("event1", "device99");
@@ -165,12 +196,20 @@ public class EntrantCategorizationTest {
         assertEquals(1, filterByStatuses(list, WaitStatus.CANCELLED, WaitStatus.DECLINED).size());
     }
 
+    /**
+     * Verifies that attempting to accept an invitation when an entrant
+     * has WAITING status (not INVITED) throws IllegalStateException.
+     */
     @Test(expected = IllegalStateException.class)
     public void testAcceptFromWaitingThrowsException() {
         WaitListRecord record = new WaitListRecord("event1", "device99");
         record.acceptInvitation(); // should throw — status is WAITING, not INVITED
     }
 
+    /**
+     * Verifies that attempting to decline an invitation when an entrant
+     * has WAITING status (not INVITED) throws IllegalStateException.
+     */
     @Test(expected = IllegalStateException.class)
     public void testDeclineFromWaitingThrowsException() {
         WaitListRecord record = new WaitListRecord("event1", "device99");

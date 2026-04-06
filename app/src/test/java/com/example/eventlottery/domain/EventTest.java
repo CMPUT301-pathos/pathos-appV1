@@ -11,6 +11,10 @@ import java.util.Map;
 
 public class EventTest {
 
+    /**
+     * Verifies that setCoOrganizerIds(null) converts null to an empty list
+     * rather than maintaining null state.
+     */
     @Test
     public void setCoOrganizerIds_null_setsEmptyList() {
         Event event = new Event();
@@ -20,6 +24,10 @@ public class EventTest {
         assertTrue(event.getCoOrganizerIds().isEmpty());
     }
 
+    /**
+     * Verifies that getCoOrganizerIds() returns a defensive copy that does not
+     * allow external modification of the internal co-organizer list.
+     */
     @Test
     public void getCoOrganizerIds_returnsDefensiveCopy() {
         Event event = new Event();
@@ -32,6 +40,10 @@ public class EventTest {
         assertFalse(event.getCoOrganizerIds().contains("co3"));
     }
 
+    /**
+     * Verifies that toMap() includes the coOrganizerIds field as a list
+     * for Firestore serialization.
+     */
     @Test
     public void toMap_includesCoOrganizerIds() {
         Event event = new Event();

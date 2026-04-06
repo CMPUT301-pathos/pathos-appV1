@@ -21,48 +21,72 @@ public class EventAdminTest {
         event = new Event();
     }
 
+    /**
+     * Verifies that setting and getting event ID works correctly.
+     */
     @Test
     public void testEventId() {
         event.setId("event123");
         assertEquals("event123", event.getId());
     }
 
+    /**
+     * Verifies that setting and getting event name works correctly.
+     */
     @Test
     public void testEventName() {
         event.setName("Swimming Lessons");
         assertEquals("Swimming Lessons", event.getName());
     }
 
+    /**
+     * Verifies that setting and getting event description works correctly.
+     */
     @Test
     public void testEventDescription() {
         event.setDescription("Beginner swimming class");
         assertEquals("Beginner swimming class", event.getDescription());
     }
 
+    /**
+     * Verifies that setting and getting organizer device ID works correctly.
+     */
     @Test
     public void testOrganizerDeviceId() {
         event.setOrganizerDeviceId("device456");
         assertEquals("device456", event.getOrganizerDeviceId());
     }
 
+    /**
+     * Verifies that setting and getting poster URL works correctly.
+     */
     @Test
     public void testPosterUrl() {
         event.setPosterUrl("https://example.com/poster.jpg");
         assertEquals("https://example.com/poster.jpg", event.getPosterUrl());
     }
 
+    /**
+     * Verifies that setting and getting event category works correctly.
+     */
     @Test
     public void testCategory() {
         event.setCategory("Sports");
         assertEquals("Sports", event.getCategory());
     }
 
+    /**
+     * Verifies that setting and getting event location works correctly.
+     */
     @Test
     public void testLocation() {
         event.setLocation("Pool A");
         assertEquals("Pool A", event.getLocation());
     }
 
+    /**
+     * Verifies that setting and getting event date (timestamp) works correctly.
+     */
     @Test
     public void testEventDate() {
         long testDate = 1700000000000L;
@@ -70,6 +94,9 @@ public class EventAdminTest {
         assertEquals(testDate, event.getEventDate());
     }
 
+    /**
+     * Verifies that setting and getting registration start time works correctly.
+     */
     @Test
     public void testRegistrationStart() {
         long testStart = 1690000000000L;
@@ -77,6 +104,9 @@ public class EventAdminTest {
         assertEquals(testStart, event.getRegistrationStart());
     }
 
+    /**
+     * Verifies that setting and getting registration end time works correctly.
+     */
     @Test
     public void testRegistrationEnd() {
         long testEnd = 1710000000000L;
@@ -84,18 +114,28 @@ public class EventAdminTest {
         assertEquals(testEnd, event.getRegistrationEnd());
     }
 
+    /**
+     * Verifies that setting and getting event capacity works correctly.
+     */
     @Test
     public void testCapacity() {
         event.setCapacity(50);
         assertEquals(50, event.getCapacity());
     }
 
+    /**
+     * Verifies that setting and getting draw size (number of winners) works correctly.
+     */
     @Test
     public void testDrawSize() {
         event.setDrawSize(10);
         assertEquals(10, event.getDrawSize());
     }
 
+    /**
+     * Verifies that registration is not open when the current time is before
+     * the registration start time.
+     */
     @Test
     public void testRegistrationOpen_WhenBeforeStart() {
         long now = System.currentTimeMillis();
@@ -104,6 +144,10 @@ public class EventAdminTest {
         assertFalse(event.isRegistrationOpen());
     }
 
+    /**
+     * Verifies that registration is open when the current time falls within
+     * the registration window.
+     */
     @Test
     public void testRegistrationOpen_WhenDuringRegistration() {
         long now = System.currentTimeMillis();
@@ -112,6 +156,10 @@ public class EventAdminTest {
         assertTrue(event.isRegistrationOpen());
     }
 
+    /**
+     * Verifies that registration is not open when the current time is after
+     * the registration end time.
+     */
     @Test
     public void testRegistrationOpen_WhenAfterEnd() {
         long now = System.currentTimeMillis();
@@ -120,6 +168,10 @@ public class EventAdminTest {
         assertFalse(event.isRegistrationOpen());
     }
 
+    /**
+     * Verifies that the parameterized Event constructor correctly initializes
+     * name, description, and organizer device ID fields.
+     */
     @Test
     public void testConstructorWithParameters() {
         Event newEvent = new Event("Test Event", "Description", "org123");
@@ -129,6 +181,10 @@ public class EventAdminTest {
         assertNull(newEvent.getPosterUrl());
     }
 
+    /**
+     * Verifies that toMap() serializes all event properties correctly
+     * for Firestore storage.
+     */
     @Test
     public void testToMap() {
         event.setId("event123");

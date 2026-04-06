@@ -21,6 +21,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+/**
+ * Admin dashboard activity for viewing app analytics and navigating admin tools.
+ *
+ * This activity displays counts for events, users, organizers, and policy
+ * violations, and provides navigation to admin-specific sections of the app.
+ */
 public class AdminMainActivity extends AppCompatActivity {
 
     private TextView tvEventsCount, tvUsersCount, tvOrganizersCount, tvPolicyViolations;
@@ -30,6 +36,9 @@ public class AdminMainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNav;
     private String currentDeviceId;
 
+    /**
+     * Sets up the admin dashboard activity and initializes admin data.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +54,9 @@ public class AdminMainActivity extends AppCompatActivity {
         setupBottomNavigation();
     }
 
+    /**
+     * Finds and stores references to all UI elements used by the admin dashboard.
+     */
     private void initViews() {
         tvEventsCount = findViewById(R.id.tvEventsCount);
         tvUsersCount = findViewById(R.id.tvUsersCount);
@@ -59,6 +71,12 @@ public class AdminMainActivity extends AppCompatActivity {
         bottomNav = findViewById(R.id.bottom_nav_admin);
     }
 
+    /**
+     * Hooks the bottom navigation bar into the admin and regular user flows.
+     *
+     * Selecting a regular user tab routes back to the normal MainActivity,
+     * while the admin dashboard remains selected when already active.
+     */
     private void setupBottomNavigation() {
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -90,6 +108,9 @@ public class AdminMainActivity extends AppCompatActivity {
         bottomNav.setSelectedItemId(R.id.nav_admin_dashboard);
     }
 
+    /**
+     * Registers click listeners for all admin cards to launch supporting admin screens.
+     */
     private void setupClickListeners() {
         cardBrowseEvents.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminBrowseEventsActivity.class)));
@@ -110,10 +131,20 @@ public class AdminMainActivity extends AppCompatActivity {
                 startActivity(new Intent(this, AdminCommentModerationActivity.class)));
 
     }
+    /**
+     * Resets the displayed policy violations count to zero.
+     *
+     * This method is currently used for demo purposes only.
+     */
     private void resetDisplayedCount() {
         tvPolicyViolations.setText("0");
         Toast.makeText(this, "Count reset to 0 for demo", Toast.LENGTH_SHORT).show();
     }
+    /**
+     * Loads admin metrics from Firestore and displays them in the dashboard.
+     *
+     * This includes counts for events, users, organizers, and policy violations.
+     */
     private void loadStatistics() {
         db.collection("events")
                 .get()
@@ -146,6 +177,9 @@ public class AdminMainActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Loads the current admin user's profile information and updates the header.
+     */
     private void loadAdminInfo() {
         if (currentDeviceId != null) {
             new FirestoreProfileRepository().getProfile(currentDeviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
@@ -167,12 +201,18 @@ public class AdminMainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Refreshes the dashboard metrics each time the activity resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         loadStatistics();
     }
 
+    /**
+     * Handles the action bar back/up button by closing the admin activity.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

@@ -54,6 +54,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<UserProfile> userList;
 
+    /**
+     * Activity entry point. Initializes UI, Firestore, and loads the user list.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,6 +76,10 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         setupRecyclerView();
         loadUsers();
     }
+    /**
+     * Records a policy violation for a user in Firestore.
+     * This is used when deleting or disciplining a user for policy breaches.
+     */
     private void savePolicyViolationRecord(UserProfile user, String reason) {
         String adminName = "Admin"; // You might want to get actual admin name
 
@@ -96,12 +103,18 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Finds and caches the main view references used by this activity.
+     */
     private void initViews() {
         etSearch = findViewById(R.id.searchUsers);
         recyclerViewUsers = findViewById(R.id.recyclerViewUsers);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
     }
 
+    /**
+     * Sets up the search input to filter users as the text changes.
+     */
     private void setupSearch() {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -117,6 +130,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Configures the RecyclerView and binds user interaction callbacks.
+     */
     private void setupRecyclerView() {
         userAdapter = new AdminUserAdapter();
         userAdapter.setOnUserClickListener(new AdminUserAdapter.OnUserClickListener() {
@@ -140,6 +156,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         recyclerViewUsers.setAdapter(userAdapter);
     }
 
+    /**
+     * Loads all user profiles from Firestore and refreshes the user list.
+     */
     private void loadUsers() {
         db.collection("users")
                 .get()
@@ -162,6 +181,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Displays a dialog with user profile details.
+     */
     private void showUserDetails(UserProfile user) {
         String details = "Name: " + user.getName() + "\n" +
                 "Email: " + user.getEmail() + "\n" +
@@ -221,6 +243,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
  .show();
  }
 */
+    /**
+     * Shows a delete confirmation dialog with selectable reasons.
+     */
     private void showDeleteConfirmation(UserProfile user) {
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_delete_user, null);
@@ -401,6 +426,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                     updateUI();
                 });
     }*/
+    /**
+     * Deletes a user and optionally logs a policy violation record.
+     */
     private void deleteUser(UserProfile user, String reason) {
         boolean isPolicyViolation = reason.equals("Violated app policy");
 
@@ -435,6 +463,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Deletes the user document from Firestore and updates the UI.
+     */
     private void performUserDeletion(UserProfile user, boolean isPolicyViolation) {
         db.collection("users")
                 .document(user.getDeviceId())
@@ -452,6 +483,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                     Toast.makeText(this, "Error deleting user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+    /**
+     * Increments the local policy violation counter in shared preferences.
+     */
     private void incrementPolicyViolationCount() {
         try {
             // Use MODE_PRIVATE to ensure proper access
@@ -474,6 +508,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Prompts the admin to confirm removal of organizer privileges from a user.
+     */
     private void showRemoveOrganizerConfirmation(UserProfile user) {
         if (!"organizer".equals(user.getRole())) {
             Toast.makeText(this, "User is not an organizer", Toast.LENGTH_SHORT).show();
@@ -489,6 +526,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Demotes the selected organizer to an entrant role in Firestore.
+     */
     private void removeOrganizerRole(UserProfile user) {
         db.collection("users")
                 .document(user.getDeviceId())
@@ -503,6 +543,9 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Refreshes the UI based on whether there are users to display.
+     */
     private void updateUI() {
         if (userList.isEmpty()) {
             recyclerViewUsers.setVisibility(View.GONE);
@@ -514,6 +557,10 @@ public class AdminBrowseUsersActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles action bar navigation up by closing the activity.
+     * @return true when navigation is handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

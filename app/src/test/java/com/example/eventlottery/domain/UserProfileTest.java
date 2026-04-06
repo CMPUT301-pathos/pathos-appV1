@@ -16,6 +16,10 @@ import static org.junit.Assert.*;
  */
 public class UserProfileTest {
 
+    /**
+     * Verifies that the default constructor creates an instance that allows
+     * setting all profile fields via setters.
+     */
     @Test
     public void defaultConstructor_allowsSetters() {
         UserProfile p = new UserProfile();
@@ -30,6 +34,10 @@ public class UserProfileTest {
         assertEquals("123", p.getPhoneNumber());
     }
 
+    /**
+     * Verifies that the parameterized constructor correctly initializes all fields
+     * and defaults the role to "entrant".
+     */
     @Test
     public void constructor_defaultRoleIsEntrant() {
         UserProfile p = new UserProfile("device_123", "Test User", "test@example.com", "555");
@@ -43,6 +51,10 @@ public class UserProfileTest {
         assertEquals("entrant", p.getRole());
     }
 
+    /**
+     * Verifies that the five-parameter constructor correctly initializes all fields
+     * including the role parameter, for both organizer and admin roles.
+     */
     @Test
     public void constructor_withRole_setsRoleCorrectly() {
         UserProfile organizer = new UserProfile("dev_org", "Org", "org@example.com", "", "organizer");
@@ -52,6 +64,10 @@ public class UserProfileTest {
         assertEquals("admin", admin.getRole());
     }
 
+    /**
+     * Verifies that getEventHistory() never returns null, always returning
+     * an empty list for new profiles.
+     */
     @Test
     public void eventHistory_getEventHistory_neverNull() {
         UserProfile p = new UserProfile("device_9", "History User", "h@example.com", "");

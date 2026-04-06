@@ -39,6 +39,9 @@ public class FirestoreWaitListRepositoryTest {
         repository = new FirestoreWaitListRepository(null);
     }
 
+    /**
+     * Verifies that getLongValue() returns a Long when the field contains a long value.
+     */
     @Test
     public void getLongValue_whenFieldIsLong_returnsLongValue() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -49,6 +52,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Long.valueOf(123L), value);
     }
 
+    /**
+     * Verifies that getLongValue() converts an Integer field value to Long.
+     */
     @Test
     public void getLongValue_whenFieldIsInteger_returnsConvertedLong() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -59,6 +65,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Long.valueOf(42L), value);
     }
 
+    /**
+     * Verifies that getLongValue() converts a Double field value to Long by truncating.
+     */
     @Test
     public void getLongValue_whenFieldIsDouble_returnsConvertedLong() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -69,6 +78,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Long.valueOf(123L), value);
     }
 
+    /**
+     * Verifies that getLongValue() returns null when the field is missing or null.
+     */
     @Test
     public void getLongValue_whenFieldMissing_returnsNull() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -79,6 +91,9 @@ public class FirestoreWaitListRepositoryTest {
         assertNull(value);
     }
 
+    /**
+     * Verifies that getDoubleValue() returns a Double when the field contains a double value.
+     */
     @Test
     public void getDoubleValue_whenFieldIsDouble_returnsDoubleValue() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -89,6 +104,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Double.valueOf(53.5461), value);
     }
 
+    /**
+     * Verifies that getDoubleValue() converts a Long field value to Double.
+     */
     @Test
     public void getDoubleValue_whenFieldIsLong_returnsConvertedDouble() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -99,6 +117,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Double.valueOf(53.0), value);
     }
 
+    /**
+     * Verifies that getDoubleValue() converts an Integer field value to Double.
+     */
     @Test
     public void getDoubleValue_whenFieldIsInteger_returnsConvertedDouble() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -109,6 +130,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Double.valueOf(51.0), value);
     }
 
+    /**
+     * Verifies that getDoubleValue() returns null when the field is missing or null.
+     */
     @Test
     public void getDoubleValue_whenFieldMissing_returnsNull() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -119,6 +143,9 @@ public class FirestoreWaitListRepositoryTest {
         assertNull(value);
     }
 
+    /**
+     * Verifies that getFloatValue() returns a Float when the field contains a float value.
+     */
     @Test
     public void getFloatValue_whenFieldIsFloat_returnsFloatValue() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -129,6 +156,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Float.valueOf(8.5f), value);
     }
 
+    /**
+     * Verifies that getFloatValue() converts a Double field value to Float.
+     */
     @Test
     public void getFloatValue_whenFieldIsDouble_returnsConvertedFloat() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -139,6 +169,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Float.valueOf(8.5f), value);
     }
 
+    /**
+     * Verifies that getFloatValue() converts a Long field value to Float.
+     */
     @Test
     public void getFloatValue_whenFieldIsLong_returnsConvertedFloat() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -149,6 +182,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Float.valueOf(8.0f), value);
     }
 
+    /**
+     * Verifies that getFloatValue() converts an Integer field value to Float.
+     */
     @Test
     public void getFloatValue_whenFieldIsInteger_returnsConvertedFloat() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -159,6 +195,9 @@ public class FirestoreWaitListRepositoryTest {
         assertEquals(Float.valueOf(12.0f), value);
     }
 
+    /**
+     * Verifies that getFloatValue() returns null when the field is missing or null.
+     */
     @Test
     public void getFloatValue_whenFieldMissing_returnsNull() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -169,6 +208,10 @@ public class FirestoreWaitListRepositoryTest {
         assertNull(value);
     }
 
+    /**
+     * Verifies that fromDocument() correctly maps all document fields including
+     * geolocation data into a WaitListRecord domain object.
+     */
     @Test
     public void fromDocument_withGeoFields_mapsRecordCorrectly() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);
@@ -196,6 +239,10 @@ public class FirestoreWaitListRepositoryTest {
         assertTrue(record.hasJoinLocation());
     }
 
+    /**
+     * Verifies that fromDocument() defaults to WAITING status when the document
+     * contains an invalid status string and omits location fields.
+     */
     @Test
     public void fromDocument_withInvalidStatus_defaultsToWaiting() throws Exception {
         DocumentSnapshot doc = mock(DocumentSnapshot.class);

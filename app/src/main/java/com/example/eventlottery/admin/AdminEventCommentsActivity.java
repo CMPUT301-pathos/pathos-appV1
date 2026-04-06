@@ -63,6 +63,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
     // Real-time listener registration
     private ListenerRegistration commentsListener;
 
+    /**
+     * Activity entry point. Initializes Firestore, event context, and starts real-time comment listening.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +93,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
         startRealtimeCommentListener();
     }
 
+    /**
+     * Lifecycle cleanup to stop Firestore listeners and prevent leaks.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -97,12 +103,18 @@ public class AdminEventCommentsActivity extends AppCompatActivity
         stopRealtimeCommentListener();
     }
 
+    /**
+     * Finds and stores references to the activity views.
+     */
     private void initViews() {
         recyclerView = findViewById(R.id.recyclerViewComments);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         progressBar = findViewById(R.id.progressBar);
     }
 
+    /**
+     * Sets up the support toolbar and title for the comments screen.
+     */
     private void setupToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -112,6 +124,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Configures the RecyclerView adapter for comment items.
+     */
     private void setupRecyclerView() {
         adapter = new EventCommentAdapter();
         adapter.setOnCommentClickListener(this);
@@ -119,12 +134,18 @@ public class AdminEventCommentsActivity extends AppCompatActivity
         recyclerView.setAdapter(adapter);
     }
 
+    /**
+     * Inflates the options menu for comment moderation actions.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_event_comments, menu);
         return true;
     }
 
+    /**
+     * Handles action bar menu clicks for refresh and delete-all actions.
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_refresh) {
@@ -276,6 +297,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
 
         Log.d(TAG, "Comment listener registered");
     }*/
+    /**
+     * Runs a test Firestore query to verify comment retrieval for the current event.
+     */
     private void testQuery() {
         db.collection("comments")
                 .whereEqualTo("eventId", eventId)
@@ -291,6 +315,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
                     Log.e(TAG, "❌ Query failed: " + e.getMessage());
                 });
     }
+    /**
+     * Starts a Firestore real-time listener for comments under the current event.
+     */
     private void startRealtimeCommentListener() {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -417,6 +444,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
 
         return comment;
     }*/
+    /**
+     * Converts a Firestore document snapshot into an EventComment object.
+     */
     private EventComment documentToComment(DocumentSnapshot doc) {
         EventComment comment = new EventComment();
         comment.setId(doc.getId());
@@ -439,6 +469,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
     /**
      * Check if comment with given ID exists in list
      */
+    /**
+     * Returns true if the comment list already contains a comment with the given ID.
+     */
     private boolean containsCommentId(String commentId) {
         for (EventComment c : commentsList) {
             if (c.getId().equals(commentId)) {
@@ -450,6 +483,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
 
     /**
      * Update an existing comment in the list
+     */
+    /**
+     * Updates an existing comment in the local list when Firestore signals a modification.
      */
     private void updateCommentInList(EventComment updatedComment) {
         for (int i = 0; i < commentsList.size(); i++) {
@@ -463,6 +499,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
     /**
      * Remove a comment from the list by ID
      */
+    /**
+     * Removes a comment from the local list by its document ID.
+     */
     private void removeCommentFromList(String commentId) {
         for (int i = commentsList.size() - 1; i >= 0; i--) {
             if (commentsList.get(i).getId().equals(commentId)) {
@@ -472,6 +511,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Refreshes the comments list UI based on current data.
+     */
     private void updateUI() {
         Log.d(TAG, "Updating UI - " + commentsList.size() + " comments");
 
@@ -487,6 +529,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Handles comment click by showing details and delete prompt.
+     */
     @Override
     public void onCommentClick(EventComment comment) {
         // Show comment details with delete option
@@ -498,16 +543,25 @@ public class AdminEventCommentsActivity extends AppCompatActivity
                 .show();
     }
 
+    /**
+     * Handles long-clicks by opening the delete dialog for the comment.
+     */
     @Override
     public void onCommentLongClick(EventComment comment) {
         showDeleteDialog(comment);
     }
 
+    /**
+     * Handles explicit delete button clicks for comments.
+     */
     @Override
     public void onDeleteClick(EventComment comment) {
         showDeleteDialog(comment);
     }
 
+    /**
+     * Shows a dialog to choose a violation reason before deleting a comment.
+     */
     private void showDeleteDialog(EventComment comment) {
         String[] reasons = {
                 "Spam or advertising",
@@ -577,6 +631,9 @@ public class AdminEventCommentsActivity extends AppCompatActivity
                             Toast.LENGTH_SHORT).show();
                 });
     }*/
+    /**
+     * Deletes a comment and logs a policy violation record in Firestore.
+     */
     private void deleteComment(EventComment comment, String reason) {
         progressBar.setVisibility(View.VISIBLE);
 
@@ -625,6 +682,10 @@ public class AdminEventCommentsActivity extends AppCompatActivity
                 });
     }
 
+    /**
+     * Handles action bar up navigation by closing the activity.
+     * @return true when navigation is handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

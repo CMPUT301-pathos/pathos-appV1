@@ -69,15 +69,17 @@ public class EventsFragment extends Fragment {
 
     public EventsFragment() {}
 
+    /**
+     * Inflates the events fragment layout and sets up event browsing UI.
+     *
+     * Initializes the event list, search field, filter button, and QR code
+     * scanner launcher.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-
-
-
-        View root = inflater.inflate(R.layout.fragment_events, container, false);
         de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto = root.findViewById(R.id.ivProfilePhoto);
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
         new FirestoreProfileRepository().getProfile(deviceId, new ProfileRepository.ProfileCallback() {
@@ -224,6 +226,9 @@ public class EventsFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Loads all public events from Firestore and displays them in the list.
+     */
     private void loadEvents() {
         eventController.loadAllEvents(new EventRepository.ListCallback() {
             @Override
@@ -240,6 +245,10 @@ public class EventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Applies all active filters (keyword, category, location, capacity, date, open-only)
+     * to the event list and updates the display.
+     */
     private void applyAllFilters() {
         java.util.List<com.example.eventlottery.domain.EventSummary> results =
                 eventController.applyAllFilters(
@@ -255,6 +264,9 @@ public class EventsFragment extends Fragment {
         updateFilterButtonLabel();
     }
 
+    /**
+     * Updates the filter button label to indicate which filters are active.
+     */
     private void updateFilterButtonLabel() {
         String label = "Filter";
         if (!selectedCategory.equals("All")) label += ": " + selectedCategory;
@@ -269,6 +281,9 @@ public class EventsFragment extends Fragment {
         btnFilter.setText(label);
     }
 
+    /**
+     * Shows the event filter dialog allowing users to set search criteria.
+     */
     private void showFilterDialog() {
         View dialogView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_filter_events, null);
@@ -360,6 +375,12 @@ public class EventsFragment extends Fragment {
         dialog.show();
     }
 
+    /**
+     * Updates the date label in the filter dialog to reflect the selected date.
+     *
+     * @param tv text view to update
+     * @param dateMs selected date in milliseconds, or 0 for no date set
+     */
     private void updateDateLabel(TextView tv, long dateMs) {
         if (dateMs == 0) {
             tv.setText("Show events after: Any date");
@@ -370,6 +391,12 @@ public class EventsFragment extends Fragment {
         }
     }
 
+    /**
+     * Checks whether the current user has completed their profile before
+     * allowing protected actions like QR scanning.
+     *
+     * @param onAllowed action to run if the profile is complete
+     */
     private void requireCompletedProfile(Runnable onAllowed) {
         String deviceId = com.example.eventlottery.service.DeviceIdentityService
                 .getDeviceId(requireContext());

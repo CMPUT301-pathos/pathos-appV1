@@ -108,6 +108,9 @@ public class ProfileDeleteTest {
         controller = new ProfileController(fakeProfileRepo, fakeEventRepo);
     }
 
+    /**
+     * Verifies that deleteProfile() removes the profile from the repository.
+     */
     @Test
     public void deleteProfile_removesProfileFromRepository() {
         UserProfile profile = new UserProfile("device1", "Test User", "test@example.com", "123", "user");
@@ -128,6 +131,10 @@ public class ProfileDeleteTest {
         });
     }
 
+    /**
+     * Verifies that deleteProfile() for a non-existent device succeeds
+     * without error and returns null.
+     */
     @Test
     public void deleteProfile_nonExistent_stillSucceeds() {
         controller.deleteProfile("no_such_device", new ProfileRepository.ProfileCallback() {
@@ -143,6 +150,10 @@ public class ProfileDeleteTest {
         });
     }
 
+    /**
+     * Verifies that deleteProfileAndOwnedEvents() deletes all events owned by
+     * the organizer before deleting the profile itself.
+     */
     @Test
     public void deleteProfileAndOwnedEvents_deletesEventsFirst_thenProfile() {
         UserProfile profile = new UserProfile("org1", "Organizer", "org@example.com", "", "organizer");
@@ -172,6 +183,10 @@ public class ProfileDeleteTest {
         });
     }
 
+    /**
+     * Verifies that deleteProfileAndOwnedEvents() for a user with no owned events
+     * deletes only the profile.
+     */
     @Test
     public void deleteProfileAndOwnedEvents_noEvents_deletesProfileOnly() {
         UserProfile profile = new UserProfile("device2", "User", "user@example.com", "", "user");

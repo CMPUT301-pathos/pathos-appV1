@@ -15,6 +15,10 @@ import static org.junit.Assert.*;
  */
 public class EventCommentTest {
 
+    /**
+     * Verifies that the EventComment constructor stores all provided fields
+     * (event ID, device ID, author name, text).
+     */
     @Test
     public void constructor_storesAllFields() {
         EventComment c = new EventComment("event1", "device1", "Alice", "Hello!");
@@ -24,6 +28,10 @@ public class EventCommentTest {
         assertEquals("Hello!", c.getText());
     }
 
+    /**
+     * Verifies that the EventComment constructor automatically sets the
+     * creation timestamp to the current time when the comment is created.
+     */
     @Test
     public void constructor_setsTimestamp() {
         long before = System.currentTimeMillis();

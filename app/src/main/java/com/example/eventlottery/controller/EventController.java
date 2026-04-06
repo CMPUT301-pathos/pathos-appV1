@@ -30,10 +30,20 @@ public class EventController {
     private final EventRepository eventRepository;
     private List<EventSummary> allEvents = new ArrayList<>();
 
+    /**
+     * Creates a new event controller instance.
+     *
+     * @param eventRepository repository used to load and manage events
+     */
     public EventController(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
 
+    /**
+     * Loads all events from the repository and caches them in memory.
+     *
+     * @param callback callback invoked with the loaded events or failure
+     */
     public void loadAllEvents(EventRepository.ListCallback callback) {
         eventRepository.getAllEvents(new EventRepository.ListCallback() {
             @Override
@@ -49,6 +59,12 @@ public class EventController {
         });
     }
 
+    /**
+     * Filters events by category.
+     *
+     * @param category category name or "All" for no filter
+     * @return list of matching events
+     */
     public List<EventSummary> filterByCategory(String category) {
         if (category == null || category.equals("All")) return allEvents;
         List<EventSummary> filtered = new ArrayList<>();
@@ -58,6 +74,12 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Filters events by location substring.
+     *
+     * @param location location text to match (case-insensitive)
+     * @return list of matching events
+     */
     public List<EventSummary> filterByLocation(String location) {
         if (location == null || location.isEmpty()) return allEvents;
         List<EventSummary> filtered = new ArrayList<>();
@@ -69,6 +91,11 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Filters events where registration is currently open.
+     *
+     * @return list of open registration events
+     */
     public List<EventSummary> filterByRegistrationOpen() {
         List<EventSummary> filtered = new ArrayList<>();
         for (EventSummary e : allEvents) {
@@ -77,6 +104,13 @@ public class EventController {
         return filtered;
     }
 
+    /**
+     * Filters events by category and optionally by open registration.
+     *
+     * @param category category name or "All" for no category filter
+     * @param openOnly true to include only events with open registration
+     * @return list of matching events
+     */
     public List<EventSummary> filterByCategoryAndAvailability(String category, boolean openOnly) {
         List<EventSummary> filtered = new ArrayList<>();
         for (EventSummary e : allEvents) {
@@ -208,6 +242,12 @@ public class EventController {
         return results;
     }
 
+    /**
+     * Builds a human-readable lottery criteria summary for the given event.
+     *
+     * @param event event summary to generate criteria for
+     * @return formatted lottery criteria text
+     */
     public String getLotteryCriteria(EventSummary event) {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(
                 "MMM dd, yyyy", java.util.Locale.getDefault());

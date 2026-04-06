@@ -73,8 +73,10 @@ public class WaitingListControllerTest {
     }
 
     // Testing US 01.06.02
-
-    @Test
+    /**
+     * Verifies that joining a waiting list creates a record and sets status to WAITING.
+     * Tests US 01.06.02: Sign up for an event from the event details.
+     */    @Test
     public void joinWaitingList_addsRecordWithWaitingStatus() {
 
        //Checks that when a user joins an event’s waiting list, the controller creates a WaitListRecord
@@ -87,6 +89,10 @@ public class WaitingListControllerTest {
         assertEquals(WaitStatus.WAITING, record.getStatus());
     }
 
+    /**
+     * Verifies that leaving a waiting list removes the entrant's record from the repository.
+     * Tests US 01.06.02: Cancel signup when user withdraws from waiting list.
+     */
     @Test
     public void leaveWaitingList_removesRecord() {
 
@@ -100,6 +106,10 @@ public class WaitingListControllerTest {
 
     // Testing US 02.02.01
 
+    /**
+     * Verifies that filtering for WAITING records returns only entrants with WAITING status.
+     * Tests US 02.02.01: Organizer views the list of entrants who joined the waiting list.
+     */
     @Test
     public void getRecordsByStatus_waiting_returnsOnlyWaitingEntrants() {
 
@@ -116,6 +126,10 @@ public class WaitingListControllerTest {
         });
     }
 
+    /**
+     * Verifies that filtering for WAITING records returns empty list when no WAITING entrants exist.
+     * Tests US 02.02.01: Organizer views the list (edge case with no waiting entrants).
+     */
     @Test
     public void getRecordsByStatus_waiting_emptyList_returnsEmpty() {
 
@@ -130,6 +144,10 @@ public class WaitingListControllerTest {
 
     // Testing US 02.06.01
 
+    /**
+     * Verifies that filtering for INVITED records returns only entrants with INVITED status.
+     * Tests US 02.06.01: Organizer views the list of all chosen/invited entrants.
+     */
     @Test
     public void getRecordsByStatus_invited_returnsOnlyInvitedEntrants() {
 
@@ -146,6 +164,10 @@ public class WaitingListControllerTest {
         });
     }
 
+    /**
+     * Verifies that filtering for INVITED records returns empty list when no INVITED entrants exist.
+     * Tests US 02.06.01: Organizer views the list (edge case with no invited entrants).
+     */
     @Test
     public void getRecordsByStatus_invited_emptyList_returnsEmpty() {
 
@@ -159,6 +181,10 @@ public class WaitingListControllerTest {
 
     // Testing US 02.07.01
 
+    /**
+     * Verifies that WAITING entrants can be retrieved for notification purposes.
+     * Tests US 02.07.01: Organizer sends notifications to all entrants on the waiting list.
+     */
     @Test
     public void notifyWaiting_returnsWaitingEntrants() {
         // Check that all WAITING entrants for an event can be fetched
@@ -176,6 +202,10 @@ public class WaitingListControllerTest {
 
     // Testing US 02.07.02
 
+    /**
+     * Verifies that INVITED entrants can be retrieved for notification purposes.
+     * Tests US 02.07.02: Organizer sends notifications to all selected entrants.
+     */
     @Test
     public void notifySelected_returnsInvitedEntrants() {
         // Checks that all INVITED entrants for an event can be fetched

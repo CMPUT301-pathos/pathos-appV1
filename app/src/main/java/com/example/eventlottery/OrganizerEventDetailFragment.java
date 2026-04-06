@@ -61,6 +61,12 @@ public class OrganizerEventDetailFragment extends Fragment {
     private FirestoreProfileRepository profileRepository;
     private PathosRaffleService raffleService;
 
+    /**
+     * Factory method to create an organizer event detail fragment.
+     *
+     * @param event the event to display details for
+     * @return configured fragment instance
+     */
     public static OrganizerEventDetailFragment newInstance(EventSummary event) {
         OrganizerEventDetailFragment fragment = new OrganizerEventDetailFragment();
         Bundle args = new Bundle();
@@ -70,6 +76,9 @@ public class OrganizerEventDetailFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes fragment arguments and sets up repositories for managing event data.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +91,12 @@ public class OrganizerEventDetailFragment extends Fragment {
         raffleService = new PathosRaffleService(waitListRepository);
     }
 
+    /**
+     * Inflates the organizer event detail layout and sets up entrant management UI.
+     *
+     * Displays containers for waiting, invited, enrolled, and cancelled entrants,
+     * along with buttons for running lotteries, sending notifications, and exporting data.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -121,6 +136,9 @@ public class OrganizerEventDetailFragment extends Fragment {
     }
 
     // US 02.07.01- Send a notification to all entrants currently on the waiting list
+    /**
+     * Sends a notification to all entrants currently on the waiting list.
+     */
     private void notifyWaitingEntrants() {
 
        //get all waitlist records with status = WAITING
@@ -173,6 +191,9 @@ public class OrganizerEventDetailFragment extends Fragment {
     }
 
     // US 02.07.02 -  Send a notification to all selected entrants
+    /**
+     * Sends a notification to all selected (invited) entrants.
+     */
     private void notifySelectedEntrants() {
         waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.INVITED,
                 new WaitListRepository.WaitListCallBack() {
@@ -216,6 +237,9 @@ public class OrganizerEventDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Marks all invited entrants as cancelled and sends them cancellation notifications.
+     */
     private void cancelAllInvited() {
         waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.INVITED,
                 new WaitListRepository.WaitListCallBack() {
@@ -264,6 +288,9 @@ public class OrganizerEventDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Exports the list of enrolled entrants as a CSV file and shares it with the organizer.
+     */
     private void exportEnrolledCsv() {
         waitListRepository.getRecordsByStatusAsync(eventId, WaitStatus.ACCEPTED,
                 new WaitListRepository.WaitListCallBack() {
@@ -324,6 +351,12 @@ public class OrganizerEventDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Writes the provided CSV rows to a file and shares it via the system
+     * share sheet for email or file transfer.
+     *
+     * @param rows list of string arrays representing CSV rows
+     */
     private void writeCsvAndShare(List<String[]> rows) {
         try {
             File cachePath = new File(requireContext().getCacheDir(), "csv_exports");
@@ -370,6 +403,10 @@ public class OrganizerEventDetailFragment extends Fragment {
         }
         return value;
     }
+    /**
+     * Loads all entrants for this event and organizes them by status into
+     * separate containers for display.
+     */
     private void loadEntrants() {
         waitListRepository.getRecordsByEventAsync(eventId, new WaitListRepository.WaitListCallBack() {
             @Override
@@ -424,6 +461,16 @@ public class OrganizerEventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Creates and displays an entrant row in the appropriate status container.
+     *
+     * Fetches the entrant's profile and displays their name along with status
+     * and a remove button (if applicable).
+     *
+     * @param container the layout container to add the row to
+     * @param deviceId device id of the entrant
+     * @param status current waitlist status of the entrant
+     */
     private void addEntrantRow(LinearLayout container, String deviceId, WaitStatus status) {
         View row = LayoutInflater.from(getContext())
                 .inflate(R.layout.item_entrant_row, container, false);
@@ -467,6 +514,14 @@ public class OrganizerEventDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * Removes an entrant from the event by marking them as cancelled
+     * and sending them a cancellation notification.
+     *
+     * @param container the layout container holding the entrant row
+     * @param row the entrant row view to remove from display
+     * @param deviceId device id of the entrant being removed
+     */
     private void removeEntrant(LinearLayout container, View row, String deviceId) {
         waitListRepository.updateStatus(eventId, deviceId, WaitStatus.CANCELLED);
 
@@ -497,6 +552,10 @@ public class OrganizerEventDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Shows a dialog allowing the organizer to enter the number of entrants
+     * to draw for a lottery, then runs the initial lottery draw.
+     */
     private void showLotteryDrawDialog() {
         android.widget.EditText etCount = new android.widget.EditText(requireContext());
         etCount.setHint("Number of entrants to draw");
@@ -520,6 +579,12 @@ public class OrganizerEventDetailFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Runs a lottery draw selecting the specified number of entrants from
+     * the waiting list and marking them as invited.
+     *
+     * @param count number of entrants to select
+     */
     private void runLotteryDraw(int count) {
         raffleService.drawInitial(eventId, count, new PathosRaffleService.RaffleCallback() {
             @Override

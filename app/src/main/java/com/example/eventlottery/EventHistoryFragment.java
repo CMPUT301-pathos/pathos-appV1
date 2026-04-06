@@ -51,6 +51,9 @@ public class EventHistoryFragment extends Fragment {
     private FirestoreEventRepository eventRepo;
     private String deviceId;
 
+    /**
+     * Initializes repository instances and retrieves the current device id.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +62,9 @@ public class EventHistoryFragment extends Fragment {
         deviceId = DeviceIdentityService.getDeviceId(requireContext());
     }
 
+    /**
+     * Inflates the event history layout and initializes the history list view.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -75,6 +81,11 @@ public class EventHistoryFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Loads completed waitlist records for the current device and refreshes the UI.
+     *
+     * Only accepted, cancelled, and declined statuses are shown in history.
+     */
     private void loadHistory() {
         waitListRepo.getRecordsForDevice(deviceId, new WaitListRepository.WaitListCallBack() {
             @Override
@@ -140,6 +151,9 @@ public class EventHistoryFragment extends Fragment {
         });
     }
 
+    /**
+     * Reloads history each time the fragment becomes active.
+     */
     @Override
     public void onResume() {
         super.onResume();

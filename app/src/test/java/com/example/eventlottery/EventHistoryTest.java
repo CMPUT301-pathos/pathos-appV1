@@ -44,6 +44,10 @@ public class EventHistoryTest {
         return filtered;
     }
 
+    /**
+     * Verifies that an EventHistoryRecord stores all field values correctly
+     * (event ID, name, date, status).
+     */
     @Test
     public void testHistoryRecord_storesFieldsCorrectly() {
         EventHistoryRecord record = new EventHistoryRecord(
@@ -54,6 +58,10 @@ public class EventHistoryTest {
         assertEquals("ACCEPTED", record.getStatus());
     }
 
+    /**
+     * Verifies that an EventHistoryRecord automatically sets the timestamp
+     * to the current time when created.
+     */
     @Test
     public void testHistoryRecord_timestampSetOnCreation() {
         long before = System.currentTimeMillis();
@@ -64,6 +72,9 @@ public class EventHistoryTest {
         assertTrue(record.getTimestamp() <= after);
     }
 
+    /**
+     * Verifies that history filtering includes records with ACCEPTED status.
+     */
     @Test
     public void testHistoryFilter_acceptedStatusIncluded() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -73,6 +84,9 @@ public class EventHistoryTest {
         assertEquals(WaitStatus.ACCEPTED, filtered.get(0).getStatus());
     }
 
+    /**
+     * Verifies that history filtering includes records with CANCELLED status.
+     */
     @Test
     public void testHistoryFilter_cancelledStatusIncluded() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -82,6 +96,9 @@ public class EventHistoryTest {
         assertEquals(WaitStatus.CANCELLED, filtered.get(0).getStatus());
     }
 
+    /**
+     * Verifies that history filtering includes records with DECLINED status.
+     */
     @Test
     public void testHistoryFilter_declinedStatusIncluded() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -91,6 +108,9 @@ public class EventHistoryTest {
         assertEquals(WaitStatus.DECLINED, filtered.get(0).getStatus());
     }
 
+    /**
+     * Verifies that history filtering excludes records with WAITING status.
+     */
     @Test
     public void testHistoryFilter_waitingStatusExcluded() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -99,6 +119,9 @@ public class EventHistoryTest {
         assertEquals(0, filtered.size());
     }
 
+    /**
+     * Verifies that history filtering excludes records with INVITED status.
+     */
     @Test
     public void testHistoryFilter_invitedStatusExcluded() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -107,6 +130,10 @@ public class EventHistoryTest {
         assertEquals(0, filtered.size());
     }
 
+    /**
+     * Verifies that history filtering with mixed statuses returns only those
+     * with ACCEPTED, CANCELLED, or DECLINED status.
+     */
     @Test
     public void testHistoryFilter_mixedRecords_onlyHistoryStatusesReturned() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -120,6 +147,9 @@ public class EventHistoryTest {
         assertEquals(3, filtered.size());
     }
 
+    /**
+     * Verifies that history filtering on an empty list returns an empty list.
+     */
     @Test
     public void testHistoryFilter_emptyList_returnsEmpty() {
         List<WaitListRecord> records = new ArrayList<>();
@@ -127,6 +157,10 @@ public class EventHistoryTest {
         assertTrue(filtered.isEmpty());
     }
 
+    /**
+     * Verifies that an EventHistoryRecord's status can be updated
+     * after creation.
+     */
     @Test
     public void testHistoryRecord_statusCanBeUpdated() {
         EventHistoryRecord record = new EventHistoryRecord(

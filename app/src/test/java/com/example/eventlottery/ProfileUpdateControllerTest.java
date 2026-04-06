@@ -38,6 +38,10 @@ public class ProfileUpdateControllerTest {
         }
     }
 
+    /**
+     * Verifies that when updateProfile is called with valid input, the repository receives all fields.
+     * Tests US 01.02.02: Update profile with name, email, and phone.
+     */
     @Test
     public void updateProfile_validInput_callsRepositoryWithCorrectFields() {
         FakeProfileRepository repo = new FakeProfileRepository();
@@ -63,6 +67,10 @@ public class ProfileUpdateControllerTest {
         assertEquals(phone, repo.lastPhone);
     }
 
+    /**
+     * Verifies that phone is optional when updating a profile—empty string is accepted.
+     * Tests US 01.02.02: Update profile where phone is an optional field.
+     */
     @Test
     public void updateProfile_allowsEmptyPhone() {
         FakeProfileRepository repo = new FakeProfileRepository();

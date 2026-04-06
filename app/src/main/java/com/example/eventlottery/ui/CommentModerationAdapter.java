@@ -26,15 +26,32 @@ public class CommentModerationAdapter extends RecyclerView.Adapter<CommentModera
         void onDeleteClick(EventComment comment);
     }
 
+    /**
+     * Sets the listener for delete actions on moderated comments.
+     *
+     * @param listener listener invoked when a comment delete action occurs
+     */
     public void setOnCommentDeleteListener(OnCommentDeleteListener listener) {
         this.deleteListener = listener;
     }
 
+    /**
+     * Updates the list of comments displayed by the adapter.
+     *
+     * @param comments new list of event comments
+     */
     public void setComments(List<EventComment> comments) {
         this.comments = comments;
         notifyDataSetChanged();
     }
 
+    /**
+     * Creates a view holder for a comment moderation row.
+     *
+     * @param parent parent view group
+     * @param viewType row view type
+     * @return new CommentViewHolder
+     */
     @NonNull
     @Override
     public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,12 +60,23 @@ public class CommentModerationAdapter extends RecyclerView.Adapter<CommentModera
         return new CommentViewHolder(view);
     }
 
+    /**
+     * Binds a comment payload into the moderation row.
+     *
+     * @param holder holder displaying the comment
+     * @param position comment position in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         EventComment comment = comments.get(position);
         holder.bind(comment);
     }
 
+    /**
+     * Returns the count of comments shown.
+     *
+     * @return number of comment rows
+     */
     @Override
     public int getItemCount() {
         return comments.size();
@@ -60,6 +88,11 @@ public class CommentModerationAdapter extends RecyclerView.Adapter<CommentModera
         private TextView tvTimestamp;
         private TextView btnDelete;
 
+        /**
+         * Constructs the view holder for a moderation comment item.
+         *
+         * @param itemView inflated comment item view
+         */
         CommentViewHolder(@NonNull View itemView) {
             super(itemView);
             tvContent = itemView.findViewById(R.id.tvCommentContent);
@@ -68,6 +101,11 @@ public class CommentModerationAdapter extends RecyclerView.Adapter<CommentModera
             btnDelete = itemView.findViewById(R.id.btnDeleteComment);
         }
 
+        /**
+         * Binds the comment details into the moderation item views.
+         *
+         * @param comment comment data to display
+         */
         void bind(EventComment comment) {
             // Display comment content
             tvContent.setText(comment.getContent() != null ? comment.getContent() : "No content");

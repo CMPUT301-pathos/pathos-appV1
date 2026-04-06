@@ -7,6 +7,11 @@ import com.example.eventlottery.domain.UserProfile;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+/**
+ * Firestore-backed implementation of {@link ProfileRepository}.
+ * Handles loading, saving, deleting and searching user profiles.
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +26,12 @@ public class FirestoreProfileRepository implements ProfileRepository {
         this.db = FirebaseFirestore.getInstance();
     }
     
+    /**
+     * Reads a user profile by device ID.
+     *
+     * @param deviceId the device identifier for the user
+     * @param callback callback that receives the profile or null if missing
+     */
     @Override
     public void getProfile(String deviceId, ProfileCallback callback) {
         if (deviceId == null || deviceId.isEmpty()) {
@@ -46,6 +57,12 @@ public class FirestoreProfileRepository implements ProfileRepository {
                 .addOnFailureListener(callback::onFailure);
     }
     
+    /**
+     * Saves or updates a user profile by its device ID.
+     *
+     * @param profile  profile payload to persist
+     * @param callback callback that receives the saved profile or failure
+     */
     @Override
     public void saveProfile(UserProfile profile, ProfileCallback callback) {
         if (profile == null) {
@@ -66,6 +83,12 @@ public class FirestoreProfileRepository implements ProfileRepository {
                 .addOnFailureListener(callback::onFailure);
     }
     
+    /**
+     * Deletes a user profile document by device ID.
+     *
+     * @param deviceId the device identifier for the user
+     * @param callback callback invoked when deletion completes or fails
+     */
     @Override
     public void deleteProfile(String deviceId, ProfileCallback callback) {
         if (deviceId == null || deviceId.isEmpty()) {
@@ -81,10 +104,28 @@ public class FirestoreProfileRepository implements ProfileRepository {
     }
     
     public interface SearchCallback {
+        /**
+         * Called when a profile search completes successfully.
+         *
+         * @param profiles matching profiles
+         */
         void onSuccess(List<UserProfile> profiles);
+
+        /**
+         * Called when a profile search fails.
+         *
+         * @param e exception raised during search
+         */
         void onFailure(Exception e);
     }
     
+    /**
+     * Searches user profiles by name or email.
+     * Performs a client-side scan of user documents and returns matches.
+     *
+     * @param query    search text
+     * @param callback callback with the matching profiles or failure
+     */
     public void searchProfiles(String query, SearchCallback callback) {
         if (query == null || query.trim().isEmpty()) {
             callback.onSuccess(new ArrayList<>());

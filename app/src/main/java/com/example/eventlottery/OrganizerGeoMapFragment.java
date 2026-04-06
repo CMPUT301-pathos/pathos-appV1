@@ -62,6 +62,13 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         // Required empty public constructor
     }
 
+    /**
+     * Factory method to create a geolocation map fragment for an event.
+     *
+     * @param eventId Firestore id of the event
+     * @param eventTitle display name of the event
+     * @return configured fragment instance
+     */
     public static OrganizerGeoMapFragment newInstance(String eventId, String eventTitle) {
         OrganizerGeoMapFragment fragment = new OrganizerGeoMapFragment();
         Bundle args = new Bundle();
@@ -71,6 +78,9 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         return fragment;
     }
 
+    /**
+     * Inflates the geolocation map layout.
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
@@ -78,6 +88,9 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         return inflater.inflate(R.layout.fragment_organizer_geo_map, container, false);
     }
 
+    /**
+     * Initializes the map fragment and loads entrant location data.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -116,6 +129,9 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         loadEntrantLocations();
     }
 
+    /**
+     * Sets up the underlying Google Map fragment.
+     */
     private void setupMap() {
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentByTag(MAP_TAG);
@@ -132,6 +148,11 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         mapFragment.getMapAsync(this);
     }
 
+    /**
+     * Initializes the Google Map instance with gesture and marker click handling.
+     *
+     * @param map the ready Google Map
+     */
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         googleMap = map;
@@ -157,6 +178,10 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         renderMarkers();
     }
 
+    /**
+     * Loads geolocation data for all entrants accepted to the event and
+     * begins the process of rendering them on the map.
+     */
     private void loadEntrantLocations() {
         if (TextUtils.isEmpty(eventId)) {
             showLoading(false);
@@ -205,6 +230,12 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         });
     }
 
+    /**
+     * Retrieves user profile names for the given waitlist records and
+     * adds them to the map with their geolocation data.
+     *
+     * @param records waitlist records containing location and device id data
+     */
     private void loadUserNamesForRecords(@NonNull List<WaitListRecord> records) {
         final int[] pendingLookups = {records.size()};
 
@@ -237,6 +268,14 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         }
     }
 
+    /**
+     * Adds an entrant location item to the map and list.
+     *
+     * @param deviceId device id of the entrant
+     * @param name display name of the entrant
+     * @param latitude latitude of the join location
+     * @param longitude longitude of the join location
+     */
     private void addEntrantItem(@NonNull String deviceId,
                                 @NonNull String name,
                                 double latitude,
@@ -247,6 +286,10 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         renderMarkers();
     }
 
+    /**
+     * Hides the loading indicator and shows the first entrant on the map
+     * if locations are available.
+     */
     private void finishLoadingState() {
         showLoading(false);
 
@@ -260,6 +303,9 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         zoomToEntrant(entrantItems.get(0));
     }
 
+    /**
+     * Renders markers on the map for all loaded entrant locations.
+     */
     private void renderMarkers() {
         if (googleMap == null) {
             return;
@@ -285,6 +331,11 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         }
     }
 
+    /**
+     * Animates the map camera to zoom and center on the specified entrant's location.
+     *
+     * @param item entrant location item to zoom to
+     */
     private void zoomToEntrant(@NonNull EntrantMapItem item) {
         if (googleMap == null) {
             return;
@@ -299,6 +350,9 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         }
     }
 
+    /**
+     * Clears all entrant locations and markers from the map display.
+     */
     private void clearCurrentData() {
         entrantItems.clear();
         entrantLabels.clear();
@@ -315,6 +369,11 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
         emptyText.setVisibility(View.GONE);
     }
 
+    /**
+     * Shows or hides the loading progress indicator.
+     *
+     * @param loading true to show the progress bar
+     */
     private void showLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
     }

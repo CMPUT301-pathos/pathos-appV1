@@ -33,6 +33,13 @@ public class FirestoreNotificationLogRepository implements NotificationLogReposi
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Adds a notification record to the Firestore notifications collection.
+     * Assigns a generated document ID to the record before persisting it.
+     *
+     * @param record notification record to save
+     * @return task that completes once the write is committed
+     */
     @Override
     public Task<Void> add(NotificationRecord record) {
         // notifications collection
@@ -42,6 +49,13 @@ public class FirestoreNotificationLogRepository implements NotificationLogReposi
         return doc.set(record);
     }
 
+    /**
+     * Lists notification records for a specific user, ordered by most recent first.
+     *
+     * @param userId recipient user/device ID
+     * @param limit  maximum number of notifications to return
+     * @return task yielding the user's notifications
+     */
     @Override
     public Task<List<NotificationRecord>> listForUser(String userId, int limit) {
         return db.collection("notifications")

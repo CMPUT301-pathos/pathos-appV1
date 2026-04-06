@@ -18,14 +18,45 @@ import java.util.List;
  */
 public interface EventHistoryRepository {
 
+    /**
+     * Retrieves event history records for a given user using the Firestore callback.
+     *
+     * @param deviceId the user device identifier
+     * @param callback callback handling the async result
+     */
     void getHistory(String deviceId, FirestoreEventHistoryRepository.EventHistoryCallback callback);
 
+    /**
+     * Saves a single event history record using the Firestore callback.
+     *
+     * @param record history record to save
+     * @param callback callback handling the async result
+     */
     void saveHistoryRecord(EventHistoryRecord record, FirestoreEventHistoryRepository.EventHistoryCallback callback);
 
+    /**
+     * Saves multiple history records in one batch using the Firestore callback.
+     *
+     * @param records list of history records to save
+     * @param callback callback handling the async result
+     */
     void saveAllHistory(List<EventHistoryRecord> records, FirestoreEventHistoryRepository.EventHistoryCallback callback);
 
+    /**
+     * Deletes a specific history record using the Firestore callback.
+     *
+     * @param deviceId the user device identifier
+     * @param eventId the event identifier
+     * @param callback callback handling the async result
+     */
     void deleteHistoryRecord(String deviceId, String eventId, FirestoreEventHistoryRepository.EventHistoryCallback callback);
 
+    /**
+     * Deletes all history records for a user using the Firestore callback.
+     *
+     * @param deviceId the user device identifier
+     * @param callback callback handling the async result
+     */
     void deleteAllHistory(String deviceId, FirestoreEventHistoryRepository.EventHistoryCallback callback);
 
     /**

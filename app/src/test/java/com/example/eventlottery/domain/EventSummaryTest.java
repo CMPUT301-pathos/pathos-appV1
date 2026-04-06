@@ -10,6 +10,10 @@ import java.util.List;
 
 public class EventSummaryTest {
 
+    /**
+     * Verifies that isUserOrganizer() returns true for the primary organizer
+     * device ID.
+     */
     @Test
     public void isUserOrganizer_returnsTrue_forPrimaryOrganizer() {
         EventSummary summary = new EventSummary(
@@ -31,6 +35,10 @@ public class EventSummaryTest {
         assertTrue(summary.isUserOrganizer("primary123"));
     }
 
+    /**
+     * Verifies that isUserOrganizer() returns true for co-organizer device IDs
+     * listed in the co-organizer list.
+     */
     @Test
     public void isUserOrganizer_returnsTrue_forCoOrganizer() {
         EventSummary summary = new EventSummary(
@@ -54,6 +62,10 @@ public class EventSummaryTest {
         assertTrue(summary.isUserOrganizer("co2"));
     }
 
+    /**
+     * Verifies that isUserOrganizer() returns false for a device ID that is
+     * neither the primary organizer nor a co-organizer.
+     */
     @Test
     public void isUserOrganizer_returnsFalse_forNonOrganizer() {
         EventSummary summary = new EventSummary(
@@ -77,6 +89,10 @@ public class EventSummaryTest {
         assertFalse(summary.isUserOrganizer("randomUser"));
     }
 
+    /**
+     * Verifies that setCoOrganizerIds(null) converts null to an empty list
+     * rather than maintaining null state.
+     */
     @Test
     public void setCoOrganizerIds_null_setsEmptyList() {
         EventSummary summary = new EventSummary(
@@ -101,6 +117,10 @@ public class EventSummaryTest {
         assertTrue(summary.getCoOrganizerIds().isEmpty());
     }
 
+    /**
+     * Verifies that getCoOrganizerIds() returns a defensive copy that does not
+     * allow external modification of the internal co-organizer list.
+     */
     @Test
     public void getCoOrganizerIds_returnsDefensiveCopy() {
         EventSummary summary = new EventSummary(

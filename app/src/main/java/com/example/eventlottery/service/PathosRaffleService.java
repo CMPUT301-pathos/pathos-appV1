@@ -52,6 +52,11 @@ public class PathosRaffleService {
 
     private final WaitListRepository waitListRepository;
 
+    /**
+     * Constructs the raffle service using the provided wait-list repository.
+     *
+     * @param waitListRepository repository used to read and update waiting list records
+     */
     public PathosRaffleService(WaitListRepository waitListRepository) {
         this.waitListRepository = waitListRepository;
     }
@@ -60,7 +65,18 @@ public class PathosRaffleService {
      * Callback for draw results.
      */
     public interface RaffleCallback {
+        /**
+         * Called when the draw completes successfully.
+         *
+         * @param selected the list of selected entries
+         */
         void onDrawComplete(List<WaitListRecord> selected);
+
+        /**
+         * Called when the draw operation fails.
+         *
+         * @param e exception describing the failure
+         */
         void onFailure(Exception e);
     }
 

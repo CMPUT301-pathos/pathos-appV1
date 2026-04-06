@@ -42,6 +42,12 @@ public class QrCodeFragment extends Fragment {
 
     public QrCodeFragment() { }
 
+    /**
+     * Factory method to create a new QrCodeFragment with a payload.
+     *
+     * @param payload the QR code payload/content to encode (typically event ID)
+     * @return a new instance of QrCodeFragment with the payload in arguments
+     */
     public static QrCodeFragment newInstance(String payload) {
         QrCodeFragment fragment = new QrCodeFragment();
         Bundle args = new Bundle();
@@ -50,6 +56,18 @@ public class QrCodeFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Creates and returns the QR code display view.
+     *
+     * Inflates the layout, retrieves the payload from arguments, generates a QR code
+     * bitmap using QrCodeGenerator, and displays it in an ImageView. Wires the share
+     * button to initiate QR code sharing via intent.
+     *
+     * @param inflater the LayoutInflater to inflate the layout
+     * @param container the parent ViewGroup
+     * @param savedInstanceState the saved instance state
+     * @return the root view of the fragment layout with QR code displayed
+     */
     @Nullable
     @Override
     public View onCreateView(
@@ -83,6 +101,13 @@ public class QrCodeFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Shares the generated QR code bitmap via Android Intent (email, messaging, etc.).
+     *
+     * Saves the QR bitmap to cache as PNG, wraps it in a FileProvider URI, and launches
+     * the system share chooser with the image and descriptive text. Handles file I/O
+     * and permission errors gracefully.
+     */
     private void shareQrCode() {
         if (qrBitmap == null) {
             Toast.makeText(requireContext(), "QR code not available", Toast.LENGTH_SHORT).show();

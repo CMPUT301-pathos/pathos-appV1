@@ -57,12 +57,20 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
 
     /**
      * Sets the click listener for event items.
-     * @param listener The listener to handle clicks
+     *
+     * @param listener The listener to handle event and delete clicks
      */
     public void setOnEventClickListener(OnEventClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Inflates the event item view and wraps it in a ViewHolder.
+     *
+     * @param parent parent view group used for inflation
+     * @param viewType view type for the row
+     * @return configured EventViewHolder instance
+     */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -71,19 +79,31 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         return new EventViewHolder(view);
     }
 
+    /**
+     * Binds the event data into the given ViewHolder.
+     *
+     * @param holder holder that displays the event row
+     * @param position position of the event in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         Event event = events.get(position);
         holder.bind(event);
     }
 
+    /**
+     * Returns the number of events currently displayed.
+     *
+     * @return current event count
+     */
     @Override
     public int getItemCount() {
         return events.size();
     }
 
     /**
-     * Updates the adapter's dataset.
+     * Updates the adapter's dataset and refreshes the RecyclerView.
+     *
      * @param events The new list of events to display
      */
     public void setEvents(List<Event> events) {
@@ -94,6 +114,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
 
     /**
      * Filters the event list based on a search query.
+     *
      * @param query The search text to filter by
      */
     public void filter(String query) {
@@ -127,6 +148,11 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         private final ImageView btnDelete;
         private final CardView cardView;
 
+        /**
+         * Constructs a new EventViewHolder for the admin event row.
+         *
+         * @param itemView inflated event item view
+         */
         EventViewHolder(@NonNull View itemView) {  // Should be EventViewHolder, not EventViewModel
             super(itemView);
             tvEventName = itemView.findViewById(R.id.tvEventName);
@@ -141,6 +167,9 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
             setupClickListeners();  // Make sure this method name matches
         }
 
+        /**
+         * Registers click handlers for the event row and delete button.
+         */
         private void setupClickListeners() {
             // Whole card click for viewing details
             cardView.setOnClickListener(v -> {
@@ -159,6 +188,11 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
             });
         }
 
+        /**
+         * Populates the ViewHolder fields with the event data.
+         *
+         * @param event the event to display
+         */
         void bind(Event event) {
             // Set event name
             tvEventName.setText(event.getName());

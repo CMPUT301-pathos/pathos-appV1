@@ -22,6 +22,20 @@ import java.util.List;
  */
 
 public interface NotificationLogRepository {
+    /**
+     * Persists a notification record to the data store.
+     *
+     * @param record the notification record to save
+     * @return task representing the async save operation
+     */
     Task<Void> add(NotificationRecord record);
+
+    /**
+     * Retrieves notification history for a specific user.
+     *
+     * @param userId the user's device or profile identifier
+     * @param limit the maximum number of records to return
+     * @return task resolving to the list of notifications
+     */
     Task<List<NotificationRecord>> listForUser(String userId, int limit);
 }

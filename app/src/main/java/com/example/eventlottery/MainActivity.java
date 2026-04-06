@@ -23,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
     private boolean profileCompleted;
     private String currentDeviceId;
 
+    /**
+     * Sets up the main activity, bottom navigation, notification listener,
+     * and shows a welcome toast if the user's profile is incomplete.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +73,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Configures bottom navigation bar items and wires fragment navigation.
+     *
+     * The admin tab is hidden by default and shown only if the user has
+     * admin privileges. Navigation selections trigger fragment switches via
+     * updateFragment().
+     */
     private void setupBottomNavigation() {
         // First, hide admin tab by default
         MenuItem adminItem = bottomNav.getMenu().findItem(R.id.nav_admin);
@@ -118,6 +129,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Checks the current user's profile role and shows the admin tab if they
+     * have admin privileges.
+     */
     private void checkAdminRole() {
         new FirestoreProfileRepository().getProfile(currentDeviceId, new ProfileRepository.ProfileCallback() {
             @Override
@@ -140,6 +155,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Refreshes the profile completion status when the activity resumes,
+     * and rechecks admin role.
+     *
+     * Shows a success toast if the profile was incomplete but is now completed.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -148,6 +169,9 @@ public class MainActivity extends AppCompatActivity {
         checkAdminRole();
     }
 
+    /**
+     * Stops the notification listener service when the activity is destroyed.
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -156,6 +180,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Queries the user's profile to check if it has been completed,
+     * updating the status and showing a completion notification if needed.
+     */
     private void refreshProfileCompletionIfNeeded() {
         new FirestoreProfileRepository()
                 .getProfile(currentDeviceId, new ProfileRepository.ProfileCallback() {
@@ -181,6 +209,11 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Replaces the current fragment container content with the specified fragment.
+     *
+     * @param fragment fragment to display
+     */
     private void switchTo(@NonNull Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()

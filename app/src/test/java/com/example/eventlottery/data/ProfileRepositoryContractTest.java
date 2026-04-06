@@ -48,6 +48,10 @@ public class ProfileRepositoryContractTest {
         }
     }
 
+    /**
+     * Verifies that a profile saved to the repository can be retrieved
+     * with all original fields intact.
+     */
     @Test
     public void saveThenGet_returnsProfile() {
         ProfileRepository repo = new InMemoryProfileRepository();
@@ -82,6 +86,10 @@ public class ProfileRepositoryContractTest {
         });
     }
 
+    /**
+     * Verifies that deleting a profile removes it from the repository
+     * and subsequent retrieval returns null.
+     */
     @Test
     public void delete_removesProfile() {
         ProfileRepository repo = new InMemoryProfileRepository();
@@ -120,6 +128,10 @@ public class ProfileRepositoryContractTest {
         });
     }
 
+    /**
+     * Verifies that saving a profile with the same device ID overwrites
+     * the previous profile (upsert behavior).
+     */
     @Test
     public void saveProfile_isUpsert_overwritesExisting() {
         ProfileRepository repo = new InMemoryProfileRepository();

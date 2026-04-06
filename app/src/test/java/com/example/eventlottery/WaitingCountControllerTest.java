@@ -65,6 +65,10 @@ public class WaitingCountControllerTest {
 
     // Testing US 01.05.04
 
+    /**
+     * Verifies that querying the waiting list count returns the correct number of entrants with WAITING status.
+     * Tests US 01.05.04: Know how many entrants are on the waiting list.
+     */
     @Test
     public void getWaitingCount_returnsCorrectCount() {
 
@@ -81,6 +85,10 @@ public class WaitingCountControllerTest {
         });
     }
 
+    /**
+     * Verifies that waiting list count returns zero when no entrants exist with WAITING status.
+     * Tests US 01.05.04: Know how many entrants are on the waiting list (edge case).
+     */
     @Test
     public void getWaitingCount_emptyList_returnsZero() {
 

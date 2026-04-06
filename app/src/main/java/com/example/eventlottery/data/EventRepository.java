@@ -19,24 +19,63 @@ import java.util.List;
 public interface EventRepository {
 
     interface CreateCallback {
+        /**
+         * Called when event creation succeeds.
+         *
+         * @param eventId the created event's document ID
+         */
         void onSuccess(String eventId);
+
+        /**
+         * Called when event creation fails.
+         *
+         * @param e the exception describing the failure
+         */
         void onFailure(Exception e);
     }
 
     interface ListCallback {
+        /**
+         * Called when a list of events is successfully retrieved.
+         *
+         * @param events the list of events returned
+         */
         void onSuccess(List<EventSummary> events);
+
+        /**
+         * Called when an event list retrieval fails.
+         *
+         * @param e the exception describing the failure
+         */
         void onFailure(Exception e);
     }
 
     interface OperationCallback {
+        /**
+         * Called when an operation completes successfully.
+         */
         void onSuccess();
+
+        /**
+         * Called when an operation fails.
+         *
+         * @param e the exception describing the failure
+         */
         void onFailure(Exception e);
     }
 
+    /**
+     * Creates a new event record.
+     *
+     * @param event the event payload to save
+     * @param callback callback for success or failure
+     */
     void createEvent(Object event, CreateCallback callback);
 
     /**
      * Returns all events for the "Events" tab list.
+     *
+     * @param callback callback for success or failure
      */
     void getAllEvents(ListCallback callback);
 

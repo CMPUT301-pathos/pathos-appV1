@@ -31,6 +31,15 @@ public class RouterActivity extends AppCompatActivity {
 
     private FirestoreProfileRepository repo;
 
+    /**
+     * Launcher activity that routes the user to their appropriate home screen.
+     *
+     * Retrieves the device ID, looks up the corresponding profile in Firestore,
+     * and delegates to role-based routing. If the profile doesn't exist, creates
+     * a default blank profile before routing. Logs device ID for debugging.
+     *
+     * @param savedInstanceState the saved instance state from previous activity lifecycle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +79,15 @@ public class RouterActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Creates and saves a new default profile in Firestore with empty fields.
+     *
+     * Initializes a blank UserProfile with user role, marks it as incomplete,
+     * enables notifications, and asynchronously persists it. Routes to appropriate
+     * home screen upon successful creation.
+     *
+     * @param deviceId the unique device identifier for the new profile
+     */
     private void createDefaultProfile(String deviceId) {
         UserProfile newProfile = new UserProfile(deviceId, "", "", "", "user");
         newProfile.setProfileCompleted(false);
@@ -92,6 +110,14 @@ public class RouterActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Routes the user to their role-appropriate home screen.
+     *
+     * Selects AdminMainActivity for admin users or MainActivity for regular users,
+     * passes the device ID and profile completion status, and starts the activity.
+     *
+     * @param profile the user's profile containing role and completion status
+     */
     private void routeToRoleHome(UserProfile profile) {
         Intent i;
 
