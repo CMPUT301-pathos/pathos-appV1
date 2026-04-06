@@ -35,7 +35,7 @@ import java.util.Locale;
  * - US 01.05.04: View waiting list counts
  *
  * @author Kenneth Joseph, Fawaz Mansoor
- * @version 2.0
+ * @version 2.1
  * @see FirestoreWaitListRepository
  */
 public class DashboardFragment extends Fragment {
@@ -68,22 +68,25 @@ public class DashboardFragment extends Fragment {
         waitListRepo = new FirestoreWaitListRepository();
         eventRepo = new FirestoreEventRepository();
 
-        de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto = view.findViewById(R.id.ivProfilePhoto);
-        new com.example.eventlottery.firebase.FirestoreProfileRepository().getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
-            @Override
-            public void onSuccess(com.example.eventlottery.domain.UserProfile profile) {
-                if (getActivity() == null) return;
-                if (profile != null && profile.getProfilePhotoUri() != null && !profile.getProfilePhotoUri().isEmpty()) {
-                    com.bumptech.glide.Glide.with(requireContext())
-                            .load(profile.getProfilePhotoUri())
-                            .placeholder(R.drawable.ic_profile_placeholder_forstyledlayout)
-                            .into(ivProfilePhoto);
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) { }
-        });
+        // Load profile photo
+        de.hdodenhof.circleimageview.CircleImageView ivProfilePhoto =
+                view.findViewById(R.id.ivProfilePhoto);
+        new com.example.eventlottery.firebase.FirestoreProfileRepository()
+                .getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
+                    @Override
+                    public void onSuccess(com.example.eventlottery.domain.UserProfile profile) {
+                        if (getActivity() == null) return;
+                        if (profile != null && profile.getProfilePhotoUri() != null
+                                && !profile.getProfilePhotoUri().isEmpty()) {
+                            com.bumptech.glide.Glide.with(requireContext())
+                                    .load(profile.getProfilePhotoUri())
+                                    .placeholder(R.drawable.ic_profile_placeholder_forstyledlayout)
+                                    .into(ivProfilePhoto);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Exception e) {}
+                });
 
         loadDashboard();
 
@@ -142,21 +145,50 @@ public class DashboardFragment extends Fragment {
                         if (getActivity() == null) return;
                         getActivity().runOnUiThread(() -> {
                             String name = event != null ? event.getName() : record.getEventId();
-                            String date = event != null
-                                    ? new SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+                            String desc = event != null ? event.getDescription() : "";
+                            String date = event != null && event.getEventDate() > 0
+                                    ? "📅 " + new SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
                                     .format(new Date(event.getEventDate()))
                                     : "";
+                            String location = event != null && !event.getLocation().isEmpty()
+                                    ? "📍 " + event.getLocation() : "";
+                            String meta = location.isEmpty() ? date : location + "  " + date;
 
                             View card = LayoutInflater.from(requireContext())
                                     .inflate(R.layout.item_dashboard_event,
                                             containerUpcomingEvents, false);
+
                             ((TextView) card.findViewById(R.id.tvEventName)).setText(name);
-                            ((TextView) card.findViewById(R.id.tvEventDate)).setText(date);
+                            ((TextView) card.findViewById(R.id.tvEventDesc)).setText(desc);
+                            ((TextView) card.findViewById(R.id.tvEventDate)).setText(meta);
+
+                            // Wire click on whole card
+                            card.setOnClickListener(v -> navigateToDetail(event));
+
+                            // Wire View Details button
+                            MaterialButton btnViewDetails = card.findViewById(R.id.btnViewDetails);
+                            btnViewDetails.setOnClickListener(v -> navigateToDetail(event));
+
                             containerUpcomingEvents.addView(card);
                             tvUpcomingEmpty.setVisibility(View.GONE);
                         });
                     }
                 });
+    }
+
+    private void navigateToDetail(EventSummary event) {
+        if (event == null || getActivity() == null) return;
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, EventDetailFragment.newInstance(
+                        event.getId(),
+                        event.getName(),
+                        event.getDescription(),
+                        event.getOrganizerDeviceId(),
+                        event.getPosterUrl()
+                ))
+                .addToBackStack(null)
+                .commit();
     }
 
     private void addWaitlistCard(WaitListRecord record) {
