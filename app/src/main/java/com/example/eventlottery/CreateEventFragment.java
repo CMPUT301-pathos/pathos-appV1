@@ -210,7 +210,13 @@ public class CreateEventFragment extends Fragment {
 
         return root;
     }
-
+    /**
+     * Searches user profiles by name or email so the organizer can add
+     * co-organizers to the event.
+     *
+     * The search is performed client-side against the users collection and
+     * excludes the current organizer and already-selected co-organizers.
+     */
     private void searchProfiles() {
         String query = safe(etCoOrganizerSearch);
 
@@ -270,7 +276,17 @@ public class CreateEventFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                 });
     }
-
+    /**
+     * Builds a co-organizer candidate model from a user document.
+     *
+     * If the Firestore document id is missing or blank, the provided fallback
+     * device id is used instead. Missing names are replaced with a default
+     * placeholder label.
+     *
+     * @param doc user document snapshot
+     * @param fallbackDeviceId fallback device id if the document id is unavailable
+     * @return lightweight co-organizer candidate for UI display
+     */
     private CoOrganizerCandidate candidateFromUserDoc(DocumentSnapshot doc, String fallbackDeviceId) {
         String deviceId = doc.getId();
         if (deviceId == null || deviceId.trim().isEmpty()) {
@@ -286,7 +302,14 @@ public class CreateEventFragment extends Fragment {
 
         return new CoOrganizerCandidate(deviceId, name, email);
     }
-
+    /**
+     * Renders co-organizer search results in the UI.
+     *
+     * Matching users are displayed as selectable rows. If no matches are found,
+     * an empty-state message is shown instead.
+     *
+     * @param matches list of matching co-organizer candidates
+     */
     private void renderSearchResults(List<CoOrganizerCandidate> matches) {
         clearSearchResults();
         tvSearchResultsLabel.setVisibility(View.VISIBLE);
@@ -304,7 +327,15 @@ public class CreateEventFragment extends Fragment {
             layoutSearchResults.addView(createSearchResultView(candidate));
         }
     }
-
+    /**
+     * Creates a single search-result row for a co-organizer candidate.
+     *
+     * The row displays the candidate's name and email, along with an add
+     * button that inserts the candidate into the selected co-organizers list.
+     *
+     * @param candidate candidate to render
+     * @return configured row view for the search results container
+     */
     private View createSearchResultView(CoOrganizerCandidate candidate) {
         LinearLayout row = new LinearLayout(requireContext());
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -362,12 +393,19 @@ public class CreateEventFragment extends Fragment {
 
         return row;
     }
-
+    /**
+     * Clears rendered co-organizer search results and hides the results label.
+     */
     private void clearSearchResults() {
         tvSearchResultsLabel.setVisibility(View.GONE);
         layoutSearchResults.removeAllViews();
     }
-
+    /**
+     * Refreshes the selected co-organizer chips shown in the UI.
+     *
+     * Each chip displays the co-organizer's name and optional email and
+     * supports removal from the selected set.
+     */
     private void refreshCoOrganizerDisplay() {
         if (chipGroupCoOrganizers == null) {
             return;
@@ -395,7 +433,9 @@ public class CreateEventFragment extends Fragment {
             chipGroupCoOrganizers.addView(chip);
         }
     }
-
+    /**
+     * Registers the image picker used to select an optional event poster.
+     */
     private void setupImagePicker() {
         pickPosterLauncher = registerForActivityResult(
                 new ActivityResultContracts.PickVisualMedia(),
@@ -407,7 +447,9 @@ public class CreateEventFragment extends Fragment {
                 }
         );
     }
-
+    /**
+     * Launches the image picker for selecting an event poster.
+     */
     private void openPosterPicker() {
         pickPosterLauncher.launch(
                 new PickVisualMediaRequest.Builder()
@@ -415,13 +457,19 @@ public class CreateEventFragment extends Fragment {
                         .build()
         );
     }
-
+    /**
+     * Wires the registration start and end fields to open the shared
+     * registration date range picker.
+     */
     private void setupDateRangePicker() {
         View.OnClickListener openPicker = v -> showDateRangePicker();
         etStart.setOnClickListener(openPicker);
         etEnd.setOnClickListener(openPicker);
     }
-
+    /**
+     * Shows a Material date range picker for selecting the event's
+     * registration period.
+     */
     private void showDateRangePicker() {
         MaterialDatePicker<Pair<Long, Long>> picker =
                 MaterialDatePicker.Builder.dateRangePicker()
@@ -441,7 +489,9 @@ public class CreateEventFragment extends Fragment {
 
         picker.show(getChildFragmentManager(), "registration_date_range_picker");
     }
-
+    /**
+     * Wires the event date field to open a single-date picker.
+     */
     private void setupEventDatePicker() {
         etEventDate.setOnClickListener(v -> {
             MaterialDatePicker<Long> picker =
@@ -460,7 +510,12 @@ public class CreateEventFragment extends Fragment {
             picker.show(getChildFragmentManager(), "event_date_picker");
         });
     }
-
+    /**
+     * Validates event input and begins the event publishing flow.
+     *
+     * If a poster is selected, the poster is processed first before the event
+     * document is created. Otherwise, the event document is created directly.
+     */
     private void publishEvent() {
         if (isPublishing) {
             return;
@@ -516,7 +571,15 @@ public class CreateEventFragment extends Fragment {
             createEventDocument(name, desc, location, capacity, null);
         }
     }
-
+    /**
+     * Compresses and encodes the selected poster image, then continues the
+     * event creation flow with the generated poster data.
+     *
+     * @param name event name
+     * @param desc event description
+     * @param location event location
+     * @param capacity event capacity, or null if unspecified
+     */
     private void uploadPosterAndCreateEvent(String name, String desc,
                                             String location, Integer capacity) {
         try {
@@ -553,7 +616,18 @@ public class CreateEventFragment extends Fragment {
             endPublishAsync();
         }
     }
-
+    /**
+     * Creates the Firestore event document and optionally sends
+     * co-organizer notifications after creation succeeds.
+     *
+     * Public events also receive a QR payload after the document is created.
+     *
+     * @param name event name
+     * @param desc event description
+     * @param location event location
+     * @param capacity event capacity, or null if unspecified
+     * @param posterUrl encoded poster data, or null if no poster was selected
+     */
     private void createEventDocument(String name, String desc, String location,
                                      Integer capacity, @Nullable String posterUrl) {
         String organizerDeviceId = DeviceIdentityService.getDeviceId(requireContext());
@@ -609,13 +683,8 @@ public class CreateEventFragment extends Fragment {
                                         android.util.Log.d("COORG_NOTIFY",
                                                 "deviceId=" + deviceId + ", recipientName=" + recipientName);
 
-                                        if (recipientName.isEmpty()) {
-                                            android.util.Log.d("COORG_NOTIFY", "Recipient name empty for deviceId=" + deviceId);
-                                            return;
-                                        }
-
                                         notifyService.notifyCoOrganizerAdded(
-                                                        recipientName,
+                                                        deviceId,
                                                         eventId,
                                                         "You were added as a co-organizer for " + name
                                                 )
@@ -657,7 +726,14 @@ public class CreateEventFragment extends Fragment {
                     endPublishAsync();
                 });
     }
-
+    /**
+     * Cleans the selected co-organizer device IDs before storing them.
+     *
+     * Blank values, duplicates, and the organizer's own device id are removed.
+     *
+     * @param organizerDeviceId current organizer's device id
+     * @return cleaned list of co-organizer device IDs
+     */
     private List<String> sanitizeCoOrganizerIds(@NonNull String organizerDeviceId) {
         List<String> cleaned = new ArrayList<>();
         for (String id : selectedCoOrganizers.keySet()) {
@@ -672,7 +748,11 @@ public class CreateEventFragment extends Fragment {
         }
         return cleaned;
     }
-
+    /**
+     * Navigates to the QR code screen for a newly created public event.
+     *
+     * @param payload QR payload associated with the event
+     */
     private void goToQr(@NonNull String payload) {
         QrCodeFragment qr = QrCodeFragment.newInstance(payload);
         FragmentManager fm = requireActivity().getSupportFragmentManager();
@@ -682,7 +762,13 @@ public class CreateEventFragment extends Fragment {
                 .addToBackStack(null)
                 .commitAllowingStateLoss();
     }
-
+    /**
+     * Navigates to the private-event invite screen after a private event
+     * has been created.
+     *
+     * @param eventId Firestore id of the created event
+     * @param eventName display name of the created event
+     */
     private void goToInvite(String eventId, String eventName) {
         PrivateEventInviteFragment fragment =
                 PrivateEventInviteFragment.newInstance(eventId, eventName);
@@ -693,7 +779,13 @@ public class CreateEventFragment extends Fragment {
                 .addToBackStack(null)
                 .commitAllowingStateLoss();
     }
-
+    /**
+     * Updates control enabled states and button text while an event is being
+     * published or poster data is being uploaded.
+     *
+     * @param publishing true while publishing is in progress
+     * @param buttonText text to show on the publish button
+     */
     private void setPublishingState(boolean publishing, String buttonText) {
         btnPublish.setEnabled(!publishing);
         btnSelectPoster.setEnabled(!publishing);
@@ -706,7 +798,10 @@ public class CreateEventFragment extends Fragment {
 
         btnPublish.setText(buttonText);
     }
-
+    /**
+     * Enables or disables event-creation controls based on whether the current
+     * user has completed their profile.
+     */
     private void configureUiAccess() {
         requireCompletedProfile(
                 () -> {
@@ -733,7 +828,12 @@ public class CreateEventFragment extends Fragment {
                 }
         );
     }
-
+    /**
+     * Runs the provided action only if the current user has a completed profile.
+     * Otherwise, a default blocked message is shown.
+     *
+     * @param onAllowed action to run when the profile is complete
+     */
     private void requireCompletedProfile(Runnable onAllowed) {
         requireCompletedProfile(onAllowed, () -> Toast.makeText(
                 requireContext(),
@@ -741,7 +841,13 @@ public class CreateEventFragment extends Fragment {
                 Toast.LENGTH_SHORT
         ).show());
     }
-
+    /**
+     * Checks whether the current user has completed their profile before
+     * allowing access to event-creation actions.
+     *
+     * @param onAllowed action to run when the profile is complete
+     * @param onBlocked action to run when the profile is incomplete or lookup fails
+     */
     private void requireCompletedProfile(Runnable onAllowed, Runnable onBlocked) {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
         new FirestoreProfileRepository().getProfile(deviceId,
@@ -761,20 +867,40 @@ public class CreateEventFragment extends Fragment {
                     }
                 });
     }
-
+    /**
+     * Returns the correct publish button label based on whether the event
+     * is public or private.
+     *
+     * @return button text for the current event mode
+     */
     private String getPublishButtonText() {
         return isPrivateEvent ? "PUBLISH PRIVATE EVENT" : "GENERATE QR CODE & POST";
     }
-
+    /**
+     * Formats a UTC millisecond timestamp into a user-friendly date string.
+     *
+     * @param utcMillis timestamp in UTC milliseconds
+     * @return formatted date string
+     */
     private String formatDate(long utcMillis) {
         return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 .format(new Date(utcMillis));
     }
-
+    /**
+     * Safely reads trimmed text from an EditText.
+     *
+     * @param et input field to read
+     * @return trimmed text, or an empty string if the field has no text
+     */
     private String safe(EditText et) {
         return et.getText() == null ? "" : et.getText().toString().trim();
     }
-
+    /**
+     * Safely trims a nullable string value.
+     *
+     * @param value source string
+     * @return trimmed string, or an empty string if the value is null
+     */
     private String safeString(String value) {
         return value == null ? "" : value.trim();
     }
