@@ -79,6 +79,7 @@ public class AdminEventCommentsActivity extends AppCompatActivity
 
     private void setupRecyclerView() {
         adapter = new EventCommentAdapter();
+        adapter.setOrganizerMode(true);
         adapter.setOnCommentClickListener(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
