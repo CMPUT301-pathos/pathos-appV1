@@ -108,6 +108,37 @@ public class EntrantInvitationFragment extends Fragment {
     }
 
     /**
+     * Helper function
+     */
+
+    private void loadEventNameAndAddGenericCard(LayoutInflater inflater,
+                                                String eventId,
+                                                String type,
+                                                String message,
+                                                String docId) {
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (getActivity() == null) return;
+
+                    String eventName = doc.exists() && doc.getString("name") != null
+                            ? doc.getString("name")
+                            : "Event Update";
+
+                    addTypedGenericNotification(inflater, type, eventName, message, docId);
+                    checkEmpty();
+                })
+                .addOnFailureListener(e -> {
+                    if (getActivity() == null) return;
+                    addTypedGenericNotification(inflater, type, "Event Update", message, docId);
+                    checkEmpty();
+                });
+    }
+
+
+    /**
      * Loads waitlist-driven entrant notifications and unread generic
      * notifications for the current device.
      *
@@ -161,7 +192,7 @@ public class EntrantInvitationFragment extends Fragment {
 
         FirebaseFirestore.getInstance()
                 .collection("notifications")
-                .whereEqualTo("deviceId", deviceId)
+                .whereEqualTo("recipientId", deviceId)
                 .whereEqualTo("read", false)
                 .get()
                 .addOnSuccessListener(snap -> {
@@ -170,8 +201,15 @@ public class EntrantInvitationFragment extends Fragment {
                     for (QueryDocumentSnapshot doc : snap) {
                         String message = doc.getString("message");
                         String docId = doc.getId();
+                        String type = doc.getString("type");
+                        String eventId = doc.getString("eventId");
+
                         if (message != null) {
-                            addGenericNotification(inflater, message, docId);
+                            if ("CO_ORGANIZER_ADDED".equals(type) && eventId != null) {
+                                loadEventNameAndAddGenericCard(inflater, eventId, type, message, docId);
+                            } else {
+                                addGenericNotification(inflater, "Waitlist Update", message, docId);
+                            }
                         }
                     }
                     checkEmpty();
@@ -365,7 +403,10 @@ public class EntrantInvitationFragment extends Fragment {
      * @param message message text to display
      * @param docId Firestore document id for marking the notification as read
      */
-    private void addGenericNotification(LayoutInflater inflater, String message, String docId) {
+    private void addGenericNotification(LayoutInflater inflater,
+                                        String title,
+                                        String message,
+                                        String docId) {
         View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
 
         TextView tvEventName = card.findViewById(R.id.tvEventName);
@@ -373,8 +414,44 @@ public class EntrantInvitationFragment extends Fragment {
         LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
         MaterialButton btnClear = card.findViewById(R.id.btnClear);
 
-        tvEventName.setText("Waitlist Update");
+        tvEventName.setText(title);
         tvMessage.setText(message);
+        winButtonsRow.setVisibility(View.GONE);
+        btnClear.setVisibility(View.VISIBLE);
+
+        btnClear.setOnClickListener(v -> {
+            FirebaseFirestore.getInstance()
+                    .collection("notifications")
+                    .document(docId)
+                    .update("read", true);
+            notificationsContainer.removeView(card);
+            checkEmpty();
+        });
+
+        notificationsContainer.addView(card);
+        tvEmpty.setVisibility(View.GONE);
+    }
+
+    private void addTypedGenericNotification(LayoutInflater inflater,
+                                             String type,
+                                             String eventName,
+                                             String message,
+                                             String docId) {
+        View card = inflater.inflate(R.layout.item_notification, notificationsContainer, false);
+
+        TextView tvEventName = card.findViewById(R.id.tvEventName);
+        TextView tvMessage = card.findViewById(R.id.tvMessage);
+        LinearLayout winButtonsRow = card.findViewById(R.id.winButtonsRow);
+        MaterialButton btnClear = card.findViewById(R.id.btnClear);
+
+        if ("CO_ORGANIZER_ADDED".equals(type)) {
+            tvEventName.setText("Co-organizer Invite");
+            tvMessage.setText("You were added as a co-organizer for " + eventName + ".");
+        } else {
+            tvEventName.setText("Waitlist Update");
+            tvMessage.setText(message);
+        }
+
         winButtonsRow.setVisibility(View.GONE);
         btnClear.setVisibility(View.VISIBLE);
 

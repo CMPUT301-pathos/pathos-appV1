@@ -604,13 +604,8 @@ public class EditEventFragment extends Fragment {
                             return;
                         }
 
-                        String recipientName = documentSnapshot.getString("name");
-                        if (recipientName == null || recipientName.trim().isEmpty()) {
-                            return;
-                        }
-
                         notifyService.notifyCoOrganizerAdded(
-                                recipientName,
+                                deviceId,
                                 eventId,
                                 "You were added as a co-organizer for " + eventName
                         );
