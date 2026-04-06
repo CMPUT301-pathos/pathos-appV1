@@ -166,7 +166,8 @@ public class EventsFragment extends Fragment {
                             event.getDescription(),
                             event.getOrganizerDeviceId(),
                             event.getPosterUrl(),
-                            event.isRequiresGeolocation()
+                            event.isRequiresGeolocation(),
+                            event.getCoOrganizerIds()
                     ))
                     .addToBackStack(null)
                     .commit();
@@ -195,7 +196,8 @@ public class EventsFragment extends Fragment {
                                                     event.getDescription(),
                                                     event.getOrganizerDeviceId(),
                                                     event.getPosterUrl(),
-                                                    event.isRequiresGeolocation()
+                                                    event.isRequiresGeolocation(),
+                                                    event.getCoOrganizerIds()
                                             );
                                             getParentFragmentManager().beginTransaction()
                                                     .replace(R.id.fragment_container, fragment)
