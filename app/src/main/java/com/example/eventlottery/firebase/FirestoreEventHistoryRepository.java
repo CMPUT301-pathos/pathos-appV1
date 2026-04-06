@@ -9,16 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Firestore implementation of EventHistoryRepository.
- * Handles reading and saving event history records to Firestore.
- * History records are stored in the "event_history" collection with
- * compound document IDs (deviceId_eventId) for uniqueness.
+ * Firestore implementation of {@link EventHistoryRepository}.
+ * Stores and retrieves event history records from the "event_history" collection.
+ * Document IDs use the format {deviceId}_{eventId} to ensure uniqueness
+ * and prevent duplicate entries per user per event.
+ *
+ * User stories supported:
+ * - US 01.02.03: View history of events registered for, selected or not
  *
  * @author Hasrat Singh Chauhan
- * @version 1.0
+ * @version 1.1
  * @see EventHistoryRepository
  * @see EventHistoryRecord
- * @since 1.0
  */
 public class FirestoreEventHistoryRepository implements EventHistoryRepository {
 
@@ -26,7 +28,8 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
     private static final String COLLECTION_NAME = "event_history";
 
     /**
-     * Creates a new FirestoreEventHistoryRepository with a Firestore database instance.
+     * Constructs a new FirestoreEventHistoryRepository using the default
+     * Firestore instance.
      */
     public FirestoreEventHistoryRepository() {
         this.db = FirebaseFirestore.getInstance();
@@ -34,7 +37,8 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
 
     /**
      * Retrieves all event history records for a specific user from Firestore.
-     * Results are ordered by timestamp descending (newest first).
+     * Results are ordered by timestamp descending so the most recent events
+     * appear first.
      *
      * @param deviceId the unique device identifier of the user
      * @param callback the callback to handle success or failure
@@ -57,15 +61,16 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
 
     /**
      * Saves a single event history record to Firestore.
-     * Uses compound ID (deviceId_eventId) to prevent duplicates.
+     * Uses a compound document ID ({deviceId}_{eventId}) to prevent
+     * duplicate entries for the same user and event combination.
      *
      * @param record   the event history record to save
-     * @param callback the callback to handle success or failure
+     * @param callback the callback to handle success or failure;
+     *                 onSuccess receives a list containing the saved record
      */
     @Override
     public void saveHistoryRecord(EventHistoryRecord record, EventHistoryCallback callback) {
         String docId = record.getDeviceId() + "_" + record.getEventId();
-
         db.collection(COLLECTION_NAME)
                 .document(docId)
                 .set(record)
@@ -78,11 +83,14 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
     }
 
     /**
-     * Saves multiple event history records to Firestore in a batch operation.
-     * More efficient than saving records individually.
+     * Saves multiple event history records to Firestore using a batch write.
+     * Batch writes are atomic — either all records are saved or none are.
+     * If the provided list is null or empty, onSuccess is called immediately
+     * with an empty list without contacting Firestore.
      *
      * @param records  the list of event history records to save
-     * @param callback the callback to handle success or failure
+     * @param callback the callback to handle success or failure;
+     *                 onSuccess receives the original list of saved records
      */
     @Override
     public void saveAllHistory(List<EventHistoryRecord> records, EventHistoryCallback callback) {
@@ -90,32 +98,29 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
             callback.onSuccess(new ArrayList<>());
             return;
         }
-
-        // Use batch for multiple writes
         var batch = db.batch();
-
         for (EventHistoryRecord record : records) {
             String docId = record.getDeviceId() + "_" + record.getEventId();
             var docRef = db.collection(COLLECTION_NAME).document(docId);
             batch.set(docRef, record);
         }
-
         batch.commit()
                 .addOnSuccessListener(aVoid -> callback.onSuccess(records))
                 .addOnFailureListener(callback::onFailure);
     }
 
     /**
-     * Deletes a specific history record from Firestore.
+     * Deletes a specific event history record from Firestore identified by
+     * the compound document ID ({deviceId}_{eventId}).
      *
      * @param deviceId the device ID of the user
-     * @param eventId  the event ID to delete from history
-     * @param callback the callback to handle success or failure
+     * @param eventId  the event ID of the record to delete
+     * @param callback the callback to handle success or failure;
+     *                 onSuccess receives an empty list
      */
     @Override
     public void deleteHistoryRecord(String deviceId, String eventId, EventHistoryCallback callback) {
         String docId = deviceId + "_" + eventId;
-
         db.collection(COLLECTION_NAME)
                 .document(docId)
                 .delete()
@@ -124,11 +129,15 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
     }
 
     /**
-     * Deletes all history records for a specific user.
-     * Useful when user deletes their account.
+     * Deletes all event history records for a specific user from Firestore.
+     * Queries all records matching the device ID and deletes them in a
+     * single batch operation. Useful when a user deletes their account.
+     * If no records exist for the user, onSuccess is called immediately
+     * with an empty list.
      *
-     * @param deviceId the device ID of the user
-     * @param callback the callback to handle success or failure
+     * @param deviceId the device ID of the user whose history should be cleared
+     * @param callback the callback to handle success or failure;
+     *                 onSuccess receives an empty list
      */
     @Override
     public void deleteAllHistory(String deviceId, EventHistoryCallback callback) {
@@ -140,41 +149,14 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
                         callback.onSuccess(new ArrayList<>());
                         return;
                     }
-
                     var batch = db.batch();
                     for (var document : queryDocumentSnapshots) {
                         batch.delete(document.getReference());
                     }
-
                     batch.commit()
                             .addOnSuccessListener(aVoid -> callback.onSuccess(new ArrayList<>()))
                             .addOnFailureListener(callback::onFailure);
                 })
                 .addOnFailureListener(callback::onFailure);
-    }
-
-    /**
-     * Duplicate stub methods were removed because the implemented methods above already provide
-     * the required Firestore-backed behavior.
-     */
-
-    /**
-     * Callback interface for asynchronous event history operations.
-     * Follows the same pattern as ProfileCallback in ProfileRepository.
-     */
-    public interface EventHistoryCallback {
-        /**
-         * Called when the operation completes successfully.
-         *
-         * @param historyList the resulting list of event history records
-         */
-        void onSuccess(List<EventHistoryRecord> historyList);
-
-        /**
-         * Called when the operation fails.
-         *
-         * @param e the exception that caused the failure
-         */
-        void onFailure(Exception e);
     }
 }
