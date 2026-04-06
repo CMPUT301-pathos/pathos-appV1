@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -18,6 +19,7 @@ import com.example.eventlottery.domain.UserProfile;
 import com.example.eventlottery.firebase.FirestoreProfileRepository;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class AdminMainActivity extends AppCompatActivity {
 
@@ -106,8 +108,12 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardCommentModeration.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminCommentModerationActivity.class)));
-    }
 
+    }
+    private void resetDisplayedCount() {
+        tvPolicyViolations.setText("0");
+        Toast.makeText(this, "Count reset to 0 for demo", Toast.LENGTH_SHORT).show();
+    }
     private void loadStatistics() {
         db.collection("events")
                 .get()

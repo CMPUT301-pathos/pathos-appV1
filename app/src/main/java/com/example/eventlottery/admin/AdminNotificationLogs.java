@@ -71,6 +71,22 @@ public class AdminNotificationLogs extends AppCompatActivity {
         setupFilter();
         setupRecyclerView();
         loadNotificationLogs();
+        startRealtimeNotificationListener();
+    }
+    private void startRealtimeNotificationListener() {
+        db.collectionGroup("notifications")
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "Real-time listener error", error);
+                        return;
+                    }
+
+                    if (snapshots == null) return;
+
+                    Log.d(TAG, "Real-time update: " + snapshots.size() + " notifications changed");
+                    // Reload all notifications
+                    loadNotificationLogs();
+                });
     }
 
     private void initViews() {
@@ -206,7 +222,7 @@ public class AdminNotificationLogs extends AppCompatActivity {
         recyclerViewLogs.setAdapter(logAdapter);
     }
 
-    private void loadNotificationLogs() {
+    /*private void loadNotificationLogs() {
         progressBar.setVisibility(View.VISIBLE);
 
         db.collection("notifications")
@@ -331,7 +347,146 @@ public class AdminNotificationLogs extends AppCompatActivity {
                     updateUI();
                 });
     }
-    
+    */
+    private void loadNotificationLogs() {
+        progressBar.setVisibility(View.VISIBLE);
+        logList.clear();
+        originalLogList.clear();
+        userNamesCache.clear();
+
+        Log.d(TAG, "Loading notifications from ALL locations using collectionGroup...");
+
+        // Use collectionGroup to find ALL notifications anywhere in Firestore
+        db.collectionGroup("notifications")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Log.d(TAG, "Found " + queryDocumentSnapshots.size() + " notifications across all collections");
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        try {
+                            NotificationLog log = new NotificationLog();
+                            log.setLogId(doc.getId());
+
+                            // Get the path to see where this notification came from
+                            String path = doc.getReference().getPath();
+                            Log.d(TAG, "Notification from: " + path);
+
+                            // Try multiple possible field names for recipient
+                            String recipientId = null;
+
+                            if (doc.contains("recipientID")) {
+                                recipientId = doc.getString("recipientID");
+                            } else if (doc.contains("recipientId")) {
+                                recipientId = doc.getString("recipientId");
+                            } else if (doc.contains("deviceId")) {
+                                recipientId = doc.getString("deviceId");
+                            } else if (doc.contains("userId")) {
+                                recipientId = doc.getString("userId");
+                            } else {
+                                // Try to extract from path: users/{userId}/notifications/...
+                                if (path.contains("/users/") && path.contains("/notifications/")) {
+                                    String[] parts = path.split("/");
+                                    for (int i = 0; i < parts.length; i++) {
+                                        if (parts[i].equals("users") && i + 1 < parts.length) {
+                                            recipientId = parts[i + 1];
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            log.setRecipientId(recipientId != null ? recipientId : "Unknown");
+
+                            // Fetch user name
+                            if (recipientId != null && !recipientId.equals("Unknown")) {
+                                if (userNamesCache.containsKey(recipientId)) {
+                                    log.setRecipientName(userNamesCache.get(recipientId));
+                                } else {
+                                    fetchUserName(recipientId, log);
+                                    log.setRecipientName("Loading...");
+                                }
+                            } else {
+                                log.setRecipientName("Unknown User");
+                            }
+
+                            log.setEventId(doc.getString("eventId"));
+                            log.setMessage(doc.getString("message"));
+
+                            String type = doc.getString("type");
+                            if (type == null) type = doc.getString("notificationType");
+                            log.setNotificationType(type);
+
+                            if ("WIN".equals(type)) {
+                                log.setTitle("Lottery Won");
+                            } else if ("LOST".equals(type)) {
+                                log.setTitle("Lottery Lost");
+                            } else if ("CANCELLED".equals(type)) {
+                                log.setTitle("Event Cancelled");
+                            } else if ("INVITE".equals(type)) {
+                                log.setTitle("Invitation Sent");
+                            } else if ("JOIN".equals(type)) {
+                                log.setTitle("Waitlist Joined");
+                            } else {
+                                log.setTitle(type != null ? type : "Notification");
+                            }
+
+                            Boolean read = doc.getBoolean("read");
+                            log.setStatus(read != null && read ? "read" : "unread");
+
+                            // Try to get timestamp
+                            Object timestampObj = doc.get("createdAt");
+                            if (timestampObj == null) timestampObj = doc.get("timestamp");
+                            if (timestampObj == null) timestampObj = doc.get("sentAt");
+
+                            if (timestampObj instanceof Long) {
+                                Long timestampMs = (Long) timestampObj;
+                                log.setTimestamp(new com.google.firebase.Timestamp(timestampMs / 1000, 0));
+                            } else if (timestampObj instanceof com.google.firebase.Timestamp) {
+                                log.setTimestamp((com.google.firebase.Timestamp) timestampObj);
+                            } else {
+                                log.setTimestamp(com.google.firebase.Timestamp.now());
+                            }
+
+                            log.setSenderName("System");
+                            log.setSenderId("system");
+
+                            logList.add(log);
+                            originalLogList.add(log);
+
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error parsing notification: " + doc.getId(), e);
+                        }
+                    }
+
+                    // Sort by timestamp (newest first)
+                    logList.sort((a, b) -> {
+                        if (a.getTimestamp() == null) return 1;
+                        if (b.getTimestamp() == null) return -1;
+                        return b.getTimestamp().compareTo(a.getTimestamp());
+                    });
+                    originalLogList.sort((a, b) -> {
+                        if (a.getTimestamp() == null) return 1;
+                        if (b.getTimestamp() == null) return -1;
+                        return b.getTimestamp().compareTo(a.getTimestamp());
+                    });
+
+                    progressBar.setVisibility(View.GONE);
+                    updateUI();
+
+                    if (logList.isEmpty()) {
+                        Toast.makeText(this, "No notification logs found anywhere", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Loaded " + logList.size() + " logs from all locations", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Log.e(TAG, "Error loading notifications", e);
+                    Toast.makeText(this, "Error loading logs: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                    updateUI();
+                });
+    }
     private void fetchUserName(String userId, NotificationLog log) {
         if (userId == null || userId.isEmpty()) {
             return;
