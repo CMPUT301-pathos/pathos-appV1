@@ -3,6 +3,8 @@ package com.example.eventlottery.admin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -38,7 +40,7 @@ public class AdminCommentModerationActivity extends AppCompatActivity
     private EventsWithCommentsAdapter eventsAdapter;
     private List<Map<String, Object>> eventsWithCommentsList;
     private FirebaseFirestore db;
-    private boolean isLoading = false;  // Prevent multiple simultaneous loads
+    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,8 +65,6 @@ public class AdminCommentModerationActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh the list when returning from detail screen
-        Log.d(TAG, "onResume - Refreshing events with comments");
         loadEventsWithComments();
     }
 
@@ -83,29 +83,14 @@ public class AdminCommentModerationActivity extends AppCompatActivity
     }
 
     private void loadEventsWithComments() {
-        // Prevent multiple simultaneous loads
-        if (isLoading) {
-            Log.d(TAG, "Already loading, skipping...");
-            return;
-        }
-
+        if (isLoading) return;
         isLoading = true;
         progressBar.setVisibility(View.VISIBLE);
-
-        // CRITICAL: Clear the list BEFORE starting the query
         eventsWithCommentsList.clear();
 
-        // Also clear the adapter to prevent showing old data
-        eventsAdapter.setEvents(new ArrayList<>());
-
-        Log.d(TAG, "Loading events with comments...");
-
-        // Get all events and check their comments
         db.collection("events")
                 .get()
                 .addOnSuccessListener(eventsSnapshot -> {
-                    Log.d(TAG, "Total events found: " + eventsSnapshot.size());
-
                     if (eventsSnapshot.isEmpty()) {
                         progressBar.setVisibility(View.GONE);
                         isLoading = false;
@@ -115,43 +100,37 @@ public class AdminCommentModerationActivity extends AppCompatActivity
 
                     AtomicInteger processedCount = new AtomicInteger(0);
                     int totalEvents = eventsSnapshot.size();
-
-                    // Use a Set to track unique event IDs to prevent duplicates
                     Map<String, Map<String, Object>> uniqueEvents = new HashMap<>();
 
                     for (QueryDocumentSnapshot eventDoc : eventsSnapshot) {
-                        final String eventId = eventDoc.getId();
-                        String eventNameRaw = eventDoc.getString("name");
-                        if (eventNameRaw == null) eventNameRaw = eventDoc.getString("title");
-                        if (eventNameRaw == null) eventNameRaw = "Unnamed Event";
-                        final String eventName = eventNameRaw;
+                        String eventId = eventDoc.getId();
+                        String eventName = eventDoc.getString("name");
+                        if (eventName == null) eventName = eventDoc.getString("title");
+                        if (eventName == null) eventName = "Unnamed Event";
 
-                        // Count comments from top-level comments collection
-                        db.collection("comments")
-                                .whereEqualTo("eventId", eventId)
+                        // Count comments in the subcollection
+                        String finalEventName = eventName;
+                        db.collection("events")
+                                .document(eventId)
+                                .collection("comments")
                                 .get()
                                 .addOnSuccessListener(commentsSnapshot -> {
-                                    final int commentCount = commentsSnapshot.size();
-                                    Log.d(TAG, "Event " + eventName + " has " + commentCount + " comments");
+                                    int commentCount = commentsSnapshot.size();
 
                                     if (commentCount > 0) {
-                                        // Use eventId as key to prevent duplicates
                                         Map<String, Object> eventInfo = new HashMap<>();
                                         eventInfo.put("eventId", eventId);
-                                        eventInfo.put("eventName", eventName);
+                                        eventInfo.put("eventName", finalEventName);
                                         eventInfo.put("commentCount", commentCount);
                                         uniqueEvents.put(eventId, eventInfo);
                                     }
 
                                     if (processedCount.incrementAndGet() == totalEvents) {
-                                        // Clear and add all unique events
                                         eventsWithCommentsList.clear();
                                         eventsWithCommentsList.addAll(uniqueEvents.values());
-
                                         progressBar.setVisibility(View.GONE);
                                         isLoading = false;
                                         updateUI();
-                                        Log.d(TAG, "Found " + eventsWithCommentsList.size() + " unique events with comments");
                                     }
                                 })
                                 .addOnFailureListener(e -> {
@@ -159,7 +138,6 @@ public class AdminCommentModerationActivity extends AppCompatActivity
                                     if (processedCount.incrementAndGet() == totalEvents) {
                                         eventsWithCommentsList.clear();
                                         eventsWithCommentsList.addAll(uniqueEvents.values());
-
                                         progressBar.setVisibility(View.GONE);
                                         isLoading = false;
                                         updateUI();
@@ -170,8 +148,7 @@ public class AdminCommentModerationActivity extends AppCompatActivity
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
                     isLoading = false;
-                    Log.e(TAG, "Error loading events", e);
-                    Toast.makeText(this, "Error loading events: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Error loading events", Toast.LENGTH_SHORT).show();
                     updateUI();
                 });
     }
@@ -188,9 +165,6 @@ public class AdminCommentModerationActivity extends AppCompatActivity
         if (eventsWithCommentsList.isEmpty()) {
             recyclerViewEvents.setVisibility(View.GONE);
             emptyStateLayout.setVisibility(View.VISIBLE);
-            if (tvEmptyMessage != null) {
-                tvEmptyMessage.setText("No events with comments found");
-            }
         } else {
             recyclerViewEvents.setVisibility(View.VISIBLE);
             emptyStateLayout.setVisibility(View.GONE);
