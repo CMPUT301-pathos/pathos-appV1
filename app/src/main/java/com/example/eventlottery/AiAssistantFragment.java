@@ -57,7 +57,7 @@ public class AiAssistantFragment extends Fragment {
     // Get one at https://console.anthropic.com
     // For production use BuildConfig or a backend proxy — never commit a real key.
     // -------------------------------------------------------------------------
-    private static final String ANTHROPIC_API_KEY = "HELL_IDK";
+    private static final String ANTHROPIC_API_KEY = "ANTHROPIC_API_KEY";
 
     private static final String API_URL = "https://api.anthropic.com/v1/messages";
     private static final String MODEL   = "claude-sonnet-4-20250514";
