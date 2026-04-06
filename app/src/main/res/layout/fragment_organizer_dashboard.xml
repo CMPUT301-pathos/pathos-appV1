@@ -18,11 +18,11 @@
         android:paddingBottom="20dp">
 
         <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:paddingBottom="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/ivProfilePhoto"
@@ -43,6 +43,7 @@
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:letterSpacing="0.1" />
+
     </LinearLayout>
         <TextView
             android:id="@+id/tvCreateEvent"
@@ -81,39 +82,32 @@
     </LinearLayout>
 
     <!-- Event list -->
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:orientation="vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingTop="4dp"
         android:paddingBottom="16dp"
         android:clipToPadding="false">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_my_events_empty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:text="You haven't created any events yet."
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:padding="12dp"
+            android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/tv_my_events_empty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="You haven't created any events yet."
-                android:textColor="#FFFFFF"
-                android:gravity="center"
-                android:padding="12dp"
-                android:visibility="gone" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_my_events"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_my_events"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
-
-        </LinearLayout>
-
-    </ScrollView>
+    </LinearLayout>
 
 </LinearLayout>

@@ -99,7 +99,8 @@ public class OrganizerGeoMapFragment extends Fragment implements OnMapReadyCallb
 
         listAdapter = new ArrayAdapter<>(
                 requireContext(),
-                android.R.layout.simple_list_item_1,
+                R.layout.item_geo_entrant_list,
+                android.R.id.text1,
                 entrantLabels
         );
         entrantListView.setAdapter(listAdapter);
