@@ -178,7 +178,6 @@ public class DashboardFragment extends Fragment {
                                     .inflate(R.layout.item_dashboard_event,
                                             containerUpcomingEvents, false);
 
-                            // IDs match item_dashboard_event.xml exactly
                             ((TextView) card.findViewById(R.id.tvEventName)).setText(name);
                             ((TextView) card.findViewById(R.id.tvEventDesc)).setText(desc);
                             ((TextView) card.findViewById(R.id.tvEventDate)).setText(meta);
@@ -222,7 +221,6 @@ public class DashboardFragment extends Fragment {
                                     .inflate(R.layout.item_dashboard_waitlist,
                                             containerWaitlist, false);
 
-                            // ID matches item_dashboard_waitlist.xml exactly
                             ((TextView) card.findViewById(R.id.tvWaitlistEventName)).setText(name);
 
                             MaterialButton btnLeave = card.findViewById(R.id.btnLeaveWaitlist);
