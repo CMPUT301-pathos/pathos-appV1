@@ -21,14 +21,15 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <ImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/ivCommentAuthorPhoto"
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:layout_marginEnd="8dp"
-                android:scaleType="centerCrop"
-                android:background="@drawable/circle_purple_bg"
-                android:src="@drawable/ic_profile_placeholder_forstyledlayout" />
+                android:src="@drawable/ic_profile_placeholder_forstyledlayout"
+                app:civ_circle_background_color="#E8E8E8"
+                app:civ_border_width="1dp"
+                app:civ_border_color="#FFFFFF" />
 
             <TextView
                 android:id="@+id/tvCommentAuthor"
