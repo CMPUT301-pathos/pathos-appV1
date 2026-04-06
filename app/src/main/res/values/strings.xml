@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="ai_assistant_title">AI Assistant</string>
+    <string name="ai_assistant_subtitle">Ask me anything about events</string>
 </resources>
