@@ -15,6 +15,10 @@ import org.junit.Test;
  */
 public class EventSummaryGeolocationTest {
 
+    /**
+     * Verifies that EventSummary constructor defaults the geolocation requirement
+     * flag to false and all accessor methods return false.
+     */
     @Test
     public void constructor_defaultsGeolocationRequirementToFalse() {
         EventSummary summary = new EventSummary(
@@ -38,6 +42,10 @@ public class EventSummaryGeolocationTest {
         assertFalse(summary.getRequiresGeolocation());
     }
 
+    /**
+     * Verifies that setRequiresGeolocation(true) updates the flag so that
+     * all accessor methods return true.
+     */
     @Test
     public void setRequiresGeolocation_true_updatesAllAccessors() {
         EventSummary summary = new EventSummary(
@@ -63,6 +71,9 @@ public class EventSummaryGeolocationTest {
         assertTrue(summary.getRequiresGeolocation());
     }
 
+    /**
+     * Verifies that setGeolocationRequired(true) updates the geolocation flag.
+     */
     @Test
     public void setGeolocationRequired_true_updatesFlag() {
         EventSummary summary = new EventSummary(
@@ -86,6 +97,10 @@ public class EventSummaryGeolocationTest {
         assertTrue(summary.isRequiresGeolocation());
     }
 
+    /**
+     * Verifies that isRegistrationOpen() returns true when the current time
+     * falls within the registration window.
+     */
     @Test
     public void registrationOpen_trueWhenNowWithinWindow() {
         long now = System.currentTimeMillis();
@@ -109,6 +124,10 @@ public class EventSummaryGeolocationTest {
         assertTrue(summary.isRegistrationOpen());
     }
 
+    /**
+     * Verifies that isRegistrationOpen() returns false when registration dates
+     * are not set (both are 0).
+     */
     @Test
     public void registrationOpen_falseWhenWindowMissing() {
         EventSummary summary = new EventSummary(

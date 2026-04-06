@@ -28,6 +28,9 @@ public class EventHistoryRepositoryTest {
         }
     }
 
+    /**
+     * Verifies that listing event history for a device returns the stored records.
+     */
     @Test
     public void listHistory_returnsRecords() {
         FakeEventHistoryRepository repo = new FakeEventHistoryRepository();
@@ -38,6 +41,10 @@ public class EventHistoryRepositoryTest {
         assertEquals(2, out.size());
     }
 
+    /**
+     * Verifies that listing event history for a device with no past events
+     * returns an empty list without crashing.
+     */
     @Test
     public void listHistory_empty_returnsEmptyList() {
         FakeEventHistoryRepository repo = new FakeEventHistoryRepository();

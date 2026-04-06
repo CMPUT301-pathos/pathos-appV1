@@ -55,13 +55,18 @@ public class FirestoreWaitListRepository implements WaitListRepository {
     public FirestoreWaitListRepository() {
         this.db = FirebaseFirestore.getInstance();
     }
+
     // For unit tests
     public FirestoreWaitListRepository(FirebaseFirestore db) {
         this.db = db;
     }
 
-
-
+    /**
+     * Adds a waitlist record for an entrant to Firestore.
+     * Documents are keyed by eventId_deviceId for uniqueness.
+     *
+     * @param record waitlist record to persist
+     */
     @Override
     public void addToWaitList(WaitListRecord record) {
         db.collection(COLLECTION)
@@ -69,6 +74,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .set(toMap(record));
     }
 
+    /**
+     * Removes an entrant from the waitlist for a given event.
+     *
+     * @param eventId  event ID
+     * @param deviceId entrant device ID
+     */
     @Override
     public void removeFromWaitList(String eventId, String deviceId) {
         db.collection(COLLECTION)
@@ -76,6 +87,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .delete();
     }
 
+    /**
+     * Updates the waitlist status for a specific entrant.
+     *
+     * @param eventId   event ID
+     * @param deviceId  entrant device ID
+     * @param newStatus new waitlist status
+     */
     @Override
     public void updateStatus(String eventId, String deviceId, WaitStatus newStatus) {
         db.collection(COLLECTION)
@@ -83,21 +101,51 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .update(FIELD_STATUS, newStatus.name());
     }
 
+    /**
+     * Synchronous record lookup is not supported by this implementation.
+     * Use {@link #getRecordAsync(String, String, SingleRecordCallback)} instead.
+     *
+     * @param eventId  event ID
+     * @param deviceId entrant device ID
+     * @return always null
+     */
     @Override
     public WaitListRecord getRecord(String eventId, String deviceId) {
         return null;
     }
 
+    /**
+     * Synchronous event listing is not supported by this implementation.
+     * Use {@link #getRecordsByEventAsync(String, WaitListCallBack)} instead.
+     *
+     * @param eventId event ID
+     * @return empty list
+     */
     @Override
     public List<WaitListRecord> getRecordsByEvent(String eventId) {
         return new ArrayList<>();
     }
 
+    /**
+     * Synchronous status-based listing is not supported by this implementation.
+     * Use {@link #getRecordsByStatusAsync(String, WaitStatus, WaitListCallBack)} instead.
+     *
+     * @param eventId event ID
+     * @param status  waitlist status filter
+     * @return empty list
+     */
     @Override
     public List<WaitListRecord> getRecordsByStatus(String eventId, WaitStatus status) {
         return new ArrayList<>();
     }
 
+    /**
+     * Asynchronously queries waitlist entries for a specific status.
+     *
+     * @param eventId  event ID
+     * @param status   waitlist status filter
+     * @param callback callback receiving the matching records or failure
+     */
     @Override
     public void getRecordsByStatusAsync(String eventId,
                                         WaitStatus status,
@@ -116,6 +164,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Loads a specific waitlist record asynchronously.
+     *
+     * @param eventId  event ID
+     * @param deviceId entrant device ID
+     * @param callback callback receiving the record or null if not found
+     */
     @Override
     public void getRecordAsync(String eventId,
                                String deviceId,
@@ -133,6 +188,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Adds a waitlist record with a callback for completion.
+     *
+     * @param record   waitlist record to save
+     * @param callback callback invoked when the write finishes
+     */
     @Override
     public void addToWaitList(WaitListRecord record, OperationCallback callback) {
         db.collection(COLLECTION)
@@ -142,6 +203,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Removes a waitlist record with completion notification.
+     *
+     * @param eventId  event ID
+     * @param deviceId entrant device ID
+     * @param callback callback invoked when deletion completes
+     */
     @Override
     public void removeFromWaitList(String eventId,
                                    String deviceId,
@@ -153,6 +221,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Retrieves all waitlist records for the given event.
+     *
+     * @param eventId  event ID
+     * @param callback callback receiving the record list or failure
+     */
     @Override
     public void getRecordsByEventAsync(String eventId, WaitListCallBack callback) {
         db.collection(COLLECTION)
@@ -168,6 +242,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Retrieves waitlist records for a specific device across all events.
+     *
+     * @param deviceId device ID to query
+     * @param callback callback receiving the matching records or failure
+     */
     public void getRecordsForDevice(String deviceId, WaitListCallBack callback) {
         db.collection(COLLECTION)
                 .whereEqualTo(FIELD_DEVICE_ID, deviceId)
@@ -182,10 +262,23 @@ public class FirestoreWaitListRepository implements WaitListRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Builds a compound Firestore document ID from event and device IDs.
+     *
+     * @param eventId  event ID
+     * @param deviceId device ID
+     * @return compound document ID
+     */
     private String buildDocumentId(String eventId, String deviceId) {
         return eventId + "_" + deviceId;
     }
 
+    /**
+     * Converts a waitlist record into a Firestore-friendly map.
+     *
+     * @param record waitlist record
+     * @return document map
+     */
     private Map<String, Object> toMap(WaitListRecord record) {
         Map<String, Object> data = new HashMap<>();
         data.put(FIELD_EVENT_ID, record.getEventId());
@@ -200,6 +293,12 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         return data;
     }
 
+    /**
+     * Converts a Firestore document into a {@link WaitListRecord}.
+     *
+     * @param doc Firestore document snapshot
+     * @return parsed record instance
+     */
     private WaitListRecord fromDocument(DocumentSnapshot doc) {
         WaitListRecord record = new WaitListRecord(
                 doc.getString(FIELD_EVENT_ID),
@@ -228,6 +327,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         return record;
     }
 
+    /**
+     * Reads a long value from Firestore document fields that may be stored in several numeric types.
+     *
+     * @param doc   Firestore document
+     * @param field field name
+     * @return long value or null if unavailable
+     */
     private Long getLongValue(DocumentSnapshot doc, String field) {
         Object value = doc.get(field);
 
@@ -243,6 +349,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         return null;
     }
 
+    /**
+     * Reads a double value from Firestore document fields that may be stored in various numeric types.
+     *
+     * @param doc   Firestore document
+     * @param field field name
+     * @return double value or null if unavailable
+     */
     private Double getDoubleValue(DocumentSnapshot doc, String field) {
         Object value = doc.get(field);
 
@@ -258,6 +371,13 @@ public class FirestoreWaitListRepository implements WaitListRepository {
         return null;
     }
 
+    /**
+     * Reads a float value from Firestore document fields that may be stored in several numeric types.
+     *
+     * @param doc   Firestore document
+     * @param field field name
+     * @return float value or null if unavailable
+     */
     private Float getFloatValue(DocumentSnapshot doc, String field) {
         Object value = doc.get(field);
 

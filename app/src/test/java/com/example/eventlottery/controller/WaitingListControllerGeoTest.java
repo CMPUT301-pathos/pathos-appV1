@@ -106,6 +106,10 @@ public class WaitingListControllerGeoTest {
         controller = new WaitingListController(fakeRepo);
     }
 
+    /**
+     * Verifies that when joining a waiting list with geolocation data,
+     * the location coordinates, accuracy, and timestamp are preserved.
+     */
     @Test
     public void joinWaitingList_withGeoRecord_preservesLocationData() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -122,6 +126,10 @@ public class WaitingListControllerGeoTest {
         assertTrue(saved.hasJoinLocation());
     }
 
+    /**
+     * Verifies that asynchronous waitlist join operations preserve location data
+     * and invoke the success callback.
+     */
     @Test
     public void joinWaitingList_asyncWithGeoRecord_preservesLocationData() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -148,6 +156,10 @@ public class WaitingListControllerGeoTest {
         assertEquals(Double.valueOf(-114.0719), saved.getJoinLongitude());
     }
 
+    /**
+     * Verifies that joining a waitlist with only event and device IDs
+     * creates a WAITING record without location data.
+     */
     @Test
     public void joinWaitingList_withIds_addsWaitingRecordWithoutLocation() {
         controller.joinWaitingList("event1", "device1");
@@ -158,6 +170,10 @@ public class WaitingListControllerGeoTest {
         assertFalse(saved.hasJoinLocation());
     }
 
+    /**
+     * Verifies that getWaitingCount only counts entrants with WAITING status,
+     * excluding those with other statuses like INVITED.
+     */
     @Test
     public void getWaitingCount_countsOnlyWaitingEntrants() {
         WaitListRecord r1 = new WaitListRecord("event1", "u1");

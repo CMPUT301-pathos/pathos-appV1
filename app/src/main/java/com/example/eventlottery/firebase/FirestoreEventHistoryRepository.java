@@ -153,30 +153,10 @@ public class FirestoreEventHistoryRepository implements EventHistoryRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    @Override
-    public void getHistory(String deviceId, EventHistoryRepository.EventHistoryCallback callback) {
-
-    }
-
-    @Override
-    public void saveHistoryRecord(EventHistoryRecord record, EventHistoryRepository.EventHistoryCallback callback) {
-
-    }
-
-    @Override
-    public void saveAllHistory(List<EventHistoryRecord> records, EventHistoryRepository.EventHistoryCallback callback) {
-
-    }
-
-    @Override
-    public void deleteHistoryRecord(String deviceId, String eventId, EventHistoryRepository.EventHistoryCallback callback) {
-
-    }
-
-    @Override
-    public void deleteAllHistory(String deviceId, EventHistoryRepository.EventHistoryCallback callback) {
-
-    }
+    /**
+     * Duplicate stub methods were removed because the implemented methods above already provide
+     * the required Firestore-backed behavior.
+     */
 
     /**
      * Callback interface for asynchronous event history operations.

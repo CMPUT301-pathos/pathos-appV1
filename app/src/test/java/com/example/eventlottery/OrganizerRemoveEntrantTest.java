@@ -110,6 +110,9 @@ public class OrganizerRemoveEntrantTest {
         fakeRepo = new FakeRemoveWaitListRepository();
     }
 
+    /**
+     * Verifies that updateStatus() on a waiting entrant sets the status to CANCELLED.
+     */
     @Test
     public void removeEntrant_setsStatusToCancelled() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -118,6 +121,10 @@ public class OrganizerRemoveEntrantTest {
         assertEquals(WaitStatus.CANCELLED, record.getStatus());
     }
 
+    /**
+     * Verifies that cancelling one entrant does not affect other entrants
+     * in the same event.
+     */
     @Test
     public void removeEntrant_doesNotAffectOtherEntrants() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -127,6 +134,10 @@ public class OrganizerRemoveEntrantTest {
         assertEquals(WaitStatus.WAITING, user2.getStatus());
     }
 
+    /**
+     * Verifies that cancelling an entrant in one event does not affect
+     * the same entrant's status in other events.
+     */
     @Test
     public void removeEntrant_doesNotAffectOtherEvents() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -136,6 +147,9 @@ public class OrganizerRemoveEntrantTest {
         assertEquals(WaitStatus.WAITING, event2Record.getStatus());
     }
 
+    /**
+     * Verifies that updating an INVITED entrant's status to CANCELLED works correctly.
+     */
     @Test
     public void removeInvitedEntrant_setsStatusToCancelled() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.INVITED);
@@ -144,6 +158,10 @@ public class OrganizerRemoveEntrantTest {
         assertEquals(WaitStatus.CANCELLED, record.getStatus());
     }
 
+    /**
+     * Verifies that after an entrant is cancelled, they no longer appear
+     * in the waiting list for that event.
+     */
     @Test
     public void cancelledEntrant_doesNotAppearInWaitingList() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -154,6 +172,10 @@ public class OrganizerRemoveEntrantTest {
         assertEquals("user2", waiting.get(0).getDeviceId());
     }
 
+    /**
+     * Verifies that after an entrant is cancelled, they appear in the
+     * cancelled records for that event.
+     */
     @Test
     public void cancelledEntrant_appearsInCancelledList() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);

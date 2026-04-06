@@ -31,6 +31,10 @@ public class PathosNotifyServiceTest {
         }
     }
 
+    /**
+     * Verifies that notifyWin() creates a WIN-type notification record with
+     * the correct recipient, event, message, and initial unread status.
+     */
     @Test
     public void notifyWin_addsWinNotificationRecord() {
         FakeNotificationLogRepository repo = new FakeNotificationLogRepository();
@@ -62,6 +66,10 @@ public class PathosNotifyServiceTest {
 
         assertNotNull(getField(r, "createdAt"));
     }
+    /**
+     * Verifies that notifyNotSelected() creates a LOSE-type notification record
+     * with the correct recipient, event, message, and initial unread status.
+     */
     @Test
     public void notifyNotSelected_addsLoseNotificationRecord() {
         FakeNotificationLogRepository repo = new FakeNotificationLogRepository();
@@ -94,6 +102,10 @@ public class PathosNotifyServiceTest {
         assertNotNull(getField(r, "createdAt"));
     }
 
+    /**
+     * Verifies that notifyCoOrganizerAdded() creates a CO_ORGANIZER_ADDED-type
+     * notification record with the correct recipient, event, message, and initial unread status.
+     */
     @Test
     public void notifyCoOrganizerAdded_addsCoOrganizerNotificationRecord() {
         FakeNotificationLogRepository repo = new FakeNotificationLogRepository();

@@ -71,6 +71,16 @@ public class EventDetailFragment extends Fragment {
 
     public EventDetailFragment() {}
 
+    /**
+     * Factory method to create an event detail fragment with basic parameters.
+     *
+     * @param eventId Firestore id of the event
+     * @param eventName display name of the event
+     * @param description event description text
+     * @param organizerDeviceId device id of the event organizer
+     * @param posterUrl URL or Base64 data of the event poster image
+     * @return configured event detail fragment instance
+     */
     public static EventDetailFragment newInstance(String eventId,
                                                   String eventName,
                                                   String description,
@@ -79,6 +89,17 @@ public class EventDetailFragment extends Fragment {
         return newInstance(eventId, eventName, description, organizerDeviceId, posterUrl, false, new ArrayList<>());
     }
 
+    /**
+     * Factory method to create an event detail fragment with geolocation flag.
+     *
+     * @param eventId Firestore id of the event
+     * @param eventName display name of the event
+     * @param description event description text
+     * @param organizerDeviceId device id of the event organizer
+     * @param posterUrl URL or Base64 data of the event poster image
+     * @param requiresGeolocation true if geolocation is required to join
+     * @return configured event detail fragment instance
+     */
     public static EventDetailFragment newInstance(String eventId,
                                                   String eventName,
                                                   String description,
@@ -88,6 +109,18 @@ public class EventDetailFragment extends Fragment {
         return newInstance(eventId, eventName, description, organizerDeviceId, posterUrl, requiresGeolocation, new ArrayList<>());
     }
 
+    /**
+     * Factory method to create an event detail fragment with all parameters.
+     *
+     * @param eventId Firestore id of the event
+     * @param eventName display name of the event
+     * @param description event description text
+     * @param organizerDeviceId device id of the event organizer
+     * @param posterUrl URL or Base64 data of the event poster image
+     * @param requiresGeolocation true if geolocation is required to join
+     * @param coOrganizerIds list of device ids of any co-organizers
+     * @return configured event detail fragment instance
+     */
     public static EventDetailFragment newInstance(String eventId,
                                                   String eventName,
                                                   String description,
@@ -108,6 +141,9 @@ public class EventDetailFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes fragment arguments and sets up controllers and service instances.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,6 +169,12 @@ public class EventDetailFragment extends Fragment {
         );
     }
 
+    /**
+     * Inflates the event detail layout and configures all UI components.
+     *
+     * Displays event name, description, poster image, waiting list count,
+     * and join/leave button. Also initializes the comments section.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -180,11 +222,23 @@ public class EventDetailFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Checks whether the current user is the event organizer or a co-organizer.
+     *
+     * @return true if the current device is the organizer or a co-organizer
+     */
     private boolean isOrganizerOrCoOrganizer() {
         if (organizerDeviceId != null && organizerDeviceId.equals(deviceId)) return true;
         return coOrganizerIds != null && coOrganizerIds.contains(deviceId);
     }
 
+    /**
+     * Sets up the join/leave button based on the user's profile completion
+     * and current waitlist status.
+     *
+     * @param buttonJoin the button to configure
+     * @param textWaitCount the text view displaying waiting list count
+     */
     private void configureParticipationButton(Button buttonJoin, TextView textWaitCount) {
         if (isOrganizerOrCoOrganizer()) {
             buttonJoin.setEnabled(false);
@@ -221,6 +275,12 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Configures the button to show "Join Waiting List" and handles the join click.
+     *
+     * @param button the button to configure
+     * @param waitCount the text view displaying waiting list count
+     */
     private void setJoinMode(Button button, TextView waitCount) {
         button.setText("Join Waiting List");
         button.setEnabled(true);
@@ -234,6 +294,12 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Configures the button to show "Leave Waiting List" and handles the leave click.
+     *
+     * @param button the button to configure
+     * @param waitCount the text view displaying waiting list count
+     */
     private void setLeaveMode(Button button, TextView waitCount) {
         button.setText("Leave Waiting List");
         button.setEnabled(true);
@@ -259,6 +325,15 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Initiates the join flow for an event requiring geolocation.
+     *
+     * Requests location permissions if not already granted, then proceeds
+     * to capture the user's location before joining the waitlist.
+     *
+     * @param button the join button to disable while processing
+     * @param waitCount the text view displaying waiting list count
+     */
     private void beginJoinWithGeolocation(Button button, TextView waitCount) {
         pendingJoinButton = button;
         pendingJoinWaitCount = waitCount;
@@ -274,6 +349,14 @@ public class EventDetailFragment extends Fragment {
         performJoinWithGeolocation();
     }
 
+    /**
+     * Processes the location permission request result.
+     *
+     * If permissions were granted, proceeds with geolocation join.
+     * Otherwise, shows an error message and restores the join button.
+     *
+     * @param result map of permission requests to grant status
+     */
     private void handleLocationPermissionResult(Map<String, Boolean> result) {
         boolean granted = false;
         if (result != null) {
@@ -293,6 +376,11 @@ public class EventDetailFragment extends Fragment {
         performJoinWithGeolocation();
     }
 
+    /**
+     * Captures the user's current location and adds them to the event waitlist.
+     *
+     * Checks that location services are enabled before requesting location.
+     */
     private void performJoinWithGeolocation() {
         if (!geoService.isLocationEnabled(requireContext())) {
             Toast.makeText(requireContext(),
@@ -345,6 +433,12 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Adds the user to the event waiting list without location data.
+     *
+     * @param button the join button to configure as "leave" mode after success
+     * @param waitCount the text view displaying waiting list count
+     */
     private void joinWithoutGeolocation(Button button, TextView waitCount) {
         waitingListController.joinWaitingList(eventId, deviceId,
                 new WaitListRepository.OperationCallback() {
@@ -365,6 +459,9 @@ public class EventDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Re-enables the pending join button if the join-with-geolocation flow was interrupted.
+     */
     private void restorePendingJoinButton() {
         if (pendingJoinButton != null) {
             pendingJoinButton.setEnabled(true);
@@ -372,11 +469,21 @@ public class EventDetailFragment extends Fragment {
         clearPendingJoinReferences();
     }
 
+    /**
+     * Clears references to the pending join button and wait count.
+     *
+     * Called after a geolocation join completes or is cancelled.
+     */
     private void clearPendingJoinReferences() {
         pendingJoinButton = null;
         pendingJoinWaitCount = null;
     }
 
+    /**
+     * Loads the current waiting list count for the event and updates the UI.
+     *
+     * @param textWaitCount the text view to update with the count
+     */
     private void refreshWaitCount(TextView textWaitCount) {
         waitingListController.getWaitingCount(eventId, new WaitingListController.CountCallback() {
             @Override
@@ -391,6 +498,15 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Sets up the event comments section with posting and moderation.
+     *
+     * Loads existing comments, configures the list view, and wires up
+     * the comment input and post button for entrants and organizers.
+     * Organizers and co-organizers can delete comments.
+     *
+     * @param view the parent view containing comment UI elements
+     */
     private void setupComments(View view) {
         RecyclerView recyclerComments = view.findViewById(R.id.recycler_comments);
         EditText editComment = view.findViewById(R.id.edit_comment);
@@ -523,6 +639,11 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Checks whether the current user has completed their profile.
+     *
+     * @param callback callback invoked with the completion status
+     */
     private void requireCompletedProfile(ProfileCheckCallback callback) {
         new FirestoreProfileRepository().getProfile(deviceId,
                 new ProfileRepository.ProfileCallback() {
@@ -538,6 +659,9 @@ public class EventDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Callback interface for checking profile completion status.
+     */
     private interface ProfileCheckCallback {
         void onResult(boolean isCompleted);
     }

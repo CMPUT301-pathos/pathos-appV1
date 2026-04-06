@@ -78,6 +78,9 @@ public class EventSearchFilterTest {
 
     // ── Keyword search tests ──────────────────────────────────────
 
+    /**
+     * Verifies that searching by event name returns the matching event.
+     */
     @Test
     public void testSearch_byEventName_returnsMatch() {
         List<EventSummary> results = controller.searchByKeyword("Swimming");
@@ -85,6 +88,9 @@ public class EventSearchFilterTest {
         assertEquals("Swimming Lessons", results.get(0).getName());
     }
 
+    /**
+     * Verifies that searching by event description returns the matching event.
+     */
     @Test
     public void testSearch_byDescription_returnsMatch() {
         List<EventSummary> results = controller.searchByKeyword("stretch");
@@ -92,30 +98,47 @@ public class EventSearchFilterTest {
         assertEquals("Yoga Class", results.get(0).getName());
     }
 
+    /**
+     * Verifies that searching by category keyword returns all events
+     * in that category.
+     */
     @Test
     public void testSearch_byCategory_returnsAllMatches() {
         List<EventSummary> results = controller.searchByKeyword("Sports");
         assertEquals(2, results.size());
     }
 
+    /**
+     * Verifies that keyword search is case-insensitive.
+     */
     @Test
     public void testSearch_caseInsensitive() {
         List<EventSummary> results = controller.searchByKeyword("swimming");
         assertEquals(1, results.size());
     }
 
+    /**
+     * Verifies that an empty keyword returns all events (no filtering).
+     */
     @Test
     public void testSearch_emptyKeyword_returnsAll() {
         List<EventSummary> results = controller.searchByKeyword("");
         assertEquals(5, results.size());
     }
 
+    /**
+     * Verifies that a null keyword is treated as no search filter
+     * and returns all events.
+     */
     @Test
     public void testSearch_nullKeyword_returnsAll() {
         List<EventSummary> results = controller.searchByKeyword(null);
         assertEquals(5, results.size());
     }
 
+    /**
+     * Verifies that a keyword with no matching events returns an empty list.
+     */
     @Test
     public void testSearch_noMatch_returnsEmpty() {
         List<EventSummary> results = controller.searchByKeyword("xyznotfound");
@@ -124,30 +147,50 @@ public class EventSearchFilterTest {
 
     // ── Capacity filter tests ─────────────────────────────────────
 
+    /**
+     * Verifies that filtering by maximum capacity returns events with
+     * capacity at or below the specified limit.
+     */
     @Test
     public void testCapacityFilter_returnsEventsUnderLimit() {
         List<EventSummary> results = controller.filterByMaxCapacity(25);
         assertEquals(3, results.size());
     }
 
+    /**
+     * Verifies that events with unlimited capacity (0) are always included
+     * in capacity filtering regardless of the limit.
+     */
     @Test
     public void testCapacityFilter_unlimitedEventsAlwaysIncluded() {
         List<EventSummary> results = controller.filterByMaxCapacity(5);
         assertTrue(results.stream().anyMatch(e -> e.getName().equals("Community Cleanup")));
     }
 
+    /**
+     * Verifies that a capacity filter of 0 disables filtering and
+     * returns all events.
+     */
     @Test
     public void testCapacityFilter_zeroMeansNoFilter() {
         List<EventSummary> results = controller.filterByMaxCapacity(0);
         assertEquals(5, results.size());
     }
 
+    /**
+     * Verifies that an event with capacity exactly matching the filter limit
+     * is included in the filtered results.
+     */
     @Test
     public void testCapacityFilter_exactMatch_isIncluded() {
         List<EventSummary> results = controller.filterByMaxCapacity(50);
         assertTrue(results.stream().anyMatch(e -> e.getName().equals("Swimming Lessons")));
     }
 
+    /**
+     * Verifies that capacity filtering below all event capacities includes
+     * only unlimited-capacity events.
+     */
     @Test
     public void testCapacityFilter_belowAllCapacities_returnsOnlyUnlimited() {
         List<EventSummary> results = controller.filterByMaxCapacity(5);
@@ -158,6 +201,10 @@ public class EventSearchFilterTest {
 
     // ── Combined search + filter tests ───────────────────────────
 
+    /**
+     * Verifies that combining keyword and category filters returns only events
+     * matching both criteria.
+     */
     @Test
     public void testApplyAllFilters_keywordAndCategory() {
         List<EventSummary> results = controller.applyAllFilters(
@@ -166,6 +213,10 @@ public class EventSearchFilterTest {
         assertEquals("Swimming Lessons", results.get(0).getName());
     }
 
+    /**
+     * Verifies that combining keyword and capacity filters returns only events
+     * matching both criteria.
+     */
     @Test
     public void testApplyAllFilters_keywordAndCapacity() {
         List<EventSummary> results = controller.applyAllFilters(
@@ -174,6 +225,9 @@ public class EventSearchFilterTest {
         assertEquals("Piano Lessons", results.get(0).getName());
     }
 
+    /**
+     * Verifies that applying no filters returns all events.
+     */
     @Test
     public void testApplyAllFilters_noFilters_returnsAll() {
         List<EventSummary> results = controller.applyAllFilters(
@@ -181,6 +235,10 @@ public class EventSearchFilterTest {
         assertEquals(5, results.size());
     }
 
+    /**
+     * Verifies that combining keyword and location filters returns only events
+     * matching both criteria.
+     */
     @Test
     public void testApplyAllFilters_keywordAndLocation() {
         List<EventSummary> results = controller.applyAllFilters(
@@ -189,6 +247,10 @@ public class EventSearchFilterTest {
         assertEquals("Yoga Class", results.get(0).getName());
     }
 
+    /**
+     * Verifies that filtering by category alone (without keyword or other filters)
+     * returns only events in that category.
+     */
     @Test
     public void testApplyAllFilters_categoryOnly() {
         List<EventSummary> results = controller.applyAllFilters(
@@ -197,6 +259,10 @@ public class EventSearchFilterTest {
         assertEquals("Piano Lessons", results.get(0).getName());
     }
 
+    /**
+     * Verifies that the open-only filter returns events with open registration
+     * (all test events have registration windows open).
+     */
     @Test
     public void testApplyAllFilters_openOnlyWithNoOpenEvents() {
         // All events have registration open (regStart < now < regEnd)
@@ -205,6 +271,10 @@ public class EventSearchFilterTest {
         assertEquals(5, results.size());
     }
 
+    /**
+     * Verifies that combining keyword, category, and capacity filters
+     * returns only events matching all three criteria.
+     */
     @Test
     public void testApplyAllFilters_keywordCategoryAndCapacity() {
         List<EventSummary> results = controller.applyAllFilters(

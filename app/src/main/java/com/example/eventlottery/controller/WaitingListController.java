@@ -31,10 +31,21 @@ public class WaitingListController {
 
     private final WaitListRepository waitListRepository;
 
+    /**
+     * Creates a waiting list controller backed by the repository.
+     *
+     * @param waitListRepository repository used for waiting list operations
+     */
     public WaitingListController(WaitListRepository waitListRepository) {
         this.waitListRepository = waitListRepository;
     }
 
+    /**
+     * Accepts an invitation for a waiting list entry and updates its status.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     */
     public void acceptInvitation(String eventId, String deviceId) {
         WaitListRecord record = new WaitListRecord(eventId, deviceId);
         record.setStatus(WaitStatus.INVITED);
@@ -42,6 +53,12 @@ public class WaitingListController {
         waitListRepository.updateStatus(eventId, deviceId, WaitStatus.ACCEPTED);
     }
 
+    /**
+     * Declines an invitation and updates the waiting list status.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     */
     public void declineInvitation(String eventId, String deviceId) {
         WaitListRecord record = new WaitListRecord(eventId, deviceId);
         record.setStatus(WaitStatus.INVITED);
@@ -49,15 +66,32 @@ public class WaitingListController {
         waitListRepository.updateStatus(eventId, deviceId, WaitStatus.DECLINED);
     }
 
+    /**
+     * Adds a new waiting list entry for the given event and device.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     */
     public void joinWaitingList(String eventId, String deviceId) {
         WaitListRecord record = new WaitListRecord(eventId, deviceId);
         waitListRepository.addToWaitList(record);
     }
 
+    /**
+     * Adds the provided waiting list record to the repository.
+     *
+     * @param record waiting list record to add
+     */
     public void joinWaitingList(WaitListRecord record) {
         waitListRepository.addToWaitList(record);
     }
 
+    /**
+     * Removes a waiting list entry for the specified event and device.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     */
     public void leaveWaitingList(String eventId, String deviceId) {
         waitListRepository.removeFromWaitList(eventId, deviceId);
     }
@@ -67,6 +101,12 @@ public class WaitingListController {
         void onFailure(Exception e);
     }
 
+    /**
+     * Retrieves the count of waiting entrants for a specific event.
+     *
+     * @param eventId event identifier
+     * @param callback callback to receive the count or error
+     */
     public void getWaitingCount(String eventId, CountCallback callback) {
         waitListRepository.getRecordsByStatusAsync(
                 eventId,
@@ -85,12 +125,26 @@ public class WaitingListController {
         );
     }
 
+    /**
+     * Checks whether a specific device has already joined the waiting list for an event.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     * @param callback callback invoked with the matching record or failure
+     */
     public void checkIfJoined(String eventId,
                               String deviceId,
                               WaitListRepository.SingleRecordCallback callback) {
         waitListRepository.getRecordAsync(eventId, deviceId, callback);
     }
 
+    /**
+     * Adds a waiting list entry and reports completion via callback.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     * @param callback operation callback for success or failure
+     */
     public void joinWaitingList(String eventId,
                                 String deviceId,
                                 WaitListRepository.OperationCallback callback) {
@@ -98,11 +152,24 @@ public class WaitingListController {
         waitListRepository.addToWaitList(record, callback);
     }
 
+    /**
+     * Adds the provided waiting list record and reports completion via callback.
+     *
+     * @param record waiting list record to add
+     * @param callback operation callback for success or failure
+     */
     public void joinWaitingList(WaitListRecord record,
                                 WaitListRepository.OperationCallback callback) {
         waitListRepository.addToWaitList(record, callback);
     }
 
+    /**
+     * Removes a waiting list entry and reports completion via callback.
+     *
+     * @param eventId event identifier
+     * @param deviceId entrant device identifier
+     * @param callback operation callback for success or failure
+     */
     public void leaveWaitingList(String eventId,
                                  String deviceId,
                                  WaitListRepository.OperationCallback callback) {

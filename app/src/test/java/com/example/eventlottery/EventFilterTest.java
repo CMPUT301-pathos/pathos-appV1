@@ -32,6 +32,10 @@ public class EventFilterTest {
 
     // --- Category filter tests ---
 
+    /**
+     * Verifies that filtering events by category returns only events
+     * matching the specified category.
+     */
     @Test
     public void testFilterByCategory_returnsMatchingEvents() {
         List<EventSummary> events = new ArrayList<>();
@@ -47,6 +51,10 @@ public class EventFilterTest {
         assertEquals(2, filtered.size());
     }
 
+    /**
+     * Verifies that filtering with "All" category returns all events
+     * without filtering by category.
+     */
     @Test
     public void testFilterByCategory_allReturnsEverything() {
         List<EventSummary> events = new ArrayList<>();
@@ -58,6 +66,10 @@ public class EventFilterTest {
         assertEquals(2, filtered.size());
     }
 
+    /**
+     * Verifies that filtering by a category with no matching events
+     * returns an empty list.
+     */
     @Test
     public void testFilterByCategory_noMatchReturnsEmpty() {
         List<EventSummary> events = new ArrayList<>();
@@ -72,6 +84,10 @@ public class EventFilterTest {
         assertEquals(0, filtered.size());
     }
 
+    /**
+     * Verifies that category filtering is case-insensitive,
+     * matching "sports", "Sports", "SPORTS".
+     */
     @Test
     public void testFilterByCategory_caseInsensitive() {
         List<EventSummary> events = new ArrayList<>();
@@ -87,6 +103,10 @@ public class EventFilterTest {
 
     // --- Location filter tests ---
 
+    /**
+     * Verifies that filtering events by location returns only events
+     * whose location contains the search string.
+     */
     @Test
     public void testFilterByLocation_returnsMatchingEvents() {
         List<EventSummary> events = new ArrayList<>();
@@ -102,6 +122,10 @@ public class EventFilterTest {
         assertEquals(2, filtered.size());
     }
 
+    /**
+     * Verifies that filtering by a location with no matching events
+     * returns an empty list.
+     */
     @Test
     public void testFilterByLocation_noMatchReturnsEmpty() {
         List<EventSummary> events = new ArrayList<>();
@@ -117,6 +141,10 @@ public class EventFilterTest {
 
     // --- Availability filter tests ---
 
+    /**
+     * Verifies that isRegistrationOpen() returns true when the current time
+     * falls within the registration window.
+     */
     @Test
     public void testIsRegistrationOpen_returnsTrue() {
         long now = System.currentTimeMillis();
@@ -127,6 +155,10 @@ public class EventFilterTest {
         assertTrue(openEvent.isRegistrationOpen());
     }
 
+    /**
+     * Verifies that isRegistrationOpen() returns false when the current time
+     * is outside the registration window.
+     */
     @Test
     public void testIsRegistrationOpen_returnsFalse() {
         long now = System.currentTimeMillis();
@@ -137,6 +169,10 @@ public class EventFilterTest {
         assertFalse(closedEvent.isRegistrationOpen());
     }
 
+    /**
+     * Verifies that filtering events by availability (registration open status)
+     * returns only events in their registration window.
+     */
     @Test
     public void testFilterByAvailability_returnsOnlyOpenEvents() {
         long now = System.currentTimeMillis();
@@ -164,6 +200,9 @@ public class EventFilterTest {
 
     // --- Lottery criteria tests ---
 
+    /**
+     * Verifies that an event's capacity lottery criteria field is set correctly.
+     */
     @Test
     public void testLotteryCriteria_capacityIsSet() {
         long now = System.currentTimeMillis();
@@ -174,6 +213,10 @@ public class EventFilterTest {
         assertEquals(50, event.getCapacity());
     }
 
+    /**
+     * Verifies that an event's draw size (number of lottery winners)
+     * lottery criteria field is set correctly.
+     */
     @Test
     public void testLotteryCriteria_drawSizeIsSet() {
         long now = System.currentTimeMillis();
@@ -184,6 +227,9 @@ public class EventFilterTest {
         assertEquals(10, event.getDrawSize());
     }
 
+    /**
+     * Verifies that an event with zero capacity represents unlimited availability.
+     */
     @Test
     public void testLotteryCriteria_unlimitedCapacity() {
         long now = System.currentTimeMillis();

@@ -56,6 +56,9 @@ public class DashboardFragment extends Fragment {
 
     public DashboardFragment() {}
 
+    /**
+     * Inflates the dashboard fragment layout.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,6 +67,9 @@ public class DashboardFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_dashboard, container, false);
     }
 
+    /**
+     * Initializes dashboard UI state and loads the current user's profile and events.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -114,6 +120,12 @@ public class DashboardFragment extends Fragment {
 
     // ── Load waitlist records ──────────────────────────────────────
 
+    /**
+     * Loads the current user's waitlist records and renders dashboard cards.
+     *
+     * Accepted events become upcoming event cards, while waiting entries
+     * become waitlist cards with a leave option.
+     */
     private void loadDashboard() {
         waitListRepo.getRecordsForDevice(deviceId, new WaitListRepository.WaitListCallBack() {
             @Override
@@ -158,6 +170,11 @@ public class DashboardFragment extends Fragment {
         });
     }
 
+    /**
+     * Creates and displays a card for an upcoming accepted event.
+     *
+     * The card includes event metadata and navigates to the detail screen.
+     */
     private void addUpcomingEventCard(WaitListRecord record) {
         eventRepo.getEventById(record.getEventId(),
                 new FirestoreEventRepository.EventByIdCallback() {
@@ -194,6 +211,11 @@ public class DashboardFragment extends Fragment {
                 });
     }
 
+    /**
+     * Opens the event detail fragment for the selected event.
+     *
+     * @param event event summary to display
+     */
     private void navigateToDetail(EventSummary event) {
         if (event == null || getActivity() == null) return;
         requireActivity().getSupportFragmentManager()
@@ -211,6 +233,11 @@ public class DashboardFragment extends Fragment {
                 .commit();
     }
 
+    /**
+     * Creates and displays a card for a waiting list entry.
+     *
+     * The card allows the user to leave the waitlist for the event.
+     */
     private void addWaitlistCard(WaitListRecord record) {
         eventRepo.getEventById(record.getEventId(),
                 new FirestoreEventRepository.EventByIdCallback() {

@@ -32,6 +32,12 @@ public class FirestoreEventRepository implements EventRepository {
         this.db = FirebaseFirestore.getInstance();
     }
 
+    /**
+     * Persists a new event document in Firestore.
+     *
+     * @param event    event object or map to save
+     * @param callback callback that receives the generated document ID or failure
+     */
     @Override
     public void createEvent(Object event, CreateCallback callback) {
         db.collection(COLLECTION)
@@ -40,6 +46,11 @@ public class FirestoreEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Fetches all events from Firestore sorted by newest creation date.
+     *
+     * @param callback callback that receives the list of event summaries or failure
+     */
     @Override
     public void getAllEvents(ListCallback callback) {
         db.collection(COLLECTION)
@@ -58,6 +69,12 @@ public class FirestoreEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Fetches events created by a specific organizer.
+     *
+     * @param organizerDeviceId device ID of the organizer
+     * @param callback          callback that receives the matching event summaries or failure
+     */
     @Override
     public void getEventsByOrganizer(String organizerDeviceId, ListCallback callback) {
         db.collection(COLLECTION)
@@ -76,6 +93,13 @@ public class FirestoreEventRepository implements EventRepository {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+    /**
+     * Fetches events that the specified device can manage.
+     * Includes events where the device is either the organizer or a co-organizer.
+     *
+     * @param deviceId device ID of the current user
+     * @param callback callback that receives the manageable event summaries or failure
+     */
     @Override
     public void getManageableEvents(String deviceId, ListCallback callback) {
         db.collection(COLLECTION)
@@ -100,6 +124,12 @@ public class FirestoreEventRepository implements EventRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Deletes an event document from Firestore by ID.
+     *
+     * @param eventId  the event document ID to delete
+     * @param callback callback invoked on success or failure
+     */
     @Override
     public void deleteEvent(String eventId, OperationCallback callback) {
         db.collection(COLLECTION)
@@ -113,6 +143,12 @@ public class FirestoreEventRepository implements EventRepository {
         void onResult(EventSummary event);
     }
 
+    /**
+     * Reads a single event document by its Firestore ID.
+     *
+     * @param eventId  event document ID
+     * @param callback callback that receives the event summary or null if not found
+     */
     public void getEventById(String eventId, EventByIdCallback callback) {
         db.collection(COLLECTION)
                 .document(eventId)

@@ -60,6 +60,10 @@ public class EventCommentRepositoryTest {
 
     //Testing US 01.08.01
 
+    /**
+     * Verifies that adding a comment stores it in the repository and
+     * can be retrieved with its original text content.
+     */
     @Test
     public void addComment_storesComment() {
         // Checks that after posting, the comment is retrievable with correct content
@@ -82,6 +86,10 @@ public class EventCommentRepositoryTest {
 
     // Testing US 01.08.02
 
+    /**
+     * Verifies that getCommentsByEvent() returns only comments for the specified event,
+     * filtering out comments from other events.
+     */
     @Test
     public void getCommentsByEvent_returnsOnlyCommentsForThatEvent() {
         // Checks that fetching event1's comments does not include event2's comments
@@ -104,6 +112,10 @@ public class EventCommentRepositoryTest {
         });
     }
 
+    /**
+     * Verifies that getCommentsByEvent() returns an empty list for events
+     * that have no comments without crashing.
+     */
     @Test
     public void getCommentsByEvent_noComments_returnsEmpty() {
         //Event with no comments returns an empty list
@@ -116,6 +128,10 @@ public class EventCommentRepositoryTest {
 
     // Testing US 02.08.01
 
+    /**
+     * Verifies that deleteComment() removes a comment from the event,
+     * so subsequent queries for that event's comments do not include it.
+     */
     @Test
     public void deleteComment_removesCommentFromEvent() {
         // Organizer deletes a comment

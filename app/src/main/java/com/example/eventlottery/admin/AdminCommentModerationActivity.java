@@ -42,6 +42,9 @@ public class AdminCommentModerationActivity extends AppCompatActivity
     private FirebaseFirestore db;
     private boolean isLoading = false;
 
+    /**
+     * Activity entry point. Initializes toolbar, Firestore, and loads the comment moderation list.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,12 +65,18 @@ public class AdminCommentModerationActivity extends AppCompatActivity
         loadEventsWithComments();
     }
 
+    /**
+     * Refreshes the event comment list whenever the activity resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         loadEventsWithComments();
     }
 
+    /**
+     * Finds and caches the views used by the comment moderation UI.
+     */
     private void initViews() {
         recyclerViewEvents = findViewById(R.id.recyclerViewComments);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
@@ -75,6 +84,9 @@ public class AdminCommentModerationActivity extends AppCompatActivity
         tvEmptyMessage = findViewById(R.id.tvEmptyMessage);
     }
 
+    /**
+     * Configures the RecyclerView adapter and click listener for event items.
+     */
     private void setupRecyclerView() {
         eventsAdapter = new EventsWithCommentsAdapter();
         eventsAdapter.setOnEventClickListener(this);
@@ -82,6 +94,9 @@ public class AdminCommentModerationActivity extends AppCompatActivity
         recyclerViewEvents.setAdapter(eventsAdapter);
     }
 
+    /**
+     * Loads events that have comment subcollections, counting comments for moderation.
+     */
     private void loadEventsWithComments() {
         if (isLoading) return;
         isLoading = true;
@@ -153,6 +168,9 @@ public class AdminCommentModerationActivity extends AppCompatActivity
                 });
     }
 
+    /**
+     * Opens the comments moderation screen for the selected event.
+     */
     @Override
     public void onEventClick(String eventId, String eventName) {
         Intent intent = new Intent(this, AdminEventCommentsActivity.class);
@@ -161,6 +179,9 @@ public class AdminCommentModerationActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    /**
+     * Refreshes the UI after loading events with comments.
+     */
     private void updateUI() {
         if (eventsWithCommentsList.isEmpty()) {
             recyclerViewEvents.setVisibility(View.GONE);
@@ -172,6 +193,10 @@ public class AdminCommentModerationActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Handles action bar navigation up by closing the activity.
+     * @return true when navigation is handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish();

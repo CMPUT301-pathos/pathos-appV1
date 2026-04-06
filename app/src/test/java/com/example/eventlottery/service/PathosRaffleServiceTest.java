@@ -120,6 +120,10 @@ public class PathosRaffleServiceTest {
 
     // ========== drawInitial tests ==========
 
+    /**
+     * Verifies that drawInitial() selects exactly the requested number of winners
+     * from the waiting pool.
+     */
     @Test
     public void drawInitial_selectsCorrectCount() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -140,6 +144,9 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawInitial() transitions selected winners to INVITED status.
+     */
     @Test
     public void drawInitial_updatesStatusToInvited() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -161,6 +168,10 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawInitial() with a draw count larger than the waiting pool
+     * size invites all available entrants.
+     */
     @Test
     public void drawInitial_fewerEntrantsThanCount_invitesAll() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -179,6 +190,9 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawInitial() with no waiting entrants returns an empty list.
+     */
     @Test
     public void drawInitial_emptyPool_returnsEmptyList() {
         raffleService.drawInitial("event1", 5, new PathosRaffleService.RaffleCallback() {
@@ -194,6 +208,10 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawInitial() only selects from WAITING entrants,
+     * ignoring those with INVITED, ACCEPTED, or DECLINED status.
+     */
     @Test
     public void drawInitial_ignoresNonWaitingEntrants() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -215,6 +233,10 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawInitial() for one event does not affect waiting entrants
+     * in other events.
+     */
     @Test
     public void drawInitial_onlyAffectsCorrectEvent() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -239,6 +261,10 @@ public class PathosRaffleServiceTest {
 
     // ========== drawReplacement tests ==========
 
+    /**
+     * Verifies that drawReplacement() selects exactly one replacement from
+     * the waiting pool.
+     */
     @Test
     public void drawReplacement_selectsExactlyOne() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);
@@ -257,6 +283,9 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawReplacement() with no waiting entrants returns an empty list.
+     */
     @Test
     public void drawReplacement_emptyPool_returnsEmptyList() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.INVITED);
@@ -275,6 +304,10 @@ public class PathosRaffleServiceTest {
         });
     }
 
+    /**
+     * Verifies that drawReplacement() transitions the selected replacement
+     * to INVITED status.
+     */
     @Test
     public void drawReplacement_updatesReplacementToInvited() {
         fakeRepo.addRecord("event1", "user1", WaitStatus.WAITING);

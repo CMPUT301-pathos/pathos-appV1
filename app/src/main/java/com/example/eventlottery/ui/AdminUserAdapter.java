@@ -25,15 +25,44 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
     private OnUserClickListener listener;
 
     public interface OnUserClickListener {
+        /**
+         * Called when a user item is selected.
+         *
+         * @param user selected user profile
+         */
         void onUserClick(UserProfile user);
+
+        /**
+         * Called when the delete button on a user item is pressed.
+         *
+         * @param user user profile to delete
+         */
         void onDeleteClick(UserProfile user);
+
+        /**
+         * Called when the remove organizer action is pressed.
+         *
+         * @param user user profile to demote from organizer
+         */
         void onRemoveOrganizerClick(UserProfile user);
     }
 
+    /**
+     * Sets the listener that receives user item events.
+     *
+     * @param listener listener handling clicks and organizer removals
+     */
     public void setOnUserClickListener(OnUserClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Inflates the user item view.
+     *
+     * @param parent containing view group
+     * @param viewType view type of the row
+     * @return a new ViewHolder for a user item
+     */
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -42,23 +71,44 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         return new ViewHolder(view);
     }
 
+    /**
+     * Binds a UserProfile to the view holder.
+     *
+     * @param holder holder displaying the row
+     * @param position position of the user in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         UserProfile user = users.get(position);
         holder.bind(user);
     }
 
+    /**
+     * Returns the current number of user rows.
+     *
+     * @return item count
+     */
     @Override
     public int getItemCount() {
         return users.size();
     }
 
+    /**
+     * Replaces the current user list and preserves a full copy for filtering.
+     *
+     * @param users new list of user profiles
+     */
     public void setUsers(List<UserProfile> users) {
         this.users = users;
         this.usersFull = new ArrayList<>(users);
         notifyDataSetChanged();
     }
 
+    /**
+     * Filters the user list by name or email.
+     *
+     * @param query search text to filter users
+     */
     public void filter(String query) {
         users.clear();
         if (query.isEmpty()) {
@@ -78,6 +128,11 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
     class ViewHolder extends RecyclerView.ViewHolder {
         private TextView tvName, tvEmail, tvRole;
 
+        /**
+         * Constructs a view holder for the admin user row.
+         *
+         * @param itemView inflated user item view
+         */
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvUserName);
@@ -103,6 +158,11 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
             });
         }
 
+        /**
+         * Binds the user profile fields into the row views.
+         *
+         * @param user the user profile to display
+         */
         void bind(UserProfile user) {
             tvName.setText(user.getName());
             tvEmail.setText(user.getEmail());

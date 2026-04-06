@@ -47,6 +47,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<Event> eventList;
 
+    /**
+     * Called when the activity is first created.
+     * Sets up the layout, action bar, Firestore instance, event list, and UI components.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,17 +71,27 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         setupFilters();
         loadEvents();
     }
+    /**
+     * Handles the action bar back button by closing the activity.
+     * @return true when navigation up has been handled.
+     */
     @Override
     public boolean onSupportNavigateUp() {
         finish(); // Go back to previous activity (AdminMainActivity)
         return true;
     }
+    /**
+     * Finds and stores references to the key UI views used by this activity.
+     */
     private void initViews() {
         etSearch = findViewById(R.id.searchEvents);
         recyclerViewEvents = findViewById(R.id.recyclerViewEvents);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
     }
 
+    /**
+     * Configures the search input to filter the event adapter as the user types.
+     */
     private void setupSearch() {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -110,6 +124,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         recyclerViewEvents.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewEvents.setAdapter(eventAdapter);
     }*/
+    /**
+     * Sets up the RecyclerView and attaches the AdminEventAdapter.
+     * Also binds click listeners for opening details and confirming deletion.
+     */
     private void setupRecyclerView() {
         eventAdapter = new AdminEventAdapter();
         eventAdapter.setOnEventClickListener(new AdminEventAdapter.OnEventClickListener() {
@@ -147,6 +165,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
                     updateUI();
                 });
     }*/
+    /**
+     * Loads events from Firestore and converts each document into an Event object.
+     * Uses safe conversion helpers for text, numeric, and date values before updating the UI.
+     */
     private void loadEvents() {
         db.collection("events")
                 .get()
@@ -191,11 +213,19 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
     }
 
     // Helper methods for safe conversion
+    /**
+     * Converts a Firestore document field into a non-null string.
+     * Returns an empty string when the field is missing or null.
+     */
     private String getStringSafe(QueryDocumentSnapshot doc, String field) {
         Object value = doc.get(field);
         return value != null ? value.toString() : "";
     }
 
+    /**
+     * Converts a Firestore field value into a long.
+     * Accepts Long, Integer, and numeric string representations.
+     */
     private long convertToLong(Object value) {
         if (value == null) return 0;
         if (value instanceof Long) return (Long) value;
@@ -210,6 +240,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         return 0;
     }
 
+    /**
+     * Converts a Firestore field value into an int.
+     * Accepts Integer, Long, and numeric string representations.
+     */
     private int convertToInt(Object value) {
         if (value == null) return 0;
         if (value instanceof Integer) return (Integer) value;
@@ -224,6 +258,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         return 0;
     }
 
+    /**
+     * Attaches the event status filter chips and the sort button.
+     * Updates the displayed event list whenever the filter or sort selection changes.
+     */
     private void setupFilters() {
         ChipGroup chipGroupStatus = findViewById(R.id.chipGroupStatus);
 
@@ -252,6 +290,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         Button btnSort = findViewById(R.id.btnSort);
         btnSort.setOnClickListener(v -> showSortDialog());
     }
+    /**
+     * Opens a dialog with sort options for name and date ordering.
+     * Stores the selected sort mode and refreshes the displayed list.
+     */
     private void showSortDialog() {
         String[] sortOptions = {"Name (A-Z)", "Name (Z-A)", "Date (Newest)", "Date (Oldest)"};
 
@@ -268,6 +310,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
                 })
                 .show();
     }
+    /**
+     * Filters the current event list by selected status and applies the active sort.
+     * Then pushes the filtered list to the adapter and updates the result count UI.
+     */
     private void applyFiltersAndSort() {
         List<Event> filteredList = new ArrayList<>();
 
@@ -290,6 +336,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         tvResultsCount.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Determines whether a given event matches the currently selected status filter.
+     * Supports active, inactive, completed, and all states.
+     */
     private boolean matchesStatusFilter(Event event) {
         if (currentStatusFilter.equals("all")) return true;
 
@@ -312,6 +362,9 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
         return status.equals(currentStatusFilter);
     }
 
+    /**
+     * Sorts the provided list of events based on the currently selected sort option.
+     */
     private void sortEvents(List<Event> events) {
         switch (currentSortOption) {
             case "name_asc":
@@ -332,6 +385,9 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
                 break;
         }
     }
+    /**
+     * Builds and displays a dialog containing the full details for the selected event.
+     */
     private void showEventDetails(Event event) {
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
@@ -354,6 +410,10 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Shows a confirmation dialog before deleting an event.
+     * If the user confirms, the event is removed from Firestore.
+     */
     private void showDeleteConfirmation(Event event) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Event")
@@ -363,6 +423,9 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Deletes the specified event document from Firestore and refreshes the UI.
+     */
     private void deleteEvent(Event event) {
         db.collection("events")
                 .document(event.getId())
@@ -377,6 +440,9 @@ public class AdminBrowseEventsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Updates the recycler view visibility and empty-state UI based on current event data.
+     */
     private void updateUI() {
         if (eventList.isEmpty()) {
             recyclerViewEvents.setVisibility(View.GONE);

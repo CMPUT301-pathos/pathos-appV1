@@ -51,6 +51,10 @@ public class LotteryCriteriaTest {
                 now + 100000, regStart, regEnd, capacity, drawSize, null);
     }
 
+    /**
+     * Verifies that the criteria summary contains the standard header
+     * "Lottery Criteria".
+     */
     @Test
     public void testCriteria_containsLotteryCriteriaHeader() {
         long now = System.currentTimeMillis();
@@ -59,6 +63,10 @@ public class LotteryCriteriaTest {
         assertTrue(criteria.contains("Lottery Criteria"));
     }
 
+    /**
+     * Verifies that the criteria summary includes the draw size
+     * (number of lottery winners).
+     */
     @Test
     public void testCriteria_showsDrawSize() {
         long now = System.currentTimeMillis();
@@ -67,6 +75,9 @@ public class LotteryCriteriaTest {
         assertTrue(criteria.contains("10"));
     }
 
+    /**
+     * Verifies that the criteria summary includes the event capacity.
+     */
     @Test
     public void testCriteria_showsCapacity() {
         long now = System.currentTimeMillis();
@@ -75,6 +86,10 @@ public class LotteryCriteriaTest {
         assertTrue(criteria.contains("50"));
     }
 
+    /**
+     * Verifies that the criteria summary displays "Unlimited" for events
+     * with zero capacity.
+     */
     @Test
     public void testCriteria_unlimitedCapacity_showsUnlimited() {
         long now = System.currentTimeMillis();
@@ -83,6 +98,10 @@ public class LotteryCriteriaTest {
         assertTrue(criteria.contains("Unlimited"));
     }
 
+    /**
+     * Verifies that the criteria summary explains the selection process
+     * uses random draw.
+     */
     @Test
     public void testCriteria_containsSelectionProcessExplanation() {
         long now = System.currentTimeMillis();
@@ -91,6 +110,10 @@ public class LotteryCriteriaTest {
         assertTrue(criteria.contains("randomly"));
     }
 
+    /**
+     * Verifies that the criteria summary includes registration start
+     * and end dates.
+     */
     @Test
     public void testCriteria_showsRegistrationDates() {
         long now = System.currentTimeMillis();

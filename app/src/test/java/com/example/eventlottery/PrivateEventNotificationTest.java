@@ -33,6 +33,10 @@ public class PrivateEventNotificationTest {
         return event;
     }
 
+    /**
+     * Verifies that a private event invitation record can be created with INVITED status.
+     * Tests US 02.07.02: Organizer invites specific entrants to a private event.
+     */
     @Test
     public void testPrivateInvite_recordHasInvitedStatus() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -40,6 +44,10 @@ public class PrivateEventNotificationTest {
         assertEquals(WaitStatus.INVITED, record.getStatus());
     }
 
+    /**
+     * Verifies that a public event invitation record can be created with INVITED status.
+     * Ensures that invitation mechanics work identically for public events.
+     */
     @Test
     public void testPublicInvite_recordHasInvitedStatus() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -47,6 +55,10 @@ public class PrivateEventNotificationTest {
         assertEquals(WaitStatus.INVITED, record.getStatus());
     }
 
+    /**
+     * Verifies that an invited entrant can accept a private event invitation.
+     * Tests US 01.05.02: Accept the invitation to register for an event.
+     */
     @Test
     public void testPrivateInvite_acceptChangesStatusToAccepted() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -55,6 +67,10 @@ public class PrivateEventNotificationTest {
         assertEquals(WaitStatus.ACCEPTED, record.getStatus());
     }
 
+    /**
+     * Verifies that an invited entrant can decline a private event invitation.
+     * Tests US 01.05.03: Decline an invitation when chosen.
+     */
     @Test
     public void testPrivateInvite_declineChangesStatusToDeclined() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -63,18 +79,30 @@ public class PrivateEventNotificationTest {
         assertEquals(WaitStatus.DECLINED, record.getStatus());
     }
 
+    /**
+     * Verifies that when an event is marked private, the isPrivate() accessor returns true.
+     * Tests US 02.07.01: Organizer creates a private event.
+     */
     @Test
     public void testPrivateEvent_isMarkedPrivate() {
         EventSummary event = makeEvent(true);
         assertTrue(event.isPrivate());
     }
 
+    /**
+     * Verifies that when an event is not marked private, isPrivate() returns false.
+     * Ensures public events are correctly identified.
+     */
     @Test
     public void testPublicEvent_isNotMarkedPrivate() {
         EventSummary event = makeEvent(false);
         assertFalse(event.isPrivate());
     }
 
+    /**
+     * Verifies that attempting to accept an invitation when status is WAITING throws IllegalStateException.
+     * Ensures state transitions are properly enforced.
+     */
     @Test
     public void testPrivateInvite_cannotAcceptIfNotInvited() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
@@ -82,12 +110,20 @@ public class PrivateEventNotificationTest {
         assertThrows(IllegalStateException.class, record::acceptInvitation);
     }
 
+    /**
+     * Verifies that attempting to decline an invitation when status is WAITING throws IllegalStateException.
+     * Ensures state transitions are properly enforced.
+     */
     @Test
     public void testPrivateInvite_cannotDeclineIfNotInvited() {
         WaitListRecord record = new WaitListRecord("event1", "device1");
         assertThrows(IllegalStateException.class, record::declineInvitation);
     }
 
+    /**
+     * Verifies that multiple entrants can be independently invited and respond differently to the same event.
+     * Tests US 02.07.02: Organizer invites specific entrants to a private event.
+     */
     @Test
     public void testPrivateInvite_multipleEntrantsCanBeInvited() {
         WaitListRecord r1 = new WaitListRecord("event1", "device1");
@@ -102,6 +138,10 @@ public class PrivateEventNotificationTest {
         assertEquals(WaitStatus.DECLINED, r2.getStatus());
     }
 
+    /**
+     * Verifies that after declining an invitation, the status permanently changes to DECLINED.
+     * Ensures the status transition is irreversible within the test scope.
+     */
     @Test
     public void testPrivateInvite_afterDecline_statusIsDeclined() {
         WaitListRecord record = new WaitListRecord("event1", "device1");

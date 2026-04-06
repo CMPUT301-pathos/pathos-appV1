@@ -28,8 +28,22 @@ public class OrganizeLotteryController {
     private final PathosRaffleService raffleService;
     private final PathosNotifyService notifyService;
 
+    /**
+     * Callback interface for lottery draw results.
+     */
     public interface LotteryCallback {
+        /**
+         * Called when the draw completes successfully.
+         *
+         * @param selected list of selected waitlist records
+         */
         void onSuccess(List<WaitListRecord> selected);
+
+        /**
+         * Called when the draw fails.
+         *
+         * @param e exception describing the failure
+         */
         void onFailure(Exception e);
     }
 
@@ -46,6 +60,14 @@ public class OrganizeLotteryController {
      * @param eventName event name for the notification message
      * @param count     number of entrants to select
      * @param callback  returns the selected entrants
+     */
+    /**
+     * Executes the initial lottery draw for an event and sends notifications to selected entrants.
+     *
+     * @param eventId the event to draw for
+     * @param eventName the event name used in notification text
+     * @param count number of entrants to select
+     * @param callback callback invoked after draw success or failure
      */
     public void runInitialDraw(String eventId, String eventName, int count, LotteryCallback callback) {
         raffleService.drawInitial(eventId, count, new PathosRaffleService.RaffleCallback() {
@@ -73,6 +95,13 @@ public class OrganizeLotteryController {
      * @param eventId   the event to draw a replacement for
      * @param eventName event name for the notification message
      * @param callback  returns the replacement (single-element list), or empty if none available
+     */
+    /**
+     * Executes a replacement lottery draw and sends a notification to the newly selected entrant.
+     *
+     * @param eventId the event for which to draw a replacement
+     * @param eventName the event name used in notification text
+     * @param callback callback invoked after replacement draw
      */
     public void runReplacementDraw(String eventId, String eventName, LotteryCallback callback) {
         raffleService.drawReplacement(eventId, new PathosRaffleService.RaffleCallback() {

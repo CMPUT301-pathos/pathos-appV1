@@ -29,12 +29,18 @@ public class PosterUploadTest {
                 50, 10, posterUrl);
     }
 
+    /**
+     * Verifies that an EventSummary created without a poster URL is null.
+     */
     @Test
     public void testPosterUrl_nullByDefault() {
         EventSummary event = makeEventWithPoster(null);
         assertNull(event.getPosterUrl());
     }
 
+    /**
+     * Verifies that an EventSummary can store a Base64-encoded image string.
+     */
     @Test
     public void testPosterUrl_storesBase64String() {
         String fakeBase64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgAB";
@@ -42,6 +48,10 @@ public class PosterUploadTest {
         assertEquals(fakeBase64, event.getPosterUrl());
     }
 
+    /**
+     * Verifies that a Base64 poster URL follows the expected format
+     * (data:image/...).
+     */
     @Test
     public void testPosterUrl_isBase64Format() {
         String base64Poster = "data:image/jpeg;base64,/9j/4AAQSkZJRgAB";
@@ -50,6 +60,10 @@ public class PosterUploadTest {
         assertTrue(event.getPosterUrl().startsWith("data:image"));
     }
 
+    /**
+     * Verifies that a Base64 poster URL contains the required "base64,"
+     * prefix separator.
+     */
     @Test
     public void testPosterUrl_containsBase64Prefix() {
         String base64Poster = "data:image/jpeg;base64,ABC123";
@@ -57,6 +71,10 @@ public class PosterUploadTest {
         assertTrue(event.getPosterUrl().contains("base64,"));
     }
 
+    /**
+     * Verifies that EventSummary also supports regular HTTP/HTTPS URLs
+     * in addition to Base64-encoded data URLs.
+     */
     @Test
     public void testPosterUrl_regularUrlStillWorks() {
         String regularUrl = "https://example.com/poster.jpg";
@@ -65,6 +83,10 @@ public class PosterUploadTest {
         assertFalse(event.getPosterUrl().startsWith("data:image"));
     }
 
+    /**
+     * Verifies that an empty string poster URL is stored correctly
+     * without null conversion.
+     */
     @Test
     public void testPosterUrl_emptyStringStoredCorrectly() {
         EventSummary event = makeEventWithPoster("");

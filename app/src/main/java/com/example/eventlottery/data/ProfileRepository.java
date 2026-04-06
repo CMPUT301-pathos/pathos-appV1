@@ -39,6 +39,7 @@ public interface ProfileRepository {
      * @param callback the callback to handle success or failure
      */
     void deleteProfile(String deviceId, ProfileCallback callback);
+
     /**
      * Callback interface for handling asynchronous profile operations.
      */
@@ -49,6 +50,7 @@ public interface ProfileRepository {
          * @param profile the resulting user profile, or null for delete operations
          */
         void onSuccess(UserProfile profile);
+
         /**
          * Called when the operation fails.
          *
@@ -57,6 +59,9 @@ public interface ProfileRepository {
         void onFailure(Exception e);
     }
 
+    /**
+     * Callback interface for search operations over user profiles.
+     */
     interface SearchCallback {
         /**
          * Called when the search operation completes successfully.

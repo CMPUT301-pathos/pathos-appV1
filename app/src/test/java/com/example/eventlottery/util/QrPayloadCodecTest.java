@@ -17,6 +17,10 @@ import static org.junit.Assert.*;
  */
 public class QrPayloadCodecTest {
 
+    /**
+     * Verifies that encoding an event ID and then decoding it returns
+     * the original event ID.
+     */
     @Test
     public void encodeThenDecode_returnsSameEventId() {
         String eventId = "abc123XYZ";
@@ -28,11 +32,18 @@ public class QrPayloadCodecTest {
         assertEquals(eventId, decoded);
     }
 
+    /**
+     * Verifies that decodeEventId() returns null when passed a null payload.
+     */
     @Test
     public void decode_withNullPayload_returnsNull() {
         assertNull(QrPayloadCodec.decodeEventId(null));
     }
 
+    /**
+     * Verifies that decodeEventId() returns null when passed a payload with
+     * an invalid prefix or malformed structure.
+     */
     @Test
     public void decode_withWrongPrefix_returnsNull() {
         assertNull(QrPayloadCodec.decodeEventId("not-a-valid-payload"));

@@ -70,6 +70,13 @@ public class OrganizerEventManagerFragment extends Fragment {
     private Button btnViewWaiting;
     private Button btnViewCancelled;
 
+    /**
+     * Factory method to create an organizer event manager fragment.
+     *
+     * @param eventId Firestore id of the event
+     * @param eventName display name of the event
+     * @return configured fragment instance
+     */
     public static OrganizerEventManagerFragment newInstance(String eventId, String eventName) {
         OrganizerEventManagerFragment fragment = new OrganizerEventManagerFragment();
         Bundle args = new Bundle();
@@ -79,6 +86,9 @@ public class OrganizerEventManagerFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes fragment arguments and sets up the lottery controller.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,6 +106,12 @@ public class OrganizerEventManagerFragment extends Fragment {
         lotteryController = new OrganizeLotteryController(raffleService, notifyService);
     }
 
+    /**
+     * Inflates the organizer event manager layout with lottery and viewing controls.
+     *
+     * Displays buttons for running initial draws, drawing replacements, and
+     * viewing entrants by status. Verifies that the user has organizer access.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -176,6 +192,10 @@ public class OrganizerEventManagerFragment extends Fragment {
                 });
     }
 
+    /**
+     * Runs an initial lottery draw to select a specified number of entrants
+     * from the waiting list and changes their status to invited.
+     */
     private void runInitialDraw() {
         String countStr = etDrawCount.getText().toString().trim();
         if (countStr.isEmpty()) {
@@ -226,6 +246,12 @@ public class OrganizerEventManagerFragment extends Fragment {
                 });
     }
 
+    /**
+     * Displays all entrants with the specified status in a dialog.
+     *
+     * @param status the waitlist status to filter by
+     * @param title dialog title
+     */
     private void showEntrantsByStatus(WaitStatus status, String title) {
         waitListRepo.getRecordsByStatusAsync(eventId, status,
                 new com.example.eventlottery.data.WaitListRepository.WaitListCallBack() {
@@ -269,6 +295,10 @@ public class OrganizerEventManagerFragment extends Fragment {
                 });
     }
 
+    /**
+     * Runs a replacement draw to select a replacement entrant when someone
+     * declines or cancels their participation.
+     */
     private void runReplacementDraw() {
         btnDrawReplacement.setEnabled(false);
         btnDrawReplacement.setText("Drawing...");

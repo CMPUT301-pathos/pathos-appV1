@@ -104,6 +104,9 @@ public class AiAssistantFragment extends Fragment {
     private boolean                 isLoading           = false;
     private String                  eventsContext       = "Event data is still loading...";
 
+    /**
+     * Inflates the AI assistant fragment layout.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -112,6 +115,9 @@ public class AiAssistantFragment extends Fragment {
         return inflater.inflate(R.layout.fragmentaiassistant, container, false);
     }
 
+    /**
+     * Initializes chat UI, user input handlers, and loads event data.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -138,6 +144,9 @@ public class AiAssistantFragment extends Fragment {
 
     // ── Firestore ─────────────────────────────────────────────────────────────
 
+    /**
+     * Loads available events from Firestore and updates the assistant context.
+     */
     private void loadEventsFromFirestore() {
         new FirestoreEventRepository().getAllEvents(new EventRepository.ListCallback() {
             @Override
@@ -169,6 +178,12 @@ public class AiAssistantFragment extends Fragment {
         });
     }
 
+    /**
+     * Builds the live event context string sent to the AI model.
+     *
+     * @param events list of events loaded from Firestore
+     * @return formatted assistant context describing available events
+     */
     private String buildEventsContext(List<EventSummary> events) {
         if (events == null || events.isEmpty()) {
             return "There are currently no events available in the app.";
@@ -192,6 +207,9 @@ public class AiAssistantFragment extends Fragment {
 
     // ── Setup ─────────────────────────────────────────────────────────────────
 
+    /**
+     * Configures the chat message list and adapter.
+     */
     private void setupRecyclerView() {
         adapter = new ChatMessageAdapter(messages);
         LinearLayoutManager lm = new LinearLayoutManager(requireContext());
@@ -200,6 +218,9 @@ public class AiAssistantFragment extends Fragment {
         recyclerMessages.setAdapter(adapter);
     }
 
+    /**
+     * Creates the AI suggestion chips and attaches click handlers.
+     */
     private void setupSuggestionChips(View root) {
         int[] chipIds = {
                 R.id.chip_1, R.id.chip_2, R.id.chip_3,
@@ -214,6 +235,9 @@ public class AiAssistantFragment extends Fragment {
         }
     }
 
+    /**
+     * Sets up input behavior for the text field and send button.
+     */
     private void setupInput() {
         etInput.setOnEditorActionListener((v, actionId, event) -> {
             boolean isSend  = actionId == EditorInfo.IME_ACTION_SEND;
@@ -228,6 +252,9 @@ public class AiAssistantFragment extends Fragment {
 
     // ── Sending ───────────────────────────────────────────────────────────────
 
+    /**
+     * Handles user sending a chat message by validating and clearing input.
+     */
     private void handleSend() {
         String text = etInput.getText().toString().trim();
         if (text.isEmpty() || isLoading) return;
@@ -235,6 +262,11 @@ public class AiAssistantFragment extends Fragment {
         sendMessage(text);
     }
 
+    /**
+     * Adds a user message to the chat history and starts the AI request.
+     *
+     * @param userText text entered by the user
+     */
     private void sendMessage(String userText) {
         if (isLoading) return;
         if (chipsContainer != null) chipsContainer.setVisibility(View.GONE);
@@ -251,6 +283,9 @@ public class AiAssistantFragment extends Fragment {
 
     // ── API ───────────────────────────────────────────────────────────────────
 
+    /**
+     * Sends the current conversation context to the Anthropic API.
+     */
     private void callAnthropicApi() {
         try {
             String systemPrompt = BASE_SYSTEM_PROMPT + eventsContext;
@@ -303,6 +338,13 @@ public class AiAssistantFragment extends Fragment {
         }
     }
 
+    /**
+     * Processes the AI API response and updates the chat UI.
+     *
+     * @param body raw response body from the AI service
+     * @param ok whether the HTTP request succeeded
+     * @param code HTTP status code
+     */
     private void handleResponse(String body, boolean ok, int code) {
         showTyping(false);
         isLoading = false;
@@ -333,6 +375,11 @@ public class AiAssistantFragment extends Fragment {
         }
     }
 
+    /**
+     * Handles API and request errors by displaying a message to the user.
+     *
+     * @param message message to show in the chat
+     */
     private void handleError(String message) {
         showTyping(false);
         isLoading = false;
@@ -342,21 +389,39 @@ public class AiAssistantFragment extends Fragment {
 
     // ── Message helpers ───────────────────────────────────────────────────────
 
+    /**
+     * Appends an AI-generated chat message to the conversation.
+     *
+     * @param text message text from the assistant
+     */
     private void addAiMessage(String text) {
         messages.add(new ChatMessage(text, false));
         notifyAndScroll();
     }
 
+    /**
+     * Appends a user message to the conversation history.
+     *
+     * @param text user-submitted message
+     */
     private void addUserMessage(String text) {
         messages.add(new ChatMessage(text, true));
         notifyAndScroll();
     }
 
+    /**
+     * Updates the RecyclerView and scrolls to the newest message.
+     */
     private void notifyAndScroll() {
         adapter.notifyItemInserted(messages.size() - 1);
         recyclerMessages.smoothScrollToPosition(messages.size() - 1);
     }
 
+    /**
+     * Toggles the typing indicator while waiting for an AI response.
+     *
+     * @param show true to display the typing indicator
+     */
     private void showTyping(boolean show) {
         if (typingIndicator != null)
             typingIndicator.setVisibility(show ? View.VISIBLE : View.GONE);

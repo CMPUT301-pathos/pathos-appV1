@@ -28,24 +28,39 @@ public class PosterServiceTest {
                 50, 10, posterUrl);
     }
 
+    /**
+     * Verifies that an EventSummary can store and retrieve a poster URL.
+     */
     @Test
     public void testEventSummary_hasPosterUrl() {
         EventSummary event = makeEvent("https://firebase.com/poster.jpg");
         assertEquals("https://firebase.com/poster.jpg", event.getPosterUrl());
     }
 
+    /**
+     * Verifies that an EventSummary with a null poster URL correctly
+     * represents an event with no poster.
+     */
     @Test
     public void testEventSummary_nullPosterUrl() {
         EventSummary event = makeEvent(null);
         assertNull(event.getPosterUrl());
     }
 
+    /**
+     * Verifies that an EventSummary with an empty string poster URL
+     * preserves the empty value correctly.
+     */
     @Test
     public void testEventSummary_emptyPosterUrl() {
         EventSummary event = makeEvent("");
         assertEquals("", event.getPosterUrl());
     }
 
+    /**
+     * Verifies that setting a poster URL does not affect other
+     * EventSummary fields (ID, name, location).
+     */
     @Test
     public void testEventSummary_posterUrlDoesNotAffectOtherFields() {
         EventSummary event = makeEvent("https://firebase.com/poster.jpg");
@@ -54,6 +69,10 @@ public class PosterServiceTest {
         assertEquals("Edmonton", event.getLocation());
     }
 
+    /**
+     * Verifies that a poster URL can be updated by creating a new EventSummary
+     * with the new URL (simulating upload flow).
+     */
     @Test
     public void testEventSummary_posterUrlIsUpdatable() {
         // Simulates the flow: old URL is replaced with new URL after upload
@@ -67,6 +86,10 @@ public class PosterServiceTest {
         assertEquals(newUrl, updatedEvent.getPosterUrl());
     }
 
+    /**
+     * Verifies that a poster URL can be removed by setting it to null
+     * (simulating poster deletion flow).
+     */
     @Test
     public void testEventSummary_removePoster_setsNullUrl() {
         // Simulates the flow: poster is removed, URL becomes null

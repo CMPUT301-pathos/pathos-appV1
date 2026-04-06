@@ -39,15 +39,31 @@ public class NotificationListenerService {
     private ListenerRegistration cancellationListenerRegistration;
 
     public interface OnInviteReceivedListener {
+        /**
+         * Called when an invite notification is received for this device.
+         *
+         * @param eventName the name of the invited event
+         */
         void onInviteReceived(String eventName);
     }
 
     private OnInviteReceivedListener inviteListener;
 
+    /**
+     * Sets a listener that receives invite notification callbacks.
+     *
+     * @param listener the listener to notify when an invite arrives
+     */
     public void setOnInviteReceivedListener(OnInviteReceivedListener listener) {
         this.inviteListener = listener;
     }
 
+    /**
+     * Constructs the notification listener service.
+     *
+     * @param context application context used to create notifications
+     * @param deviceId unique device identifier used to filter Firestore records
+     */
     public NotificationListenerService(Context context, String deviceId) {
         this.context = context;
         this.deviceId = deviceId;
@@ -200,6 +216,11 @@ public class NotificationListenerService {
         }
     }
 
+    /**
+     * Shows a cancellation notification if the user has notifications enabled.
+     *
+     * @param message the cancellation message to display
+     */
     private void showCancellationNotification(String message) {
         new com.example.eventlottery.firebase.FirestoreProfileRepository()
                 .getProfile(deviceId, new com.example.eventlottery.data.ProfileRepository.ProfileCallback() {
@@ -233,6 +254,9 @@ public class NotificationListenerService {
                 });
     }
 
+    /**
+     * Creates the Android notification channel required for posting notifications.
+     */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(

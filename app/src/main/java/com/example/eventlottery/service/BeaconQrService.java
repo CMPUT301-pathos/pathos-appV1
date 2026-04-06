@@ -23,6 +23,11 @@ public class BeaconQrService {
 
     private final EventRepository eventRepository;
 
+    /**
+     * Constructs the QR service using the provided event repository.
+     *
+     * @param eventRepository repository used to resolve scanned event identifiers
+     */
     public BeaconQrService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
@@ -79,7 +84,18 @@ public class BeaconQrService {
     }
 
     public interface ResolveCallback {
+        /**
+         * Called when a QR scan resolves to an existing event.
+         *
+         * @param event resolved event summary
+         */
         void onSuccess(EventSummary event);
+
+        /**
+         * Called when QR resolution fails.
+         *
+         * @param e failure exception
+         */
         void onFailure(Exception e);
     }
 }

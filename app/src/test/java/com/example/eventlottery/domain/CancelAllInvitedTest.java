@@ -73,6 +73,10 @@ public class CancelAllInvitedTest {
         return r;
     }
 
+    /**
+     * Verifies that bulk cancellation of invited entrants transitions
+     * all INVITED records to CANCELLED status.
+     */
     @Test
     public void testCancelAllInvitedChangesStatusToCancelled() {
         List<WaitListRecord> cancelled = cancelAllInvited(allRecords);
@@ -83,6 +87,9 @@ public class CancelAllInvitedTest {
         }
     }
 
+    /**
+     * Verifies that after bulk cancellation, no records remain with INVITED status.
+     */
     @Test
     public void testCancelAllInvitedLeavesNoInvitedRemaining() {
         cancelAllInvited(allRecords);
@@ -91,6 +98,10 @@ public class CancelAllInvitedTest {
         assertEquals(0, stillInvited.size());
     }
 
+    /**
+     * Verifies that bulk cancellation of invited entrants does not affect
+     * records with WAITING status.
+     */
     @Test
     public void testCancelAllInvitedDoesNotAffectWaiting() {
         cancelAllInvited(allRecords);
@@ -99,6 +110,10 @@ public class CancelAllInvitedTest {
         assertEquals(2, waiting.size());
     }
 
+    /**
+     * Verifies that bulk cancellation of invited entrants does not affect
+     * records with ACCEPTED status.
+     */
     @Test
     public void testCancelAllInvitedDoesNotAffectAccepted() {
         cancelAllInvited(allRecords);
@@ -107,6 +122,10 @@ public class CancelAllInvitedTest {
         assertEquals(2, accepted.size());
     }
 
+    /**
+     * Verifies that the total count of CANCELLED records increases by the number
+     * of invited entrants cancelled (previously cancelled records are included).
+     */
     @Test
     public void testCancelAllInvitedIncreasesTotalCancelledCount() {
         // 1 already cancelled before
@@ -118,6 +137,10 @@ public class CancelAllInvitedTest {
         assertEquals(4, getByStatus(allRecords, WaitStatus.CANCELLED).size());
     }
 
+    /**
+     * Verifies that bulk cancellation returns an empty list when there are
+     * no INVITED records to cancel.
+     */
     @Test
     public void testCancelAllInvitedWithNoInvitedReturnsEmpty() {
         // Remove all invited records
@@ -130,6 +153,10 @@ public class CancelAllInvitedTest {
         assertEquals(0, cancelled.size());
     }
 
+    /**
+     * Verifies that bulk cancellation of an empty list returns an empty result
+     * without errors.
+     */
     @Test
     public void testCancelAllInvitedWithEmptyList() {
         List<WaitListRecord> empty = new ArrayList<>();
@@ -137,6 +164,10 @@ public class CancelAllInvitedTest {
         assertEquals(0, cancelled.size());
     }
 
+    /**
+     * Verifies that bulk cancellation does not remove or add records,
+     * only changes their status (total count remains the same).
+     */
     @Test
     public void testTotalRecordCountUnchangedAfterCancelAll() {
         int before = allRecords.size();

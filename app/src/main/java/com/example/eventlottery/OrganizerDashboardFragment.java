@@ -66,6 +66,12 @@ public class OrganizerDashboardFragment extends Fragment {
 
     public OrganizerDashboardFragment() { }
 
+    /**
+     * Inflates the organizer dashboard layout and sets up event management UI.
+     *
+     * Displays the list of events the organizer has created or co-organizes,
+     * along with action buttons for creating, viewing, and editing events.
+     */
     @Nullable
     @Override
     public View onCreateView(

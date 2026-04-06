@@ -49,6 +49,13 @@ public class PrivateEventInviteFragment extends Fragment {
     private FirestoreProfileRepository profileRepo;
     private FirestoreWaitListRepository waitListRepo;
 
+    /**
+     * Factory method to create a private event invitation fragment.
+     *
+     * @param eventId Firestore id of the private event
+     * @param eventName display name of the event
+     * @return configured fragment instance
+     */
     public static PrivateEventInviteFragment newInstance(String eventId, String eventName) {
         PrivateEventInviteFragment fragment = new PrivateEventInviteFragment();
         Bundle args = new Bundle();
@@ -58,6 +65,9 @@ public class PrivateEventInviteFragment extends Fragment {
         return fragment;
     }
 
+    /**
+     * Initializes fragment arguments and sets up repositories.
+     */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +79,9 @@ public class PrivateEventInviteFragment extends Fragment {
         waitListRepo = new FirestoreWaitListRepository();
     }
 
+    /**
+     * Inflates the private event invite layout and sets up the search interface.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -97,6 +110,13 @@ public class PrivateEventInviteFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Searches for user profiles matching the search query.
+     *
+     * Results can match by name, email, or phone number.
+     *
+     * @param query search string to match against profile information
+     */
     private void searchEntrants(String query) {
         containerResults.removeAllViews();
         tvResultsEmpty.setVisibility(View.GONE);
@@ -127,6 +147,14 @@ public class PrivateEventInviteFragment extends Fragment {
         });
     }
 
+    /**
+     * Creates and displays a result card for a found user profile.
+     *
+     * The card includes the user's name, email, and phone number (if available),
+     * along with an invite button.
+     *
+     * @param profile user profile to display
+     */
     private void addResultCard(UserProfile profile) {
         View card = LayoutInflater.from(requireContext())
                 .inflate(R.layout.item_invite_result, containerResults, false);
@@ -149,6 +177,13 @@ public class PrivateEventInviteFragment extends Fragment {
         containerResults.addView(card);
     }
 
+    /**
+     * Invites a user to the private event by adding them to the waitlist
+     * with INVITED status.
+     *
+     * @param profile user profile to invite
+     * @param btnInvite the button that triggered the invite
+     */
     private void inviteEntrant(UserProfile profile, MaterialButton btnInvite) {
         btnInvite.setEnabled(false);
         btnInvite.setText("Inviting...");

@@ -34,6 +34,11 @@ public class PathosNotifyService {
 
     private final NotificationLogRepository notificationRepo;
 
+    /**
+     * Constructs the notification service using the provided repository.
+     *
+     * @param notificationRepo repository used to persist notification records
+     */
     public PathosNotifyService(NotificationLogRepository notificationRepo) {
         this.notificationRepo = notificationRepo;
     }
@@ -75,12 +80,12 @@ public class PathosNotifyService {
     }
 
     /**
-     * Create/log a CO_ORGANIZER_ADDED notification for an entrnat who was chosen
+     * Create/log a CO_ORGANIZER_ADDED notification for an entrant who was chosen.
      *
      * @param recipientId entrant device id or mapped profile id
      * @param eventId event identifier
      * @param message message shown in the in-app notifications list
-     *  @return asynchronous Firestore task
+     * @return asynchronous Firestore task
      */
     public Task<Void> notifyCoOrganizerAdded(String recipientId, String eventId, String message) {
         NotificationRecord record = new NotificationRecord(

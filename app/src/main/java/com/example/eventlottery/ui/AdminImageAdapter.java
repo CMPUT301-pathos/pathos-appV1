@@ -31,15 +31,32 @@ public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.Im
         void onDeleteClick(AdminBrowseImages.ImageData image);
     }
 
+    /**
+     * Sets the click listener for image items.
+     *
+     * @param listener listener receiving image click and delete events
+     */
     public void setOnImageClickListener(OnImageClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Replaces the adapter dataset and refreshes the view.
+     *
+     * @param images new list of image data objects
+     */
     public void setImages(List<AdminBrowseImages.ImageData> images) {
         this.images = images;
         notifyDataSetChanged();
     }
 
+    /**
+     * Creates a ViewHolder for image items.
+     *
+     * @param parent parent view group
+     * @param viewType item view type
+     * @return the new ImageViewHolder
+     */
     @NonNull
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -48,12 +65,23 @@ public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.Im
         return new ImageViewHolder(view);
     }
 
+    /**
+     * Binds the image data for the given position.
+     *
+     * @param holder holder displaying the image item
+     * @param position position of the item in the list
+     */
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
         AdminBrowseImages.ImageData image = images.get(position);
         holder.bind(image);
     }
 
+    /**
+     * Returns the total number of image items.
+     *
+     * @return image count
+     */
     @Override
     public int getItemCount() {
         return images.size();
@@ -63,6 +91,11 @@ public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.Im
         private ImageView ivImage;
         private ImageView btnDelete;
 
+        /**
+         * Constructs the view holder for an admin image item.
+         *
+         * @param itemView inflated image item view
+         */
         ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             ivImage = itemView.findViewById(R.id.ivImage);
@@ -81,12 +114,11 @@ public class AdminImageAdapter extends RecyclerView.Adapter<AdminImageAdapter.Im
             });
         }
 
-       /* void bind(AdminBrowseImages.ImageData image) {
-            Glide.with(itemView.getContext())
-                    .load(image.getImageUrl())
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .into(ivImage);
-        }*/
+        /**
+         * Loads the image into the view and optionally displays the image type.
+         *
+         * @param image image model to bind
+         */
        void bind(AdminBrowseImages.ImageData image) {
            Glide.with(itemView.getContext())
                    .load(image.getImageUrl())

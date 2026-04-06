@@ -56,6 +56,14 @@ public class ProfileFragment extends Fragment {
     private CircleImageView profileImage;
     private ActivityResultLauncher<String> pickImageLauncher;
 
+    /**
+     * Initializes the fragment and its dependencies.
+     *
+     * Sets up the ProfileController with Firestore-backed repositories and retrieves
+     * the unique device identifier for profile management.
+     *
+     * @param savedInstanceState the saved instance state from previous fragment lifecycle
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +74,18 @@ public class ProfileFragment extends Fragment {
         deviceId = DeviceIdentityService.getDeviceId(requireContext());
     }
 
+    /**
+     * Creates and returns the fragment's view hierarchy.
+     *
+     * Inflates the profile layout, binds all UI elements (name/email/phone fields,
+     * profile image, buttons, notification switch), loads the current profile data,
+     * and wires all click listeners for save, delete, history, and photo selection.
+     *
+     * @param inflater the LayoutInflater to inflate the layout
+     * @param container the parent ViewGroup
+     * @param savedInstanceState the saved instance state
+     * @return the root view of the fragment layout
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
@@ -145,6 +165,13 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Asynchronously loads the current user's profile from Firestore.
+     *
+     * Fetches the profile by device ID, populates UI fields (name, email, phone),
+     * loads profile photo if available, and configures the notification opt-out switch
+     * with a change listener. Handles both Base64-encoded and URI-based photos.
+     */
     private void loadCurrentProfile() {
         profileController.getProfile(deviceId, new ProfileRepository.ProfileCallback() {
             @Override
@@ -219,6 +246,13 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Validates and saves profile changes to Firestore.
+     *
+     * Trims input fields, validates that name and email are non-empty, then
+     * asynchronously calls the ProfileController to update the profile. Updates
+     * button state during save operation and displays success/failure feedback.
+     */
     private void saveProfile() {
         String name = editName.getText().toString().trim();
         String email = editEmail.getText().toString().trim();
@@ -264,6 +298,13 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    /**
+     * Shows a confirmation dialog before permanent account deletion.
+     *
+     * Displays a request for user confirmation before deleting the account and
+     * all owned events. On confirmation, calls ProfileController to perform the
+     * deletion and finishes the activity upon success.
+     */
     private void showDeleteConfirmDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Account")

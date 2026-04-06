@@ -158,6 +158,12 @@ public class OrganizeLotteryControllerTest {
 
     // ── Tests ────────────────────────────────────────────────────
 
+    /**
+     * Verifies that running a lottery draw creates one WIN notification
+     * for each entrant selected in the draw.
+     *
+     * Given 3 waiting entrants with a draw count of 2, expects 2 notifications.
+     */
     @Test
     public void testDrawSendsNotificationToEachChosenEntrant() {
         waitListRepo.addRecord("event1", "device1", WaitStatus.WAITING);
@@ -183,6 +189,9 @@ public class OrganizeLotteryControllerTest {
         assertEquals(2, notificationRepo.added.size());
     }
 
+    /**
+     * Verifies that notifications sent to lottery winners have type WIN.
+     */
     @Test
     public void testNotificationTypeIsWin() {
         waitListRepo.addRecord("event1", "device1", WaitStatus.WAITING);
@@ -200,6 +209,9 @@ public class OrganizeLotteryControllerTest {
         assertEquals(NotificationType.WIN.name(), notificationRepo.added.get(0).type);
     }
 
+    /**
+     * Verifies that lottery win notifications include the event name in the message.
+     */
     @Test
     public void testNotificationContainsEventName() {
         waitListRepo.addRecord("event1", "device1", WaitStatus.WAITING);
@@ -216,6 +228,9 @@ public class OrganizeLotteryControllerTest {
         assertTrue(notificationRepo.added.get(0).message.contains("Dance Class"));
     }
 
+    /**
+     * Verifies that notifications are sent to the correct recipient device ID.
+     */
     @Test
     public void testNotificationSentToCorrectRecipient() {
         waitListRepo.addRecord("event1", "device_abc", WaitStatus.WAITING);
@@ -232,6 +247,10 @@ public class OrganizeLotteryControllerTest {
         assertEquals("device_abc", notificationRepo.added.get(0).recipientId);
     }
 
+    /**
+     * Verifies that no notifications are created when drawing from an event
+     * with no waiting entrants.
+     */
     @Test
     public void testNoNotificationWhenNoEntrants() {
         controller.runInitialDraw("event1", "Empty Event", 5,

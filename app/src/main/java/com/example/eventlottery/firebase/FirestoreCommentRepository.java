@@ -14,6 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Firestore-backed implementation of {@link com.example.eventlottery.data.CommentRepository}.
+ * Handles adding, listing, and deleting comments for event documents.
+ */
 public class FirestoreCommentRepository implements CommentRepository {
     
     private static final String TAG = "FirestoreCommentRepo";
@@ -25,6 +29,14 @@ public class FirestoreCommentRepository implements CommentRepository {
         this.db = FirebaseFirestore.getInstance();
     }
     
+    /**
+     * Adds a new comment to the event's comments subcollection.
+     * The comment is written as a plain Firestore document map.
+     *
+     * @param eventId  the event document ID
+     * @param comment  the comment payload to save
+     * @param callback callback that receives the saved comment or failure
+     */
     @Override
     public void addComment(String eventId, EventComment comment, CommentCallback callback) {
         CollectionReference commentsRef = db.collection(EVENTS_COLLECTION)
@@ -48,6 +60,12 @@ public class FirestoreCommentRepository implements CommentRepository {
                 .addOnFailureListener(callback::onFailure);
     }
     
+    /**
+     * Retrieves comments for the specified event sorted by newest first.
+     *
+     * @param eventId  the event document ID
+     * @param callback callback that receives the resulting comment list or failure
+     */
     @Override
     public void getComments(String eventId, CommentCallback callback) {
         db.collection(EVENTS_COLLECTION)
@@ -67,6 +85,13 @@ public class FirestoreCommentRepository implements CommentRepository {
                 .addOnFailureListener(callback::onFailure);
     }
     
+    /**
+     * Deletes a comment from the event's comments subcollection.
+     *
+     * @param commentId the Firestore document ID of the comment
+     * @param eventId   the parent event document ID
+     * @param callback  callback invoked on success or failure
+     */
     @Override
     public void deleteComment(String commentId, String eventId, CommentCallback callback) {
         db.collection(EVENTS_COLLECTION)
@@ -78,3 +103,4 @@ public class FirestoreCommentRepository implements CommentRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 }
+
