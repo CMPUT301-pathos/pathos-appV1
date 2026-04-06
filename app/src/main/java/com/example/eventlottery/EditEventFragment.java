@@ -237,7 +237,15 @@ public class EditEventFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                 });
     }
-
+    /**
+     * Extracts co-organizer device IDs from the event document.
+     *
+     * The stored Firestore field is expected to be a list under
+     * "coOrganizerIds". Invalid, blank, and duplicate values are ignored.
+     *
+     * @param snapshot event document snapshot
+     * @return cleaned list of co-organizer device IDs
+     */
     private List<String> extractCoOrganizerIds(DocumentSnapshot snapshot) {
         List<String> result = new ArrayList<>();
         Object raw = snapshot.get("coOrganizerIds");
@@ -256,6 +264,14 @@ public class EditEventFragment extends Fragment {
         return result;
     }
 
+    /**
+     * Resolves stored co-organizer device IDs into lightweight UI models.
+     *
+     * Each ID is looked up in the users collection so the UI can display
+     * readable chip labels using names and emails instead of raw device IDs.
+     *
+     * @param ids list of co-organizer device IDs to resolve
+     */
     private void resolveCoOrganizerProfiles(List<String> ids) {
         final int total = ids.size();
         final int[] resolved = {0};
@@ -355,7 +371,17 @@ public class EditEventFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                 });
     }
-
+    /**
+     * Builds a co-organizer candidate model from a user document.
+     *
+     * If the Firestore document id is missing or blank, the provided fallback
+     * device id is used instead. Missing names are replaced with a default
+     * placeholder label.
+     *
+     * @param doc user document snapshot
+     * @param fallbackDeviceId fallback device id if the document id is unavailable
+     * @return lightweight co-organizer candidate for UI display
+     */
     private CoOrganizerCandidate candidateFromUserDoc(DocumentSnapshot doc, String fallbackDeviceId) {
         String deviceId = doc.getId();
         if (deviceId == null || deviceId.trim().isEmpty()) {
@@ -372,6 +398,14 @@ public class EditEventFragment extends Fragment {
         return new CoOrganizerCandidate(deviceId, name, email);
     }
 
+    /**
+     * Renders search results for co-organizer lookup.
+     *
+     * Matching users are displayed as selectable rows. If no matches are found,
+     * an empty-state message is shown instead.
+     *
+     * @param matches list of matching co-organizer candidates
+     */
     private void renderSearchResults(List<CoOrganizerCandidate> matches) {
         clearSearchResults();
 
@@ -391,6 +425,15 @@ public class EditEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Creates a single search-result row for a co-organizer candidate.
+     *
+     * The row shows the candidate's display information and an add button
+     * that inserts the candidate into the selected co-organizers list.
+     *
+     * @param candidate candidate to render
+     * @return configured row view for the search results container
+     */
     private View createSearchResultView(CoOrganizerCandidate candidate) {
         LinearLayout row = new LinearLayout(requireContext());
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -450,6 +493,9 @@ public class EditEventFragment extends Fragment {
         return row;
     }
 
+    /**
+     * Clears all rendered co-organizer search results and hides the section label.
+     */
     private void clearSearchResults() {
         tvSearchResultsLabel.setVisibility(View.GONE);
         layoutSearchResults.removeAllViews();
@@ -481,6 +527,12 @@ public class EditEventFragment extends Fragment {
         }
     }
 
+    /**
+     * Shows a confirmation dialog before removing a co-organizer from the
+     * selected set for this event.
+     *
+     * @param candidate co-organizer candidate being removed
+     */
     private void showRemoveCoOrganizerDialog(CoOrganizerCandidate candidate) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Remove co-organizer")
@@ -494,6 +546,13 @@ public class EditEventFragment extends Fragment {
                 .show();
     }
 
+    /**
+     * Enables or disables editing controls based on whether the current user
+     * has completed their profile.
+     *
+     * Users with incomplete profiles are blocked from editing event content
+     * and shown a short explanatory message.
+     */
     private void configureUiAccess() {
         requireCompletedProfile(() -> {
             btnSelectPoster.setEnabled(true);
@@ -518,6 +577,11 @@ public class EditEventFragment extends Fragment {
         });
     }
 
+    /**
+     * Enables or disables removal controls for all rendered co-organizer chips.
+     *
+     * @param enabled true to allow chip removal, false to disable it
+     */
     private void setCoOrganizerChipRemovalEnabled(boolean enabled) {
         for (int i = 0; i < chipGroupCoOrganizers.getChildCount(); i++) {
             View child = chipGroupCoOrganizers.getChildAt(i);
@@ -587,7 +651,15 @@ public class EditEventFragment extends Fragment {
                 });
     }
 
-    // Helper function
+    /**
+     * Sends in-app notifications to newly added co-organizers after an event
+     * update has been saved.
+     *
+     * Each notification is written for the recipient device id so it can be
+     * loaded later from the notifications collection.
+     *
+     * @param addedIds device IDs of co-organizers newly added to the event
+     */
     private void sendCoOrganizerNotifications(List<String> addedIds) {
         NotificationLogRepository repo =
                 new com.example.eventlottery.firebase.FirestoreNotificationLogRepository();
@@ -612,9 +684,6 @@ public class EditEventFragment extends Fragment {
                     });
         }
     }
-    /**
-     * Updates non-poster event metadata in Firestore.
-     */
     /**
      * Updates non-poster event metadata in Firestore.
      */
@@ -673,6 +742,12 @@ public class EditEventFragment extends Fragment {
                 });
     }
 
+    /**
+     * Finalizes UI state after a successful event update.
+     *
+     * This refreshes the original comparison values, resets the save button,
+     * and shows a confirmation message to the organizer.
+     */
     private void onSaveSucceeded() {
         originalRequiresGeolocation = currentRequiresGeolocation;
         originalCoOrganizerIds.clear();
@@ -734,10 +809,22 @@ public class EditEventFragment extends Fragment {
         btnSavePoster.setText("SAVE CHANGES");
     }
 
+    /**
+     * Returns the currently selected co-organizer device IDs.
+     *
+     * @return list of selected co-organizer device IDs
+     */
     private List<String> getSelectedCoOrganizerIds() {
         return new ArrayList<>(selectedCoOrganizers.keySet());
     }
 
+    /**
+     * Compares two lists of device IDs without considering order.
+     *
+     * @param first first list of device IDs
+     * @param second second list of device IDs
+     * @return true if both lists contain the same IDs, false otherwise
+     */
     private boolean sameIds(List<String> first, List<String> second) {
         if (first.size() != second.size()) {
             return false;
@@ -753,6 +840,13 @@ public class EditEventFragment extends Fragment {
         ).show());
     }
 
+    /**
+     * Checks whether the current user has completed their profile before
+     * allowing access to event-editing actions.
+     *
+     * @param onAllowed action to run when the profile is complete
+     * @param onBlocked action to run when the profile is incomplete or lookup fails
+     */
     private void requireCompletedProfile(Runnable onAllowed, Runnable onBlocked) {
         String deviceId = DeviceIdentityService.getDeviceId(requireContext());
 
@@ -774,10 +868,22 @@ public class EditEventFragment extends Fragment {
                 });
     }
 
+    /**
+     * Safely reads trimmed text from an EditText.
+     *
+     * @param et input field to read
+     * @return trimmed text, or an empty string if the field has no text
+     */
     private String safe(EditText et) {
         return et.getText() == null ? "" : et.getText().toString().trim();
     }
 
+    /**
+     * Safely trims a nullable string value.
+     *
+     * @param value source string
+     * @return trimmed string, or an empty string if the value is null
+     */
     private String safeString(String value) {
         return value == null ? "" : value.trim();
     }

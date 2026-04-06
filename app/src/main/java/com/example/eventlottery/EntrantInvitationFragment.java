@@ -108,9 +108,19 @@ public class EntrantInvitationFragment extends Fragment {
     }
 
     /**
-     * Helper function
+     * Loads the event name for a generic notification and then renders a
+     * type-aware notification card.
+     *
+     * This is mainly used for notifications from the "notifications"
+     * collection that are not driven directly by waitlist status, such as
+     * co-organizer notifications.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param eventId Firestore id of the related event
+     * @param type notification type stored in Firestore
+     * @param message fallback message stored on the notification document
+     * @param docId Firestore document id of the notification
      */
-
     private void loadEventNameAndAddGenericCard(LayoutInflater inflater,
                                                 String eventId,
                                                 String type,
@@ -295,6 +305,17 @@ public class EntrantInvitationFragment extends Fragment {
                 });
     }
 
+    /**
+     * Builds and displays an invitation card for a selected entrant.
+     *
+     * The card supports both normal event invitations and private event
+     * invitations, and allows the entrant to accept or decline.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param eventName display name of the event
+     * @param record waitlist record backing this invitation
+     * @param isPrivate true if the invitation is for a private event
+     */
     private void buildInviteCard(LayoutInflater inflater,
                                  String eventName,
                                  WaitListRecord record,
@@ -432,6 +453,19 @@ public class EntrantInvitationFragment extends Fragment {
         tvEmpty.setVisibility(View.GONE);
     }
 
+    /**
+     * Adds a generic notification card with UI customized by notification type.
+     *
+     * This allows special notification categories, such as co-organizer
+     * additions, to appear with clearer titles and messages than the default
+     * generic notification layout.
+     *
+     * @param inflater inflater used to create notification cards
+     * @param type notification type stored in Firestore
+     * @param eventName display name of the related event
+     * @param message fallback message stored on the notification document
+     * @param docId Firestore document id for marking the notification as read
+     */
     private void addTypedGenericNotification(LayoutInflater inflater,
                                              String type,
                                              String eventName,
